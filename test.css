@@ -1,0 +1,128 @@
+@charset "utf-8";
+
+/********************************************************************************************************************/
+/*General UI Settings*/
+.UIScale {
+  font-family: "Segoe UI", Frutiger, "Frutiger Linotype", "Dejavu Sans", "Helvetica Neue", Arial, sans-serif;
+	font-size: 100%;
+  color: #abb2bf;
+}
+
+.UIScale h1 {
+	font-size: 100%;
+}
+
+.UIIcon {
+
+}
+
+html, body {
+  width: -webkit-fill-available;
+  height: 100vh;
+	overflow: hidden;
+  background-color: #282c34;
+  margin: 0;
+  padding: 0;
+
+}
+/********************************************************************************************************************/
+/*Console-Text*/
+
+.console-error-msg {
+  color: #d54e45;
+  font-weight: bold;
+}
+
+.console-warning-msg {
+  color: #d8ad3e;
+  font-weight: bold;
+}
+
+
+/********************************************************************************************************************/
+/*Scrollbar-Elements*/
+/* width */
+::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    background: #282c34;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: #4b5362;
+    border-radius: 5px;
+}
+
+/*Corner where scrollbars meet*/
+::-webkit-scrollbar-corner{
+    background: #282c34;
+}
+/********************************************************************************************************************/
+/*CSS for site-content like console, timeline etc.*/
+.wrapper-filler {
+  height: -webkit-fill-available;
+}
+
+#console {
+	overflow: scroll;
+  font-family: "Courier New", Consolas, monospace;
+}
+
+#sidebar-wrapper {
+  background-color: #21252b;
+}
+
+#editor {
+  overflow: hidden;
+}
+
+#toolbar {
+  border-bottom: solid black 1px;
+}
+
+#timeline {
+    overflow: hidden;
+}
+
+/********************************************************************************************************************/
+/*Split.js classes for Slidebars*/
+.split p, .split-flex p {
+    padding: 20px;
+  }
+
+  .split, .split-flex {
+    -webkit-box-sizing: border-box;
+       -moz-box-sizing: border-box;
+            box-sizing: border-box;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .gutter {
+    background-color: #4b5362;
+
+    background-repeat: no-repeat;
+    background-position: 50%;
+  }
+
+  .gutter.gutter-horizontal {
+    background-image: url('icons/grip-vertical.png');
+    cursor: ew-resize;
+  }
+
+  .gutter.gutter-vertical {
+    background-image: url('icons/grip-horizontal.png');
+    cursor: ns-resize;
+  }
+
+  .split.split-horizontal, .gutter.gutter-horizontal {
+    height: 100%;
+    float: left;
+  }
+/********************************************************************************************************************/
