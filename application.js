@@ -38,11 +38,6 @@ function Project( path ) {
 
 
 
-
-
-
-
-
 function Application() {
 
   this.currentProject= null;
@@ -62,7 +57,7 @@ function Application() {
 
   this.saveProject= function() {
     if( this.currentProject === null ) {
-      // Fehler 
+      // Fehler
     }
     else {
       this.currentProject.saveToDisk();

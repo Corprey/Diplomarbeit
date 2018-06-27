@@ -1,6 +1,7 @@
 
 const {UIConsole} = require('./console.js');
 const {AppInterface} = require('./applicationInterface.js');
+const {Editor} = require('./editor.js');
 
 
 function mkSplit( divs, config ) {
@@ -17,6 +18,8 @@ function UserInterface() {
 
   this.fontScale= 1;
   this.interface= new AppInterface( this );
+
+  this.uiEditor= new Editor();
 
   this.uiConsole= new UIConsole("console", {
     maxLineCount: 200,

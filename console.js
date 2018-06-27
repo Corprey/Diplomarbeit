@@ -1,3 +1,4 @@
+const Common= require('./common.js');
 
 function UIConsole( conname, config ) {
 
@@ -35,7 +36,10 @@ function UIConsole( conname, config ) {
   //Fügt Uhrzeit an Anfang an
   this.prefix= function( str ) {
     let time= new Date();
-    let pref= "[" + time.getHours() + ":" + time.getMinutes() + ":" + time.getSeconds() + "] $ ";
+    let pref= "[" + Common.paddedInteger(time.getHours(), 2) +
+              ":" + Common.paddedInteger(time.getMinutes(), 2) +
+              ":" + Common.paddedInteger(time.getSeconds(), 2) +
+              "] $ ";
     return pref + str;
   }
 
