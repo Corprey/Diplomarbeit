@@ -3,7 +3,7 @@ const Common= require('./common.js');
 function MenuNode( cnf ) {
 
   let config= new Common.DefaultConfig( cnf,
-                                        { name: "Manu Option", html: "Menu Content" },
+                                        { name: "Menu Option", html: "Menu Content" },
                                         function( prop, val ) {
                                           console.error("Error in MenuNode Class Constructor: Missing configuration argument: "+ prop+
                                                         "\nSetting default value: "+ val );

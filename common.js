@@ -17,7 +17,7 @@ function paddedInteger(num, size ) {
 function DefaultConfig( cnf, def, callback ) {
 
   for( let prop in def ) {
-    if( cnf.hasOwnProperty( prop ) === false ) {
+    if( (typeof cnf === 'undefined') || (cnf.hasOwnProperty( prop ) === false) ) {
       this[prop]= def[prop];
       callback( prop, def[prop] );
 
