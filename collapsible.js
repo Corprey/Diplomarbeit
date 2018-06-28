@@ -1,23 +1,31 @@
+const Common= require('./common.js');
 
 function MenuNode( cnf ) {
 
-  this.name= cnf.name;
+  let config= new Common.DefaultConfig( cnf,
+                                        { name: "Manu Option", html: "Menu Content" },
+                                        function( prop, val ) {
+                                          console.error("Error in MenuNode Class Constructor: Missing configuration argument: "+ prop+
+                                                        "\nSetting default value: "+ val );
+                                        } );
 
-  this.button= document.createElement("button");          // create button element
+  this.name= config.name;
+
+  this.button= document.createElement("button");                   // create button element
   this.button.appendChild( document.createTextNode( this.name ) ); // set buttons name
-  this.button.classList.add("collapsible");   // add css classes to button
+  this.button.classList.add("collapsible");                        // add css classes to button
   this.button.classList.add("UIScale");
 
   this.button.addEventListener("click", this.eventHandler );  // add event listener to button
 
   this.contentDiv= document.createElement("div");       // create div holding the content
   this.contentDiv.classList.add("collapsible-content"); // add css classes to div
-  this.contentDiv.innerHTML= cnf.html;                  // create content in div
+  this.contentDiv.innerHTML= config.html;               // create content in div
 
   this.close();
 
-  if( cnf.hasOwnProperty("active") === true ) {       // if config has an 'active' property...
-    if( cnf.active === 'true' ) {                     // ...the node can be set to be active by default
+  if( config.hasOwnProperty("active") === true ) {    // if config has an 'active' property...
+    if( config.active === true ) {                    // ...the node can be set to be active by default
       this.button.classList.add("active");
       this.contentDiv.style.display = "block";
     }

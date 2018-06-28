@@ -25,7 +25,7 @@ function UserInterface() {
   this.uiEditor= new Editor();
 
   this.uiConsole= new UIConsole("console", {
-    maxLineCount: 200,
+    //maxLineCount: 200,
     maxCollCount: 400
   });
 

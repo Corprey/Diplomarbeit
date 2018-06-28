@@ -1,6 +1,6 @@
 const Common= require('./common.js');
 
-function UIConsole( conname, config ) {
+function UIConsole( conname, cnf ) {
 
   //Überprüfe ob alle Config-Parameter gesetzt wurden bzw existieren
   this.loadConfig= function( cnf ) {
@@ -92,7 +92,12 @@ function UIConsole( conname, config ) {
   this.lines= [];
   this.container= document.getElementById(conname);
 
-  this.loadConfig( config );
+  this.config= new Common.DefaultConfig( cnf,
+                                        { maxLineCount: 200, maxCollCount: 350 },
+                                        function( prop, val ) {
+                                          console.error("Error in Console Class Constructor: Missing configuration argument: "+ prop+
+                                                        "\nSetting default value: "+ val );
+                                        } );
 
   this.clearConsole();
 
