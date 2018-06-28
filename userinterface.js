@@ -5,6 +5,7 @@ const {UIConsole} = require('./console.js');
 const {AppInterface} = require('./applicationInterface.js');
 const {Editor} = require('./editor.js');
 const {CollapsibleMenu}= require('./collapsible.js');
+const Split= require('split.js');
 
 function UserInterface() {
   //set scale for font size to standard(1)
