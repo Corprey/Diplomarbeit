@@ -16,7 +16,11 @@ function paddedInteger(num, size ) {
 
 function DefaultConfig( cnf, def, callback ) {
 
+  // Iteratre through all properties of the default-config
   for( let prop in def ) {
+
+    // Set the config to default values if the specified-config is either
+    // 'undefined' or misses properties
     if( (typeof cnf === 'undefined') || (cnf.hasOwnProperty( prop ) === false) ) {
       this[prop]= def[prop];
       callback( prop, def[prop] );

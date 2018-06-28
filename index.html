@@ -31,7 +31,7 @@
 				</div>
 
 				<div class="split split-horizontal" id="editor-wrapper" >
-					<div id= "editor" >content</div>
+					<div id= "editor" ></div>
 				</div>
 
 			</div>
@@ -48,8 +48,11 @@
 
 	<script>
 			//Start the UI
-		  const ui= new UserInterface();
-
+      try {
+		      const ui= new UserInterface();
+      } catch ( err ) {
+        require('electron').remote.getGlobal('application').fatalError( err.message );
+      }
 			//Get interface function for IPC-interprozesscommunication
       function getInterface() { return ui.interface; }
 	</script>

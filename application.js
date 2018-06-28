@@ -86,10 +86,27 @@ function Application() {
   }
 
 /********************************************************************************************************************/
-//Ausgabe in UIConsole
+// Output string in the UI Console
   this.printUIConsole= function( text, type ) {
     this.callInterface( "printUIConsole", [ { t: 'str', v: text},
                                             {t: 'str', v: type }  ] );
+  }
+
+/********************************************************************************************************************/
+  // Error method to crash main program and output error string to new context window
+  this.fatalError= function( err ) {
+    let errorWin= new BrowserWindow( { parent: this.mainWindow, center: true, width: 500, height: 150,
+                                       resizeable: false, alwaysOnTop: true,
+                                       title: "Error", autoHideMenuBar: "true" } );
+
+    let html= '<body style="background-color: #282c34; color: white; font-family: Frutiger, Arial, sans-serif;">  <br/> <br/> <center> Error: '+
+              err+
+              " </center> </body>"
+              ;
+    errorWin.setMenu(null);
+    errorWin.setResizable(false);
+    errorWin.loadURL("data:text/html;charset=utf-8," + encodeURI(html));
+    errorWin.on('close', function() { app.quit(); } );
   }
 
 }

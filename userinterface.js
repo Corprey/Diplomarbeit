@@ -17,7 +17,7 @@ function UserInterface() {
   this.uiMenu= new CollapsibleMenu('sidebar-menu', [] );
 
   //set up editor functionality
-  this.uiEditor= new Editor();
+  this.uiEditor= new Editor( { ankorName: 'editor', backColor: '#282c34' } );
 
   //set up uiconsole functionality with default values
   this.uiConsole= new UIConsole("console", {
@@ -34,19 +34,13 @@ function UserInterface() {
 /********************************************************************************************************************/
   // make Split with default values and callback
   this.mkSplit= function( divs, config ) {
-
     let self= this;
 
     config.snapOffset= 5; //fixed value
     config.gutterSize= 5; //fixed value
+    config.onDrag= function() { self.uiEditor.updateCanvas(); };
 
-    //
-    config.onDragEnd= function() { self.uiEditor.updateCanvas(); };
-
-    return Split(
-        divs,
-        config
-     );
+    return Split( divs, config );
   }
 
 /**************************************************Constructor*******************************************************/
@@ -128,13 +122,14 @@ function UserInterface() {
       $( "#timeline-wrapper" ).css("display", "block");
       //delete current slidebars
       this.splitWorkspace.destroy();
-
+      //set flag to "currently shown"
       this.tiles.timeline= true;
 
+      //gererate slidebars
       this.splitWorkspace= this.mkSplit(['#workspace-wrapper', '#timeline-wrapper'], {
-        sizes: [75, 25],
-        minSize: [200,1],
-        direction: 'vertical'
+        sizes: [75, 25], //height in %
+        minSize: [200,1], //minimal height of element in px
+        direction: 'vertical' //split orientation
       });
     }
   }
@@ -145,16 +140,20 @@ function UserInterface() {
       //if timeline currently visible
       if(this.tiles.timeline == true ) {
         this.showCompleteWorkspace();
-      } else {
+      }
+      else {
+        //make window visible
         $( "#console-wrapper" ).css("display", "block");
+        //delete current slidebars
         this.splitWorkspace.destroy();
-
+        //set flag to "currently shown"
         this.tiles.console= true;
 
+        //gererate slidebars
         this.splitWorkspace= this.mkSplit(['#workspace-wrapper', '#console-wrapper'], {
-          sizes: [75, 25],
-          minSize: [200,1],
-          direction: 'vertical'
+          sizes: [75, 25], //height in %
+          minSize: [200,1], //minimal height of element in px
+          direction: 'vertical' //split orientation
         });
       }
     }
@@ -163,27 +162,32 @@ function UserInterface() {
   // Method functionality: only show editor window
   this.onlyShowEditor= function() {
     this.splitWorkspace= this.mkSplit(['#workspace-wrapper'], {
-      sizes: [100],
-      minSize: [200],
-      direction: 'vertical'
+      sizes: [100], //height in %
+      minSize: [200], //minimal height of element in px
+      direction: 'vertical' //split orientation
     });
   }
 
 /********************************************************************************************************************/
   //Method functionality: remove timeline window
   this.hideTimeline = function() {
+    //hide current window
     $( "#timeline-wrapper" ).css("display", "none");
+    //delete current slidebars
     this.splitWorkspace.destroy();
-
+    //set flag to "currently hidden"
     this.tiles.timeline= false;
 
+    //if console currently visible
     if( this.tiles.console == true ) {
+      //gererate slidebars
       this.splitWorkspace= this.mkSplit(['#workspace-wrapper', '#console-wrapper'], {
-        sizes: [75, 25],
-        minSize: [200,1],
-        direction: 'vertical'
+        sizes: [75, 25], //height in %
+        minSize: [200,1], //minimal height of element in px
+        direction: 'vertical' //split orientation
       });
-    } else {
+    }
+    else {
       this.onlyShowEditor();
     }
   }
@@ -191,18 +195,23 @@ function UserInterface() {
 /********************************************************************************************************************/
   //Method functionality: remove console window
   this.hideConsole = function() {
+    //hide current window
     $( "#console-wrapper" ).css("display", "none");
+    //delete current slidebars
     this.splitWorkspace.destroy();
-
+    //set flag to "currently hidden"
     this.tiles.console= false;
 
+    //if timeline currently visible
     if( this.tiles.timeline == true ) {
+      //gererate slidebars
       this.splitWorkspace= this.mkSplit(['#workspace-wrapper', '#timeline-wrapper'], {
-        sizes: [75, 25],
-        minSize: [200,1],
-        direction: 'vertical'
+        sizes: [75, 25], //height in %
+        minSize: [200,1], //minimal height of element in px
+        direction: 'vertical' //split orientation
       });
-    } else {
+    }
+    else {
       this.onlyShowEditor();
     }
   }

@@ -26,7 +26,7 @@ html, body {
 
 }
 /********************************************************************************************************************/
-/*Console-Text*/
+/*Console-Text prperties*/
 
 .console-error-msg {
   color: #d54e45;
@@ -116,6 +116,10 @@ html, body {
 
 #editor {
   overflow: hidden;
+  height: inherit;
+  width: -webkit-fill-available;
+  margin: 0;
+  padding: 0;
 }
 
 #toolbar {
