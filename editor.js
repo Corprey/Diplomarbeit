@@ -22,7 +22,7 @@ function Editor() {
 
   /* Constructor */
   p5Renderer.editor= this;
-  this.p5Instance= new p5Module( p5Renderer );
+  this.p5Instance= new p5Module( p5Renderer, 'editor' );
 
 
 }

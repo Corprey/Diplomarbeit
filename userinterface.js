@@ -2,7 +2,7 @@
 const {UIConsole} = require('./console.js');
 const {AppInterface} = require('./applicationInterface.js');
 const {Editor} = require('./editor.js');
-
+const {CollapsibleMenu}= require('./collapsible.js');
 
 function mkSplit( divs, config ) {
   config.snapOffset= 5;
@@ -14,10 +14,13 @@ function mkSplit( divs, config ) {
    );
 }
 
+
 function UserInterface() {
 
   this.fontScale= 1;
   this.interface= new AppInterface( this );
+
+  this.uiMenu= new CollapsibleMenu('sidebar-menu', [] );
 
   this.uiEditor= new Editor();
 
