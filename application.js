@@ -1,5 +1,6 @@
 const electron = require("electron");
 const {app, BrowserWindow, remote} = electron;
+const localShortcut= require('electron-localshortcut');
 
 const storage = require("electron-json-storage");
 
@@ -36,6 +37,32 @@ function Project( path ) {
 
 
 
+function EventHandler( w, sarr ) {
+
+  this.win= w;
+
+  let self= this;
+  for( let i= 0; i!= sarr.length; i++ ) {
+    localShortcut.register( this.win, sarr[i].trig, function() { self[ sarr[i].func ](); } );
+  }
+
+  this.unbindAll= function() {
+    localshortcut.unregisterAll( this.win )
+  }
+
+  this.eventDebugToggle= function() {
+    global.application.callInterface( "editorCommand", [ { t: 'str', v: 'toggleDebug'} ] );
+  }
+
+  this.eventPanOrigin= function() {
+    global.application.callInterface( "editorCommand", [ { t: 'str', v: 'panOrigin'} ] );
+  }
+
+
+}
+
+
+
 
 
 function Application() {
@@ -45,6 +72,9 @@ function Application() {
   this.mainWindow= new BrowserWindow();
   this.mainWindow.maximize();
   this.mainWindow.loadURL(`file://${__dirname}/index.html`);
+
+  this.eventHandler= new EventHandler( this.mainWindow, [ { trig: 'Ctrl+D', func: 'eventDebugToggle' },
+                                                          { trig: 'Ctrl+T', func: 'eventPanOrigin' } ] );
 
   this.printConsole= function( str ) {
     console.log( str );
@@ -64,18 +94,26 @@ function Application() {
     }
   }
 
+/*********************************************************Shortcuts**************************************************/
+  this.terminate= function() {
+    this.eventHandler.unbindAll();
+  }
+
 
 /****************************************************Interfacing Methods*********************************************/
   this.callInterface= function( name, args ) {
     let command= 'getInterface().' + name+ '( ';
 
-    // Iteriere durch alle übergebenen Argumente undfüge sie zu langem string zusammen
+    // Stringify command arguments to list
     for( let i= 0; i!= args.length; i++ ) {
 
-      // Wenn Argument vom Typ String ist, setze Anführungszeichen
       if( args[i].t == 'str' ) {
-        command += ( '"' + args[i].v + '", ' );
-      } else {
+        command += ( '"' + args[i].v + '", ' );   // If arg type is string, add quotes
+
+      } else if( args[i].t == 'obj') {            // If arg type is object, convert it to JSON
+        command += ( JSON.stringify( args[i].v ) + ', ' );
+
+      }else {                                     // Numeric values are intetnally converted to string
         command += (args[i].v + ', ');
       }
     }
@@ -102,7 +140,7 @@ function Application() {
     let html= '<body style="background-color: #282c34; color: white; font-family: Frutiger, Arial, sans-serif;">  <br/> <br/> <center> Error: '+
               err+
               " </center> </body>";
-              
+
     errorWin.setMenu(null);
     errorWin.setResizable(false);
     errorWin.loadURL("data:text/html;charset=utf-8," + encodeURI(html));

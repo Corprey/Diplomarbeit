@@ -38,7 +38,12 @@ function DebugScreen( e, spd, col ) {
   }
 }
 
+function Grid( e ) {
+  this.editor= e;
 
+
+
+}
 
 function Map() {
 
@@ -52,7 +57,10 @@ function Map() {
 
 }
 
-
+/*
+*   Editor Class that interfaces with the controls and UI,
+*   and holds the actual rendering framework
+*/
 function Editor( cnf ) {
 
   this.updateCanvas= function( up ) {
@@ -81,6 +89,7 @@ function Editor( cnf ) {
     return false;
   }
 
+  // check if a certain key is currently held down
   this.isPressed= function( key ) {
     return (this.p5.keyCode === key ) && (this.p5.keyIsPressed === true);
   }
@@ -88,15 +97,6 @@ function Editor( cnf ) {
   // translate the canvas for the origin and position offset
   this.translateOffset= function() {
     this.p5.translate( p5Module.Vector.add( this.originOffset, this.positionOffset ) );
-  }
-
-  // enable or disable the debug screen
-  this.toggleDebugScreen= function() {
-    if( this.debugScreen !== null ) {
-      this.debugScreen= null;
-    } else {
-      this.debugScreen= new DebugScreen( this, 12, this.complementCol );
-    }
   }
 
   /* Render Callbacks to P5.js */
@@ -148,13 +148,14 @@ function Editor( cnf ) {
       if( p5.mouseButton === p5.RIGHT ) {
         if( self.clickPosition !== null ) { // calculate new position as offset from old position with curosr movement
           self.positionOffset= p5Module.Vector.add( self.lastPositionOffset, vectorSub(p5.mouseX, p5.mouseY, self.clickPosition) );
-          p5.curor( p5.HAND );
+          p5.cursor( p5.HAND );
         }
       }
     }
 
     p5.mouseReleased= function() {
       self.clickPosition= null;     // reset click position to stop dragging calculation
+      p5.cursor( p5.ARROW );
     }
 
     p5.mouseWheel= function( event ) {
@@ -171,6 +172,22 @@ function Editor( cnf ) {
         }
       }
     }
+  }
+
+  /* Commands  */
+
+  // Enable or disable the debug screen
+  this.toggleDebugScreen= function() {
+    if( this.debugScreen !== null ) {
+      this.debugScreen= null;
+    } else {
+      this.debugScreen= new DebugScreen( this, 12, this.complementCol );
+    }
+  }
+
+  this.autoPanOrigin= function() {
+    this.positionOffset= this.p5.createVector( 20, 20 );
+    this.scale= 1;
   }
 
   /* Constructor */

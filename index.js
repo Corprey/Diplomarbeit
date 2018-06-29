@@ -9,6 +9,11 @@ app.on("ready", () => {
 
 });
 
+app.on("will-quit", () => {
+  console.log("Done.");
+  global.application.terminate();
+});
+
 exports.openWindow = filename => {
   //win.currentOpenWindow().close()
   let win = new BrowserWindow({width: 800, height: 600});

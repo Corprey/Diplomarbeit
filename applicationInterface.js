@@ -37,6 +37,20 @@ function AppInterface( ui ) {
 
     }
   }
+
+  this.editorCommand= function( cmd, conf ) {
+
+    switch( cmd ) {
+      case 'toggleDebug':
+        this.userInterface.uiEditor.toggleDebugScreen();
+        this.userInterface.uiConsole.println( "Toggled editor debug screen" );
+        break;
+
+      case 'panOrigin':
+        this.userInterface.uiEditor.autoPanOrigin();
+        break;
+    }
+  }
 }
 
 module.exports.AppInterface= AppInterface;
