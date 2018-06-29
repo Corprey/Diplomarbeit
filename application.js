@@ -101,8 +101,8 @@ function Application() {
 
     let html= '<body style="background-color: #282c34; color: white; font-family: Frutiger, Arial, sans-serif;">  <br/> <br/> <center> Error: '+
               err+
-              " </center> </body>"
-              ;
+              " </center> </body>";
+              
     errorWin.setMenu(null);
     errorWin.setResizable(false);
     errorWin.loadURL("data:text/html;charset=utf-8," + encodeURI(html));

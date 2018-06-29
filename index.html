@@ -47,8 +47,9 @@
 
 	<script>
 			//Start the UI
+      let ui= null;
       try {
-		      const ui= new UserInterface();
+		      ui= new UserInterface();
       } catch ( err ) {
         require('electron').remote.getGlobal('application').fatalError( err.message );
       }

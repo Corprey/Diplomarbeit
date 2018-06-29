@@ -18,7 +18,7 @@ function UserInterface() {
   this.uiMenu= new CollapsibleMenu('sidebar-menu', [] );
 
   //set up editor functionality
-  this.uiEditor= new Editor( { ankorName: 'editor', backColor: '#282c34' } );
+  this.uiEditor= new Editor( { ankorName: 'editor', backColor: '#282c34', compColor: 'white' } );
 
   //set up uiconsole functionality with default values
   this.uiConsole= new UIConsole("console", {
