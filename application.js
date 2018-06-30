@@ -35,8 +35,10 @@ function Project( path ) {
 }
 
 
-
-
+/*
+*   Event Handler Class to deal with all shortcuts that are not implemented
+*   as accelerators in the app menu
+*/
 function EventHandler( w, sarr ) {
 
   this.win= w;
@@ -73,8 +75,8 @@ function Application() {
   this.mainWindow.maximize();
   this.mainWindow.loadURL(`file://${__dirname}/index.html`);
 
-  this.eventHandler= new EventHandler( this.mainWindow, [ { trig: 'Ctrl+D', func: 'eventDebugToggle' },
-                                                          { trig: 'Ctrl+T', func: 'eventPanOrigin' } ] );
+  this.eventHandler= new EventHandler( this.mainWindow, [ { trig: 'Ctrl+Alt+D', func: 'eventDebugToggle' },
+                                                          { trig: 'Ctrl+T',     func: 'eventPanOrigin'   } ] );
 
   this.printConsole= function( str ) {
     console.log( str );

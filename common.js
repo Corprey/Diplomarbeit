@@ -21,9 +21,14 @@ function DefaultConfig( cnf, def, callback ) {
 
     // Set the config to default values if the specified-config is either
     // 'undefined' or misses properties
-    if( (typeof cnf === 'undefined') || (cnf.hasOwnProperty( prop ) === false) ) {
+    if(typeof cnf === 'undefined') {
+      callback( null, null, true );
+      return;
+    }
+
+    if(cnf.hasOwnProperty( prop ) === false) {
       this[prop]= def[prop];
-      callback( prop, def[prop] );
+      callback( prop, def[prop], ( def[prop] === null ) );
 
     } else {
       this[prop]= cnf[prop];
