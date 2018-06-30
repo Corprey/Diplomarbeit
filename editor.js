@@ -16,6 +16,10 @@ function vectorInvert( v ) {
   return p5Module.Vector.mult(v, -1);
 }
 
+// create a new p5-Vector from x and y, if they are floats, they are truncated
+function truncVector( x, y ) {
+  return new p5Module.Vector( Math.trunc(x), Math.trunc(y), 0 );
+}
 
 /*
 *   Debug Screen Class rendering debug information as
@@ -30,6 +34,8 @@ function DebugScreen( e, spd, col ) {
   this.frameRate= -1;
   this.scale= -1;
   this.position= new p5Module.Vector(-1, -1);
+  this.mousePosition= new p5Module.Vector(-1, -1);
+  this.mouseGridPosition= new p5Module.Vector(-1, -1);
 
   // load values to display
   this.update= function() {
@@ -37,6 +43,8 @@ function DebugScreen( e, spd, col ) {
       this.frameRate= this.editor.p5.frameRate();
       this.scale= this.editor.scale;
       this.position= this.editor.positionOffset.copy();
+      this.mousePosition= truncVector( this.editor.p5.mouseX, this.editor.p5.mouseY );
+      this.mouseGridPosition= truncVector( this.editor.mouseGridPosition.x, this.editor.mouseGridPosition.x );
     }
   }
 
@@ -56,7 +64,9 @@ function DebugScreen( e, spd, col ) {
     let {x,y}= this.getRenderPosition();
     p5.text( "Frame Rate: "+ this.frameRate.toFixed(3), x, y  );
     p5.text( "Position X: "+ this.position.x + " Y: " + this.position.y, x, y+12  );
-    p5.text( "Scale:      "+ this.scale.toFixed(5)*100 + "%", x, y+24  );
+    p5.text( "Mouse X: "   + this.mousePosition.x + " Y: " + this.mousePosition.y
+                           + " | X: " + this.mouseGridPosition.x + " Y: " + this.mouseGridPosition.y, x, y+24  );
+    p5.text( "Scale: "     + this.scale.toFixed(5)*100 + "%", x, y+36  );
     p5.pop();
   }
 }
@@ -76,13 +86,14 @@ function Grid( e, gridcol ) {
   this.getMousePosition= function() {
     let p5= this.editor.p5;
     let res= this.resolution* this.editor.scale;  // actual grid resolution on the canvas
-    let delta= p5.mouseX % res;                   // offset to the next grid point
-    let x= p5.mouseX -delta + ( ( delta < (res/2) )? 0: res ); // go to the next point if the offset is greater than half the resolution
 
-    delta= p5.mouseY % res;
-    let y= p5.mouseY -delta + ( ( delta < (res/2) )? 0: res );
+    let mouse= p5.createVector( p5.mouseX, p5.mouseY ).add( this.editor.getCanvasOrigin() );  // get mouse position on the map
+    let delta= mouse.x % res;                                  // offset to the next grid point
+    mouse.x= mouse.x -delta + ( ( delta < (res/2) )? 0: res ); // go to the next point if the offset is greater than half the resolution
 
-    return p5.createVector( x, y );
+    delta= mouse.y % res;
+    mouse.y= mouse.y -delta + ( ( delta < (res/2) )? 0: res );
+    return mouse;
   }
 
   this.toggleGrid= function() {
@@ -102,18 +113,18 @@ function Grid( e, gridcol ) {
         let x= cnvOrg.x- (cnvOrg.x % res)+ (cnvOrg.x >0 ? res : 0 );  // x offset to canvas (0,0)
         let y= cnvOrg.y- (cnvOrg.y % res)+ (cnvOrg.y >0 ? res : 0 );  // y offset to canvas (0,0)
 
-        p5.ellipse( x, y, 20)
-
         p5.push();
         p5.stroke( this.color );
         p5.strokeWeight( 1 );
 
+        // draw lines
         let pos= y;
         for( let i= 0; i< linecnt; i++ ) {
           p5.line( x- res, pos, x+ this.editor.canvasWidth, pos );
           pos+= res;
         }
 
+        // draw collumns
         pos= x;
         for( let i= 0; i< collcnt; i++ ) {
           p5.line( pos, y- res, pos, y+ this.editor.canvasHeight );
@@ -182,8 +193,15 @@ function Editor( cnf ) {
     this.p5.translate( p5Module.Vector.add( this.originOffset, this.positionOffset ) );
   }
 
+  // get canvas (0,0) cordinates on the map
   this.getCanvasOrigin= function() {
     return vectorInvert( p5Module.Vector.add( this.originOffset, this.positionOffset ) );
+  }
+
+  // update rendering gscale
+  this.setScale= function( s ) {
+    this.scale= s;
+    self.mouseGridPosition= self.grid.getMousePosition();
   }
 
   /* Render Callbacks to P5.js */
@@ -193,6 +211,10 @@ function Editor( cnf ) {
     p5.setup= function() {
       self.canvas = p5.createCanvas( 400, 400 );
       self.updateCanvas( false );
+
+      self.canvas.mouseMoved( function() {                      // add listener for mouse movement on the canvas
+          self.mouseGridPosition= self.grid.getMousePosition();
+        } );
     }
 
     p5.draw= function() {
@@ -214,12 +236,16 @@ function Editor( cnf ) {
       p5.line(-10, 0, 10, 0);
       p5.line(0, -10, 0, 10);
 
-      // show the mouse cursor on the canvas grid as little circle
+      // show the mouse cursor on the canvas grid as a little circle
       if( self.config.showCursor === true ) {
-        p5.noFill();
-        p5.stroke('#31bff7');
-        let {x,y} = self.grid.getMousePosition();
-        p5.ellipse( x, y, 8);
+        if( self.clickPosition === null ) {
+          if( self.mouseInCanvas() ) {
+            p5.noFill();
+            p5.stroke('#31bff7');
+            let {x,y} = self.mouseGridPosition;
+            p5.ellipse( x, y, 8);
+          }
+        }
       }
 
       p5.pop();
@@ -263,7 +289,7 @@ function Editor( cnf ) {
       if( self.mouseInCanvas() ) {      // only respond if the cursor is in the canvas
 
         if( self.isPressed( p5.CONTROL ) ){       // zoom if control is pressed
-          self.scale*= (1+(event.delta/-2000));
+          self.setScale( self.scale* (1+(event.delta/-2000)) );
 
         } else if( self.isPressed( p5.SHIFT ) ) { // pan left/right if shift is pressed
           self.positionOffset.x+= (event.delta *0.75);
@@ -289,7 +315,7 @@ function Editor( cnf ) {
   // Move map back to the origin and set scale to 1
   this.autoPanOrigin= function() {
     this.positionOffset= vectorSub( 20, 20, this.originOffset );
-    this.scale= 1;
+    this.setScale( 1 );
   }
 
   /* Constructor */
@@ -319,6 +345,7 @@ function Editor( cnf ) {
   this.backColor= this.p5.color( this.config.backColor );
   this.complementCol= this.p5.color( this.config.compColor );
   this.clickPosition= null;
+  this.mouseGridPosition= null;
 }
 
 module.exports.Editor= Editor;
