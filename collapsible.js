@@ -11,8 +11,15 @@ function MenuNode( cnf ) {
 
   this.name= config.name;
 
+  this.icon= document.createElement("img");
+  this.icon.setAttribute("src", "./icons/menu-arrow.svg");
+  this.icon.setAttribute("width", "12");
+  this.icon.setAttribute("height", "12");
+  this.icon.classList.add("collapsible-icon");
+
   this.button= document.createElement("button");                   // create button element
   this.button.appendChild( document.createTextNode( this.name ) ); // set buttons name
+  this.button.appendChild( this.icon );                            // add menu icon
   this.button.classList.add("collapsible");                        // add css classes to button
   this.button.classList.add("UIScale");
 
@@ -33,12 +40,16 @@ function MenuNode( cnf ) {
 }
 
 MenuNode.prototype.close= function() {
+  this.icon.classList.remove('collapsible-icon-active');
+  this.icon.classList.add('collapsible-icon');
+
   this.button.classList.remove('active');
   this.contentDiv.style.display= 'none'
 }
 
 MenuNode.prototype.eventHandler= function() {
   this.classList.toggle("active");
+  Common.swapCSSClass(this.firstChild.nextElementSibling, "collapsible-icon", "collapsible-icon-active");
   let content= this.nextElementSibling;
 
   if (content.style.display === "block") {

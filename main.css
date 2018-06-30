@@ -99,6 +99,16 @@ html, body {
     background-color: #21252b;
 }
 
+.collapsible-icon {
+    float: right;
+    transform: rotate(270deg);
+}
+
+.collapsible-icon-active {
+    float: right;
+    transform: rotate(0deg);
+}
+
 /********************************************************************************************************************/
 /*CSS for site-content like console, timeline etc.*/
 .wrapper-filler {
