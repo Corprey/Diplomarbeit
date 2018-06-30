@@ -11,11 +11,9 @@ function MenuNode( cnf ) {
 
   this.name= config.name;
 
-  this.icon= document.createElement("img");
-  this.icon.setAttribute("src", "./icons/menu-arrow.svg");
-  this.icon.setAttribute("width", "12");
-  this.icon.setAttribute("height", "12");
-  this.icon.classList.add("collapsible-icon");
+  this.icon= document.createElement("img");                     // create icon element
+  this.icon.setAttribute("src", "./icons/col-menu-arrow.svg");  // set source of the image
+  this.icon.classList.add("collapsible-icon");                  // set class
 
   this.button= document.createElement("button");                   // create button element
   this.button.appendChild( document.createTextNode( this.name ) ); // set buttons name
