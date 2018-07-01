@@ -36,6 +36,7 @@ function DebugScreen( e, spd, col ) {
   this.position= new p5Module.Vector(-1, -1);
   this.mousePosition= new p5Module.Vector(-1, -1);
   this.mouseGridPosition= new p5Module.Vector(-1, -1);
+  this.canvasSize= new p5Module.Vector(-1, -1);
 
   // load values to display
   this.update= function() {
@@ -45,12 +46,8 @@ function DebugScreen( e, spd, col ) {
       this.position= this.editor.positionOffset.copy();
       this.mousePosition= truncVector( this.editor.p5.mouseX, this.editor.p5.mouseY );
       this.mouseGridPosition= truncVector( this.editor.mouseGridPosition.x, this.editor.mouseGridPosition.x );
+      this.canvasSize= new p5Module.Vector( this.editor.canvasWidth, this.editor.canvasHeight );
     }
-  }
-
-  this.getRenderPosition= function() {
-    return { x: -this.editor.positionOffset.x -this.editor.originOffset.x +3,
-             y: -this.editor.positionOffset.y -this.editor.originOffset.y +20 };
   }
 
   // render debug information as text to the screen
@@ -61,12 +58,14 @@ function DebugScreen( e, spd, col ) {
     p5.textAlign( p5.LEFT );
     p5.fill( this.color );
 
-    let {x,y}= this.getRenderPosition();
-    p5.text( "Frame Rate: "+ this.frameRate.toFixed(3), x, y  );
-    p5.text( "Position X: "+ this.position.x + " Y: " + this.position.y, x, y+12  );
+    let {x,y}= this.editor.getCanvasOrigin();
+    x+= 3; y+= 20;
+    p5.text( "Frame Rate: "+ this.frameRate.toFixed(3), x, y );
+    p5.text( "Position X: "+ this.position.x + " Y: " + this.position.y, x, y+12 );
     p5.text( "Mouse X: "   + this.mousePosition.x + " Y: " + this.mousePosition.y
-                           + " | X: " + this.mouseGridPosition.x + " Y: " + this.mouseGridPosition.y, x, y+24  );
-    p5.text( "Scale: "     + this.scale.toFixed(5)*100 + "%", x, y+36  );
+                           + " | X: " + this.mouseGridPosition.x + " Y: " + this.mouseGridPosition.y, x, y+24 );
+    p5.text( "Scale: "     + this.scale.toFixed(5)*100 + "%", x, y+36 );
+    p5.text( "Canvas: "    + this.canvasSize.x + " x " + this.canvasSize.y, x, y+48 );
     p5.pop();
   }
 }
@@ -167,7 +166,7 @@ function Editor( cnf ) {
 
     this.canvasWidth= x;
     this.canvasHeight= y;
-    this.p5.resizeCanvas( x, y, false );
+    this.p5.resizeCanvas( x, y, true );
   }
 
   this.getScaledPos= function( x, y ) {
@@ -201,7 +200,7 @@ function Editor( cnf ) {
   // update rendering gscale
   this.setScale= function( s ) {
     this.scale= s;
-    self.mouseGridPosition= self.grid.getMousePosition();
+    this.mouseGridPosition= this.grid.getMousePosition();
   }
 
   /* Render Callbacks to P5.js */
@@ -209,9 +208,9 @@ function Editor( cnf ) {
     let self= this;
 
     p5.setup= function() {
-      self.canvas = p5.createCanvas( 400, 400 );
+      self.canvas = p5.createCanvas( 400, 400, p5.P2D );
       self.updateCanvas( false );
-
+      self.mouseGridPosition= self.grid.getMousePosition();     // get inital value for mouse position
       self.canvas.mouseMoved( function() {                      // add listener for mouse movement on the canvas
           self.mouseGridPosition= self.grid.getMousePosition();
         } );
@@ -338,6 +337,7 @@ function Editor( cnf ) {
 
   let self= this;
   this.p5= new p5Module( function(p5) { self.p5Renderer(p5); }, this.config.ankorName );
+  this.p5.disableFriendlyErrors= !this.config.friendlyErrors;
 
   this.originOffset= this.p5.createVector(0, 0);
   this.positionOffset= this.p5.createVector(0, 0);

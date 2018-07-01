@@ -42,7 +42,36 @@ function swapCSSClass( element, ca, cb ) {
   }
 }
 
+// Very simple pipe to store objects in the order they were received
+function ObjPipe() {
+  this.arr= [];
+
+  this.push= function( o ) {
+    this.arr.unshift( o );
+  }
+
+  this.get= function() {
+    if( this.isEmpty() ) {
+      return null;
+    }
+    return this.arr.pop();
+  }
+
+  this.isEmpty= function() {
+    return this.arr.length === 0;
+  }
+}
+
+
+/* Hack to make script file loadable via 'importScripts' in a Web-Worker */
+if(self.importScripts !== undefined) {
+  console.log('WebWorker!');
+  this.module= {};
+  this.module.exports= {};
+}
+
 module.exports.filledString= filledString;
 module.exports.paddedInteger= paddedInteger;
 module.exports.DefaultConfig= DefaultConfig;
 module.exports.swapCSSClass= swapCSSClass;
+module.exports.WorkerMessage= WorkerMessage;
