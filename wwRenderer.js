@@ -43,7 +43,6 @@ let thisInstance= new function() {
 
   this.eventMessage= function( e ) {
     let m= e.data;
-    console.log( this.id + "-> Got Message from Host: " + m.message );
 
     switch( m.message ) {
       case 'init':
@@ -51,13 +50,10 @@ let thisInstance= new function() {
         break;
 
       case 'frame':
-        console.log( this.id + "-> Got frame: ");
-        console.log(m.frame);
         this.frames.push( m.frame );
         break;
 
       case 'start':
-        console.log( this.id + "-> Started "+ this.id );
         this.run();
         break;
 
@@ -73,15 +69,9 @@ let thisInstance= new function() {
   }
 
   // write pixel data to current and previous image
-  this.writePixel= function( img, old, pos, r, g, b ) {
-    img.setUint8(pos,   r);
-    img.setUint8(pos+1, g);
-    img.setUint8(pos+2, b);
-    img.setUint8(pos+3, 255);
-    old.setUint8(pos,   r);
-    old.setUint8(pos+1, g);
-    old.setUint8(pos+2, b);
-    old.setUint8(pos+3, 255);
+  this.writePixel= function( img, old, pos, col ) {
+    img.setUint32(pos, col);
+    old.setUint32(pos, col);
   }
 
   // main render loop
@@ -110,32 +100,43 @@ let thisInstance= new function() {
 
   // Render a solid image in a single color
   this.renderSolid= function( frview, prview, imgview, frame ) {
-    console.log( this.id + "-> Rendering solif frame for "+ frame.panelId );
     if( frview.byteLength != 3 ) { //
       console.error( "Render Function 'Solid' received wrong buffer length: "+ view.byteLength );
     }
 
-    let r= frview.getUint8(0);                // get pixel colors
-    let g= frview.getUint8(1);
-    let b= frview.getUint8(2);
+    // get pixel colors
+    col= frview.getUint8(0);              // byte 0: r (msB)
+    col= (col << 8) | frview.getUint8(1); // byte 1: g
+    col= (col << 8) | frview.getUint8(2); // byte 2: b
+    col= (col << 8) | 0xFF;               // byte 3: a (lsB)
+
     for( let i= 0; i!= panelBytes; i+= 4 ) {
-      this.writePixel( imgview, prview, i, r, g, b );
+      this.writePixel( imgview, prview, i, col );
     }
   }
 
   // Render an entire image from provided pixel values
   this.renderEntire= function( frview, prview, imgview, frame ) {
-
     if( frview.byteLength != 6912 ) { //
       console.error( "Render Function 'Entire' received wrong buffer length: "+ frview.byteLength );
     }
 
-    let pos= 0, r, g, b;
+    let pos= 0, col;
     for( let i= 0; i < frview.byteLength; i+= 3 ) {       // frame only has 3 bytes per pixel
-      r= frview.getUint8(i);
-      g= frview.getUint8(i+1);
-      b= frview.getUint8(i+2);
-      this.writePixel( imgview, prview, pos, r, g, b );
+
+      // get pixel colors
+      if( i < (frview.byteLength-3) ) { // load as 4 byte value and replace the lsB with the a-value
+        col= frview.getUint32(i);
+        col|= 0xFF;
+
+      } else {                          // the last value needs to be loaded byte by byte as only 3 bytes to load remain ...
+        col= frview.getUint8(i);        // ... and loading 4 bytes would throw out-of-bounds
+        col= (col << 8) | frview.getUint8(i+1);
+        col= (col << 8) | frview.getUint8(i+2);
+        col= (col << 8) | 0xFF;
+      }
+
+      this.writePixel( imgview, prview, pos, col );
       pos+= 4;                                            // image has 4 bytes per pixel
     }
   }
@@ -147,7 +148,6 @@ let thisInstance= new function() {
 };
 
 self.onmessage= function( e ) {
-  console.log("-> ww thread!");
 
   thisInstance.eventMessage( e );
 }

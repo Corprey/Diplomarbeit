@@ -220,13 +220,19 @@ function Editor( cnf ) {
     p5.draw= function() {
       p5.background( self.backColor );
 
-      self.translateOffset();
+      self.translateOffset();   // set map offset
 
-      self.grid.render();
+      self.grid.render();       // render the grid
 
-      p5.fill('#fae');
+      p5.fill('#fae');          // test circle
       let pos= self.getScaledPos(500, 500);
       p5.ellipse(pos.x, pos.y, 90* self.scale );
+
+      if( self.frenderer.screens.arr.length !== 0 ) {
+        p5.image( self.frenderer.screens.arr[0].curImage ,0,0 ); // <- Just testing if the renderer did it right
+      }
+      self.frenderer.loadFrames([0]);
+      self.frenderer.begin();   // run the renderer
 
       // Rendering additional elements
       // draw the origin cross at (0,0)
@@ -255,7 +261,6 @@ function Editor( cnf ) {
         self.debugScreen.show();
       }
 
-      p5.image( self.frenderer.screens.arr[0].curImage ,0,0 ); // <- Just testing if the renderer did it right 
       // Done Rendering
     }
 
@@ -337,20 +342,30 @@ function Editor( cnf ) {
   this.debugScreen= null;
   this.grid= new Grid( this, this.config.gridColor );
 
+  this.timeline= new Render.TimeLine();
+  this.frenderer= new Render.FrameRenderer( this.timeline );
+  let timelinebuff= new ArrayBuffer( 48*48*3 );
+  let tv= new DataView( timelinebuff );
+  for(let i= 0; i< tv.byteLength; i+= 3 ) {
+    if( (Math.trunc(i/1152)%2 == 0) && ( i !== 0 ) ) {
+      console.log("pink");
+      tv.setUint8(i, 224);
+      tv.setUint8(i+1, 47);
+      tv.setUint8(i+2, 138);
+    } else {
+      console.log("blue");
+      tv.setUint8(i, 47);
+      tv.setUint8(i+1, 85);
+      tv.setUint8(i+2, 224);
+    }
+  }
+  //let testframe= new Render.Frame('e', 0, 0, timelinebuff );
+  //this.frenderer.targetBatch.push( testframe );
+  this.timeline.addFrame( 0, 0, 'e', timelinebuff );
+
   let self= this;
   this.p5= new p5Module( function(p5) { self.p5Renderer(p5); }, this.config.ankorName );
   this.p5.disableFriendlyErrors= !this.config.friendlyErrors;
-
-  /* Renderer Test */
-  this.frenderer= new Render.FrameRenderer();
-  let timelinebuff= new ArrayBuffer( 3 );
-  let tv= new DataView( timelinebuff );
-  tv.setUint8(0, 66 );
-  tv.setUint8(1, 255 );
-  tv.setUint8(2, 134 );
-  let testframe= new Render.Frame('s', 0, 0, timelinebuff );
-  this.frenderer.targetBatch.push( testframe );
-  this.frenderer.begin();
 
   this.originOffset= this.p5.createVector(0, 0);
   this.positionOffset= this.p5.createVector(0, 0);

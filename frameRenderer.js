@@ -34,6 +34,77 @@ Screen.prototype.update= function( buff ) {
 
 
 /*
+* Timeline Class holding all frames for all panels
+*
+*/
+function TimeLine() {
+  this.frameCounter= 0;
+  this.animation= [];
+
+  // add frame to animation
+  this.addFrame= function( num, panel, type, data ) {
+    while( num >= this.animation.length ) {
+      this.animation.push( [] );
+    }
+
+    this.animation[num].push( new Frame( type, num, panel, data ) );
+  }
+
+  // Get number of frame sets
+  this.length= function() {
+    return this.animation.length;
+  }
+
+  this.next= function( wrap ) {
+    if( this.frameCounter >= this.animation.length-1 ) {
+      if( wrap ) {
+        this.frameCounter= 0;
+      }
+      return true;
+
+    } else {
+        this.frameCounter++;
+    }
+    return false;
+  }
+
+  // Load frame for panel (this code has a complexity of O(N*N) but that's good enough)
+  this.getFrame= function( num, panel ) {
+    if( num >= this.animation.length ) {
+      console.error( "Timeline Frame request out of bounds: number: " + num + " panel: "+ panel);
+      throw Error( "Timeline Frame request out of bounds: number: " + num + " panel: "+ panel);
+    }
+
+    let dataSet= this.animation[num];
+    for( let i= 0; i!= dataSet.length; i++ ) {
+      if( dataSet[i].panelId === panel ) {
+        return dataSet[i];
+      }
+    }
+
+    return null;
+  }
+
+  // Get frame based on panel and internal frame counter
+  this.getCurrentFrame= function( panel ) {
+    return this.getFrame( this.frameCounter, panel );
+  }
+
+  // Return the buffer to a frame on the timeline
+  this.restoreBuffer= function( f ) {
+    let frame= this.getFrame( f.frameNumber, f.panelId );
+
+    if( frame === null ) {
+      console.error( "Cannot restore buffer for unknown frame: number:" + f.frameNumber + " panel: " + f.panelId );
+      throw Error( "Cannot restore buffer for unknown frame: number:" + f.frameNumber + " panel: " + f.panelId );
+    }
+
+    frame.data= f.data;
+  }
+}
+
+
+/*
 * Screen Array Class holding all attached screens to
 * the renderer
 */
@@ -41,6 +112,7 @@ function ScreenArray( r ) {
   this.arr= [];
   this.renderer= r;
 
+  // Save array lookup, that automatically expands array and constructs Screen
   this.at= function( index ) {
     while( index >= this.arr.length ) {
       this.arr.push( null );
@@ -53,6 +125,7 @@ function ScreenArray( r ) {
     return this.arr[index];
   }
 
+  // Add new Screen to array
   this.add= function( index ) {
     if( this.arr[index] !== null ) {
       console.error("Screen array slot is already occupied: "+ index );
@@ -63,11 +136,12 @@ function ScreenArray( r ) {
     r.assignWorker( this.arr[index] );
   }
 
+  // Return all ids of available panels as array
   this.getIndices= function() {
     let a= [];
 
      for( let i= 0; i!= this.arr.length; i++ ) {
-       if( this.arr[i] !== null ) {
+       if( this.arr[i] !== null ) {               // append id to array if panel exists in slot
          a.push( i );
        }
      }
@@ -82,7 +156,7 @@ function ScreenArray( r ) {
 * rendering them to p5-images that can be displayed on the
 * editor canvas
 */
-function FrameRenderer( cnf ) {
+function FrameRenderer( tm, cnf ) {
 
   // Spawn new web worker thread with id
   this.spawnThread= function() {
@@ -103,21 +177,23 @@ function FrameRenderer( cnf ) {
 
   // Post frame data to worker thread
   this.postFrame= function( id, f ) {
+    if( f.data.byteLength === 0 ) {
+      console.error( "Empty Buffer!" );
+      return;
+    }
     this.workers[id].postMessage( {message: 'frame', id: id, frame: f}, [f.data] );
   }
 
   // Event Handler on Message from web worker
   this.eventMessage= function( e ) {
     let msg= e.data;
-    console.log( "Received from WW: "+ msg.message );
     switch( msg.message ) {
       case 'done':
-        console.log(msg);
         let frame= msg.frame;
         let imgbuff= msg.imgData;
 
-        this.screens.at( frame.panelId ).update( imgbuff );
-        // return the frame buffer back to the timeline
+        this.screens.at( frame.panelId ).update( imgbuff ); // update pixels of screen to new image data
+        this.timeline.restoreBuffer( frame );               // return buffer data to frame on timeline
         break;
 
       default:
@@ -146,7 +222,7 @@ function FrameRenderer( cnf ) {
     let w= 0;
 
     if( this.workers.length === 0 ) {
-      console.log("No workers available!")
+      console.error("No workers available!")
       throw Error("Frame Renderer: No workers available!");
     }
 
@@ -155,28 +231,28 @@ function FrameRenderer( cnf ) {
       w= ( this.workerLoad[w] > this.workerLoad[i] ) ? i : w;
     }
 
-    console.log("Assigned panel "+ panel.id + " the worker " + w + " with a load of " + this.workerLoad[w] );
     panel.workerId= w;      // assign worker
     this.workerLoad[w]++;   // increase load of worker
   }
 
-  this.loadFrames= function( frameNumber, panels ) {
+  // Load frames from timeline for current frame number
+  this.loadFrames= function( panels ) {
     let targets= [];
+    // if no panels specified, load frames for all screens
     if( typeof panels !== 'undefined' ) {
       targets= panels.slice();
     } else {
       targets= this.screens.getIndices();
     }
 
-    // load next set of frames from the timeline
-    // frameNumber: id of frame to load from the timeline
-    // panels[]: array of panels to update (ones that are currently not visible in the editor are ignored for example)
+    // load frames from timeline
+    for( let i= 0; i!= targets.length; i++ ) {
+      let frame= this.timeline.getCurrentFrame( targets[i] );
 
-    /* Test */
-
-
-
-
+      if( frame !== null ) {
+        this.targetBatch.push( frame );
+      }
+    }
   }
 
   // Post frames and get them rendered by the threads
@@ -189,18 +265,16 @@ function FrameRenderer( cnf ) {
       let frame= this.targetBatch[i];             // get frame from batch
       let panel= this.screens.at(frame.panelId);  // get panel based on frame
 
-      console.log( "Got frame for " + panel.workerId );
-      console.log( frame );
       this.postFrame( panel.workerId, frame );    // post frame to worker
       updates.add( panel.workerId );              // save that worker needs to be started
     }
 
     let self= this;
     updates.forEach( function( id ) {             // start all workers that got new data
-      console.log("Starting "+ id);
       self.post(id, 'start');
     });
 
+    this.targetBatch= [];                         // remove all tasks from the batch
   }
 
   /* Constructor */
@@ -212,6 +286,7 @@ function FrameRenderer( cnf ) {
                                                           "\nSetting default value: "+ val );
                                           } );
 
+  this.timeline= tm;
   this.workers= [];                     // Array of workers
   this.workerLoad= [];                  // Array where each worker id (index) correlates with the worker's number of panels to render
   this.screens= new ScreenArray(this);  // Array of screens
@@ -225,4 +300,5 @@ function FrameRenderer( cnf ) {
 
 module.exports.FrameRenderer= FrameRenderer;
 module.exports.Frame= Frame;
+module.exports.TimeLine= TimeLine;
 module.exports.Screen= Screen;

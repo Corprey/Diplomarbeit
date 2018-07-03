@@ -48,11 +48,11 @@
 	<script>
 			//Start the UI
       let ui= null;
-      try {
+      //try {
 		      ui= new UserInterface();
-      } catch ( err ) { console.log({x: err});
+      /*} catch ( err ) { console.log({x: err});
         require('electron').remote.getGlobal('application').fatalError( {error: String(err.name), trace: String(err.stack), message: err.message} );
-      }
+      }*/
 
 			//Get interface function for IPC
       function getInterface() { return ui.interface; }
