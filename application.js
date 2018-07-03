@@ -136,12 +136,39 @@ function Application() {
   // Error method to crash main program and output error string to new context window
   this.fatalError= function( err ) {
     let errorWin= new BrowserWindow( { parent: this.mainWindow, center: true, width: 500, height: 150,
-                                       resizeable: false, alwaysOnTop: true,
+                                       useContentSize: true, resizeable: false, alwaysOnTop: true,
                                        title: "Error", autoHideMenuBar: "true" } );
 
+    // decompose stack trace
+    let lines= err.trace.split('\n');         // split lines and ignore first one
+    let trace= "";
+    for( let i= 1; i< lines.length; i++ ) {   // iterate through lines
+      let l= lines[i].trim();
+
+      let b= l.indexOf("file:");
+      if( b === -1 ) {
+        b = l.indexOf("C:");
+      }
+
+      if( b !== -1 ) {                        // if file path exists
+        trace+= l.substring(0, b);            // copy substring before path
+
+        let path= l.substring(b, l.length );  // truncate path to filename and line numbers
+        let dirs= path.split("/");
+        if( dirs.length === 1 ) {
+          dirs= path.split('\\');
+        }
+        trace+= dirs[dirs.length-1];          // append filename to trace
+
+      } else {
+        trace+= l;
+      }
+      trace+= '</br>';
+    }
+
     let html= '<body style="background-color: #282c34; color: white; font-family: Frutiger, Arial, sans-serif;">  <br/> <br/> <center> Error: '+
-              err+
-              " </center> </body>";
+              err.error+ ' </br>'+ err.message+ '</center> </br>'+ trace+
+              " </body>";
 
     errorWin.setMenu(null);
     errorWin.setResizable(false);

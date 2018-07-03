@@ -42,6 +42,26 @@ function swapCSSClass( element, ca, cb ) {
   }
 }
 
+// A very simple set class for small integer ranges
+function SimpleSet() {
+  this.arr= [];
+
+  this.add= function( value ) {
+    while(value >= this.arr.length) {
+      this.arr.push( false );
+    }
+    this.arr[value]= true;
+  }
+
+  this.forEach= function( cb ) {
+    for( let i= 0; i!= this.arr.length; i++ ) {
+      if( this.arr[i] === true ) {
+        cb( i );
+      }
+    }
+  }
+}
+
 // Very simple pipe to store objects in the order they were received
 function ObjPipe() {
   this.arr= [];
@@ -65,7 +85,6 @@ function ObjPipe() {
 
 /* Hack to make script file loadable via 'importScripts' in a Web-Worker */
 if(self.importScripts !== undefined) {
-  console.log('WebWorker!');
   this.module= {};
   this.module.exports= {};
 }
@@ -74,4 +93,5 @@ module.exports.filledString= filledString;
 module.exports.paddedInteger= paddedInteger;
 module.exports.DefaultConfig= DefaultConfig;
 module.exports.swapCSSClass= swapCSSClass;
-module.exports.WorkerMessage= WorkerMessage;
+module.exports.SimpleSet= SimpleSet;
+module.exports.ObjPipe= ObjPipe;

@@ -1,5 +1,6 @@
 const p5Module= require('p5');
 const Common = require('./common.js');
+const Render = require('./frameRenderer.js');
 
 // create a new p5-Vector and subtract another one from it on the fly
 function vectorSub( x, y, v ) {
@@ -254,6 +255,7 @@ function Editor( cnf ) {
         self.debugScreen.show();
       }
 
+      p5.image( self.frenderer.screens.arr[0].curImage ,0,0 ); // <- Just testing if the renderer did it right 
       // Done Rendering
     }
 
@@ -338,6 +340,17 @@ function Editor( cnf ) {
   let self= this;
   this.p5= new p5Module( function(p5) { self.p5Renderer(p5); }, this.config.ankorName );
   this.p5.disableFriendlyErrors= !this.config.friendlyErrors;
+
+  /* Renderer Test */
+  this.frenderer= new Render.FrameRenderer();
+  let timelinebuff= new ArrayBuffer( 3 );
+  let tv= new DataView( timelinebuff );
+  tv.setUint8(0, 66 );
+  tv.setUint8(1, 255 );
+  tv.setUint8(2, 134 );
+  let testframe= new Render.Frame('s', 0, 0, timelinebuff );
+  this.frenderer.targetBatch.push( testframe );
+  this.frenderer.begin();
 
   this.originOffset= this.p5.createVector(0, 0);
   this.positionOffset= this.p5.createVector(0, 0);
