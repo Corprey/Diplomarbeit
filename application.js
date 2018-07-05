@@ -1,8 +1,8 @@
 const electron = require("electron");
-const {app, BrowserWindow, remote} = electron;
+const {app, BrowserWindow, remote, ipcMain} = electron;
 const localShortcut= require('electron-localshortcut');
-
 const storage = require("electron-json-storage");
+const {FileLoader}= require("./fileLoader.js");
 
 function Project( path ) {
 
@@ -13,7 +13,6 @@ function Project( path ) {
   //filename
   this.fileName= path.substring(splitPos+1, path.length);
 
-
   storage.setDataPath(this.dataPath );
   this.fileObj= storage.get( this.fileName,
     function(error, data) {
@@ -22,6 +21,7 @@ function Project( path ) {
       }
   });
 /********************************************************************************************************************/
+
   this.saveToDisk= function() {
       storage.setDataPath( this.dataPath );
 
@@ -53,11 +53,11 @@ function EventHandler( w, sarr ) {
   }
 
   this.eventDebugToggle= function() {
-    global.application.callInterface( "editorCommand", [ { t: 'str', v: 'toggleDebug'} ] );
+    global.application.editorCommand( 'toggleDebug' );
   }
 
   this.eventPanOrigin= function() {
-    global.application.callInterface( "editorCommand", [ { t: 'str', v: 'panOrigin'} ] );
+    global.application.editorCommand( 'panOrigin' );
   }
 
 
@@ -69,7 +69,9 @@ function EventHandler( w, sarr ) {
 
 function Application() {
 
+  const self= this;
   this.currentProject= null;
+  this.fileLoader= null;
 
   this.mainWindow= new BrowserWindow();
   this.mainWindow.maximize();
@@ -78,11 +80,11 @@ function Application() {
   this.eventHandler= new EventHandler( this.mainWindow, [ { trig: 'Ctrl+Alt+D', func: 'eventDebugToggle' },
                                                           { trig: 'Ctrl+T',     func: 'eventPanOrigin'   } ] );
 
-  this.printConsole= function( str ) {
-    console.log( str );
-    return true;
+  this.terminate= function() {
+    this.eventHandler.unbindAll();
   }
 
+  /*******************************************************Project/Files************************************************/
   this.loadProject= function( path ) {
     this.currentProject= new Project( path );
   }
@@ -96,41 +98,35 @@ function Application() {
     }
   }
 
-/*********************************************************Shortcuts**************************************************/
-  this.terminate= function() {
-    this.eventHandler.unbindAll();
+  this.loadAnimation= function( path ){
+    if( this.fileLoader !== null ) {
+      this.fileLoader.close();
+    }
+    this.fileLoader= new FileLoader( path,  );
   }
 
 
 /****************************************************Interfacing Methods*********************************************/
-  this.callInterface= function( name, args ) {
-    let command= 'getInterface().' + name+ '( ';
-
-    // Stringify command arguments to list
-    for( let i= 0; i!= args.length; i++ ) {
-
-      if( args[i].t == 'str' ) {
-        command += ( '"' + args[i].v + '", ' );   // If arg type is string, add quotes
-
-      } else if( args[i].t == 'obj') {            // If arg type is object, convert it to JSON
-        command += ( JSON.stringify( args[i].v ) + ', ' );
-
-      }else {                                     // Numeric values are intetnally converted to string
-        command += (args[i].v + ', ');
-      }
-    }
-
-    command += '); ';
-
-    this.mainWindow.webContents.executeJavaScript( command );
+  // Output string in the UI Console
+  this.printUIConsole= function( type, text ) {
+    this.mainWindow.webContents.send('ui-console', type, text );
   }
 
-/********************************************************************************************************************/
-// Output string in the UI Console
-  this.printUIConsole= function( text, type ) {
-    this.callInterface( "printUIConsole", [ { t: 'str', v: text},
-                                            {t: 'str', v: type }  ] );
+  // Send editor command
+  this.editorCommand= function( cmd, conf ) {
+    this.mainWindow.webContents.send( 'editor-command', cmd, conf );
   }
+
+  //Output string in the node-Console
+  ipcMain.on( 'console', function( event, msg ) {
+    console.log( msg );
+  });
+
+  // Load new project
+  ipcMain.on( 'load-project', function( event, path ) {
+    self.loadProject( path );
+    event.returnValue= { success: true };
+  });
 
 /********************************************************************************************************************/
   // Error method to crash main program and output error string to new context window

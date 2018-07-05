@@ -1,3 +1,4 @@
+'use strict'
 const Common= require('./common.js');
 const p5Module= require('p5');
 
@@ -24,6 +25,10 @@ function Screen( i ) {
   this.workerId= -1;
   this.curImage= new p5Module.Image(48, 48);
   this.curImage.loadPixels();
+
+  for( let i= 3; i< (48*48*4); i+= 4) {  // setting default color to black
+    this.curImage.pixels[i]= 255;
+  }
 }
 
 Screen.prototype.update= function( buff ) {
@@ -178,7 +183,7 @@ function FrameRenderer( tm, cnf ) {
   // Post frame data to worker thread
   this.postFrame= function( id, f ) {
     if( f.data.byteLength === 0 ) {
-      console.error( "Empty Buffer!" );
+      console.error( "Empty Buffer on cycle: "+ this.cycles );
       return;
     }
     this.workers[id].postMessage( {message: 'frame', id: id, frame: f}, [f.data] );
@@ -230,7 +235,7 @@ function FrameRenderer( tm, cnf ) {
     for( let i= 0; i!= this.workerLoad.length; i++ ) {
       w= ( this.workerLoad[w] > this.workerLoad[i] ) ? i : w;
     }
-
+    console.log("Assigned screen " + panel.id + " to worker " + w);
     panel.workerId= w;      // assign worker
     this.workerLoad[w]++;   // increase load of worker
   }
@@ -275,6 +280,7 @@ function FrameRenderer( tm, cnf ) {
     });
 
     this.targetBatch= [];                         // remove all tasks from the batch
+    this.cycles++;
   }
 
   /* Constructor */
@@ -291,6 +297,8 @@ function FrameRenderer( tm, cnf ) {
   this.workerLoad= [];                  // Array where each worker id (index) correlates with the worker's number of panels to render
   this.screens= new ScreenArray(this);  // Array of screens
   this.targetBatch= [];                 // List of frames to render during cycle
+
+  this.cycles= 0;
 
   for( let i= 0; i!= this.config.threadCount; i++ ) {
     this.spawnThread();

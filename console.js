@@ -1,3 +1,4 @@
+'use strict'
 const Common= require('./common.js');
 
 function UIConsole( conname, cnf ) {

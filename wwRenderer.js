@@ -1,3 +1,4 @@
+'use strict'
 self.importScripts('./common.js');
 
 /*
@@ -88,8 +89,13 @@ let thisInstance= new function() {
 
       if( frame.type === 'd' ) {          // difference
         // render diff
+
       } else if( frame.type === 'e' ) {   // entire
         this.renderEntire(frview, prview, imgview, frame);
+
+      } else if( frame.type === 'l' ) {   // line
+        // render lines
+
       } else {                            // solid
         this.renderSolid(frview, prview, imgview, frame);
       }

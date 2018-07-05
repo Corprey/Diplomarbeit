@@ -1,4 +1,4 @@
-
+'use strict'
 // Create String filled with the specified charater
 function filledString( character , length) {
   return new Array(length + 1).join( character )

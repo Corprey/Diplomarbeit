@@ -1,20 +1,26 @@
-
-const {remote} = require('electron');
+'use strict'
+const {ipcRenderer} = require('electron');
 
 function AppInterface( ui ) {
 
+  const self= this;
   this.userInterface= ui;
-  this.mainApp= remote.getGlobal('application');
 
-  this.printConsole= function( str ) {
-    return this.mainApp.printConsole( str );
+  /* interface */
+  this.editorCommand= function( cmd, conf ) {
+    switch( cmd ) {
+      case 'toggleDebug':
+        this.userInterface.uiEditor.toggleDebugScreen();
+        this.userInterface.uiConsole.println( "Toggled editor debug screen" );
+        break;
+
+      case 'panOrigin':
+        this.userInterface.uiEditor.autoPanOrigin();
+        break;
+    }
   }
 
-  this.loadProject= function( path ) {
-    return this.mainApp.loadProject( path );
-  }
-
-  this.printUIConsole= function( text, type ) {
+  this.printUIConsole= function( type, text ) {
     if( typeof x === 'undefined' ) {
       type= 'msg';
     }
@@ -38,19 +44,40 @@ function AppInterface( ui ) {
     }
   }
 
-  this.editorCommand= function( cmd, conf ) {
+  /* ipc Emitters */
+  this.printConsole= function( msg ) {
+    ipcRenderer.send( 'console', msg );
+  }
 
-    switch( cmd ) {
-      case 'toggleDebug':
-        this.userInterface.uiEditor.toggleDebugScreen();
-        this.userInterface.uiConsole.println( "Toggled editor debug screen" );
-        break;
-
-      case 'panOrigin':
-        this.userInterface.uiEditor.autoPanOrigin();
-        break;
+  this.loadProject= function( path ) {
+    let res= ipcRenderer.sendSync( 'load-project', path );
+    if( res.success === false ) {
+      // Error: Could not load project
     }
   }
+
+  /* ipc Receivers */
+  ipcRenderer.on( 'ui-console', function( event, type, text ) {
+    self.printUIConsole( type, text );
+  });
+
+  ipcRenderer.on( 'editor-command', function( event, cmd, conf ) {
+    self.editorCommand( cmd, conf );
+  });
+
+}
+
+function unpackBuffer(str) {
+  var buf = new ArrayBuffer(str.length*2); // 2 bytes for each char
+  var bufView = new Uint16Array(buf);
+  for (var i=0, strLen=str.length; i < strLen; i++) {
+    bufView[i] = str.charCodeAt(i);
+  }
+  return buf;
+}
+
+function AnimationFile( inf, path ) {
+
 }
 
 module.exports.AppInterface= AppInterface;

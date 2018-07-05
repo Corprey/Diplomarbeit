@@ -1,5 +1,5 @@
+'use strict'
 /* Javascript for UserInterace elements */
-
 
 const {UIConsole} = require('./console.js');
 const {AppInterface} = require('./applicationInterface.js');

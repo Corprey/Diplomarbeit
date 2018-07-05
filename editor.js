@@ -1,3 +1,4 @@
+'use strict'
 const p5Module= require('p5');
 const Common = require('./common.js');
 const Render = require('./frameRenderer.js');
@@ -230,8 +231,9 @@ function Editor( cnf ) {
 
       if( self.frenderer.screens.arr.length !== 0 ) {
         p5.image( self.frenderer.screens.arr[0].curImage ,0,0 ); // <- Just testing if the renderer did it right
+        p5.image( self.frenderer.screens.arr[1].curImage ,50,0 ); // <- Just testing if the renderer did it right
       }
-      self.frenderer.loadFrames([0]);
+      self.frenderer.loadFrames([0, 1]);
       self.frenderer.begin();   // run the renderer
 
       // Rendering additional elements
@@ -348,20 +350,31 @@ function Editor( cnf ) {
   let tv= new DataView( timelinebuff );
   for(let i= 0; i< tv.byteLength; i+= 3 ) {
     if( (Math.trunc(i/1152)%2 == 0) && ( i !== 0 ) ) {
-      console.log("pink");
       tv.setUint8(i, 224);
       tv.setUint8(i+1, 47);
       tv.setUint8(i+2, 138);
     } else {
-      console.log("blue");
       tv.setUint8(i, 47);
       tv.setUint8(i+1, 85);
       tv.setUint8(i+2, 224);
     }
   }
-  //let testframe= new Render.Frame('e', 0, 0, timelinebuff );
-  //this.frenderer.targetBatch.push( testframe );
   this.timeline.addFrame( 0, 0, 'e', timelinebuff );
+
+  let timelinebuff2= new ArrayBuffer( 48*48*3 );
+  let tv2= new DataView( timelinebuff2 );
+  for(let i= 0; i< tv2.byteLength; i+= 3 ) {
+    if( (Math.trunc(i/1152)%2 == 0) && ( i !== 0 ) ) {
+      tv2.setUint8(i, 47);
+      tv2.setUint8(i+1, 85);
+      tv2.setUint8(i+2, 224);
+    } else {
+      tv2.setUint8(i, 224);
+      tv2.setUint8(i+1, 47);
+      tv2.setUint8(i+2, 138);
+    }
+  }
+  this.timeline.addFrame( 0, 1, 'e', timelinebuff2 );
 
   let self= this;
   this.p5= new p5Module( function(p5) { self.p5Renderer(p5); }, this.config.ankorName );
