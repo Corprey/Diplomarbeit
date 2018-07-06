@@ -2,6 +2,7 @@
 const p5Module= require('p5');
 const Common = require('./common.js');
 const Render = require('./frameRenderer.js');
+const {AnimationFile} = require('./applicationInterface.js');
 
 // create a new p5-Vector and subtract another one from it on the fly
 function vectorSub( x, y, v ) {
@@ -156,7 +157,7 @@ function Map() {
 *   Editor Class that interfaces with the controls and UI,
 *   and holds the actual rendering framework
 */
-function Editor( cnf ) {
+function Editor( i, cnf ) {
 
   this.updateCanvas= function( up ) {
     let x= this.canvasDiv.clientWidth;
@@ -326,7 +327,22 @@ function Editor( cnf ) {
     this.setScale( 1 );
   }
 
+  // Load anmiation
+  this.loadAnimation= function( path ) {
+    if( this.anmFile !== null ) {
+      this.unloadAnmiation();
+    }
+    this.anmFile= new AnimationFile( this.appInterface, path, this.timeline );
+  }
+
+  // Unload anmiation
+  this.unloadAnmiation= function() {
+    this.anmFile.close();
+    this.anmFile= null;
+  }
+
   /* Constructor */
+  this.appInterface= i;
   this.config= new Common.DefaultConfig(  cnf,
                                           { ankorName: null, backColor: 'white', compColor: 'black', gridColor: 'red', friendlyErrors: false, showCursor: true },
                                           function( prop, val, fatal ) {
@@ -346,6 +362,8 @@ function Editor( cnf ) {
 
   this.timeline= new Render.TimeLine();
   this.frenderer= new Render.FrameRenderer( this.timeline );
+  this.anmFile= null;
+
   let timelinebuff= new ArrayBuffer( 48*48*3 );
   let tv= new DataView( timelinebuff );
   for(let i= 0; i< tv.byteLength; i+= 3 ) {

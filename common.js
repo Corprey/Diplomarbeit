@@ -82,11 +82,29 @@ function ObjPipe() {
   }
 }
 
+// Pack a buffetr into a Utf-16 string
+function packBuffer(buf) {
+  return String.fromCharCode.apply(null, new Uint16Array(buf));
+}
+
+// Convert an Utf-16 string to a buffer
+function unpackBuffer(str) {
+  let buf = new ArrayBuffer(str.length*2); // 2 bytes for each char
+  let bufView = new Uint16Array(buf);
+  let len= str.length;
+
+  for (let i=0; i < len; i++) {            // get char codes as data
+    bufView[i] = str.charCodeAt(i);
+  }
+
+  return buf;
+}
+
 
 /* Hack to make script file loadable via 'importScripts' in a Web-Worker */
-if(self.importScripts !== undefined) {
-  this.module= {};
-  this.module.exports= {};
+if( typeof WorkerGlobalScope !== 'undefined') {
+    this.module= {};
+    this.module.exports= {};
 }
 
 module.exports.filledString= filledString;
@@ -95,3 +113,5 @@ module.exports.DefaultConfig= DefaultConfig;
 module.exports.swapCSSClass= swapCSSClass;
 module.exports.SimpleSet= SimpleSet;
 module.exports.ObjPipe= ObjPipe;
+module.exports.packBuffer= packBuffer;
+module.exports.unpackBuffer= unpackBuffer;

@@ -5,8 +5,30 @@ function AppInterface( ui ) {
 
   const self= this;
   this.userInterface= ui;
+  this.subscribers= [];
 
   /* interface */
+  this.attachReceiver= function( rcv, subs ) {
+    this.subscribers.push( { receiver: rcv, subscriptions: subs } );
+  }
+
+  this.removeReceiver= function( rcv ) {
+    for( let i= 0; i<= this.subscribers.length; i++ ) {
+      if( this.subscribers[i].receiver === rcv ) {
+        this.subscribers.splice( i, 1 );
+      }
+    }
+  }
+
+  this.subEvent= function( name, event, cnf ) {
+    let len= this.subscribers.length;
+    for( let i= 0; i !=len; i++ ) {
+      if( this.subscribers[i].subscriptions.indexOf(name) !== -1 ) {
+        this.subscribers[i].receiver.interfaceEvent( name, event, cnf );
+      }
+    }
+  }
+
   this.editorCommand= function( cmd, conf ) {
     switch( cmd ) {
       case 'toggleDebug':
@@ -21,7 +43,7 @@ function AppInterface( ui ) {
   }
 
   this.printUIConsole= function( type, text ) {
-    if( typeof x === 'undefined' ) {
+    if( typeof type === 'undefined' ) {
       type= 'msg';
     }
 
@@ -56,28 +78,86 @@ function AppInterface( ui ) {
     }
   }
 
+  this.saveProject= function() {
+    ipcRenderer.send( 'Save-project' );
+  }
+
+  this.loadAnimation= function( path ) {
+    ipcRenderer.send( 'load-animation', path );
+  }
+
+  this.loadFrame= function() {
+    ipcRenderer.send( 'load-frame' );
+  }
+
   /* ipc Receivers */
   ipcRenderer.on( 'ui-console', function( event, type, text ) {
     self.printUIConsole( type, text );
   });
 
   ipcRenderer.on( 'editor-command', function( event, cmd, conf ) {
+    self.subEvent('editor-command', event, {cmd: cmd, conf: conf} );
     self.editorCommand( cmd, conf );
   });
 
+  ipcRenderer.on( 'floader-ready', function( event, cnf ) {
+    self.subEvent('floader-ready', event, cnf );
+  });
+
+  ipcRenderer.on( 'floader-frame', function( event, cnf ) {
+    self.subEvent('floader-frame', event, cnf );
+  });
+
+  ipcRenderer.on( 'floader-eof', function( event, cnf ) {
+    self.subEvent('floader-eof', event, cnf );
+  });
+
+  ipcRenderer.on( 'floader-error', function( event, cnf ) {
+    self.subEvent('floader-error', event, cnf );
+  });
 }
 
-function unpackBuffer(str) {
-  var buf = new ArrayBuffer(str.length*2); // 2 bytes for each char
-  var bufView = new Uint16Array(buf);
-  for (var i=0, strLen=str.length; i < strLen; i++) {
-    bufView[i] = str.charCodeAt(i);
+/*
+* Animation File Class handling all ipc communication required to
+* load an animation file and inject it into the timeline
+*/
+function AnimationFile( inf, path, tml ) {
+
+  this.interface= inf;
+  this.interface.attachReceiver( this, ['floader-ready', 'floader-error', 'floader-frame', 'floader-eof'] );
+  this.meta= null;
+
+  this.interface.loadAnimation( path );
+
+  this.close= function() {
+    this.interface.removeReceiver( this );
   }
-  return buf;
+
+  this.interfaceEvent= function(name, event, cnf) {
+    switch(name) {
+      case 'floader-ready':
+        this.meta= cnf; console.log('got meta data: '); console.log( this.meta );
+        this.interface.loadFrame();
+        break;
+
+      case 'floader-frame':
+        console.log('got frame data:' );
+        console.log(cnf);
+        this.interface.loadFrame();
+        break;
+
+      case 'floader-eof':
+        console.log('Loader eof');
+        break;
+
+      case 'floader-error': console.log(cnf);
+        this.interface.userInterface.uiConsole.printError( "File Loader Error: "+ cnf.message );
+        break;
+    }
+  }
+
 }
 
-function AnimationFile( inf, path ) {
-
-}
 
 module.exports.AppInterface= AppInterface;
+module.exports.AnimationFile= AnimationFile;

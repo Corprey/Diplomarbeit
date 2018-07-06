@@ -90,10 +90,7 @@ function Application() {
   }
 
   this.saveProject= function() {
-    if( this.currentProject === null ) {
-      // Fehler
-    }
-    else {
+    if( this.currentProject !== null ) {
       this.currentProject.saveToDisk();
     }
   }
@@ -102,11 +99,23 @@ function Application() {
     if( this.fileLoader !== null ) {
       this.fileLoader.close();
     }
-    this.fileLoader= new FileLoader( path,  );
+    this.fileLoader= new FileLoader( path, this );
+  }
+
+  this.loadFrame= function() {
+    if( this.fileLoader === null ) {
+      // Error
+    }
+    this.fileLoader.parseFrame();
   }
 
 
 /****************************************************Interfacing Methods*********************************************/
+  // Send simple event to main rendering process
+  this.sendEvent= function( channel, cnf ) {
+    this.mainWindow.webContents.send( channel, cnf );
+  }
+
   // Output string in the UI Console
   this.printUIConsole= function( type, text ) {
     this.mainWindow.webContents.send('ui-console', type, text );
@@ -126,6 +135,21 @@ function Application() {
   ipcMain.on( 'load-project', function( event, path ) {
     self.loadProject( path );
     event.returnValue= { success: true };
+  });
+
+  // Save current project
+  ipcMain.on( 'save-project', function( event ) {
+    self.saveProject();
+  });
+
+  // Create file loader for animation file
+  ipcMain.on( 'load-animation', function( event, path ) {
+    self.loadAnimation( path );
+  });
+
+  // Parse next frame from animation file
+  ipcMain.on( 'load-frame', function( event ) {
+    self.loadFrame();
   });
 
 /********************************************************************************************************************/
