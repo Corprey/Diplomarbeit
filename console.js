@@ -3,21 +3,6 @@ const Common= require('./common.js');
 
 function UIConsole( conname, cnf ) {
 
-  //Überprüfe ob alle Config-Parameter gesetzt wurden bzw existieren
-  this.loadConfig= function( cnf ) {
-    let props= ["maxLineCount", "maxCollCount"];
-    let def= ["200", "350"];
-
-    for( let i= 0; i!= props.length; i++ ) {
-      if( cnf.hasOwnProperty( props[i] ) == false ) {
-        console.error("Error in Console Class Constructor: Missing configuration argument: "+ props[i] );
-        console.log("Setting default value:"+ def[i] );
-        cnf[ props[i] ]= def[i];
-      }
-    }
-
-    this.config= cnf;
-  }
 
 /********************************************************************************************************************/
   // Schreibt aktuellen den Text in HTML Container
