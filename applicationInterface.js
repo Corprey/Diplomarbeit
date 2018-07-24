@@ -42,7 +42,30 @@ function AppInterface( ui ) {
     }
   }
 
-  this.printUIConsole= function( type, text ) {
+  this.uiCommand= function( cmd ) {
+    switch( cmd ) {
+      case 'showConsole':
+        this.userInterface.showConsole();
+        break;
+      case 'showTimeline':
+        this.userInterface.showTimeline();
+        break;
+      case 'showAll':
+        this.userInterface.showCompleteWorkspace();
+        break;
+      case 'actualSize':
+        this.userInterface.actualSize();
+        break;
+      case 'zoomIn':
+        this.userInterface.zoomIn();
+        break;
+      case 'zoomOut':
+        this.userInterface.zoomOut();
+        break;
+    }
+  }
+
+  this.printUIConsole= function( text, type ) {
     if( typeof type === 'undefined' ) {
       type= 'msg';
     }
@@ -90,14 +113,20 @@ function AppInterface( ui ) {
     ipcRenderer.send( 'load-frame' );
   }
 
+
+
   /* ipc Receivers */
   ipcRenderer.on( 'ui-console', function( event, type, text ) {
-    self.printUIConsole( type, text );
+    self.printUIConsole( text, type );
   });
 
   ipcRenderer.on( 'editor-command', function( event, cmd, conf ) {
     self.subEvent('editor-command', event, {cmd: cmd, conf: conf} );
     self.editorCommand( cmd, conf );
+  });
+
+  ipcRenderer.on( 'ui-command', function( event, cmd ) {
+    self.uiCommand( cmd );
   });
 
   ipcRenderer.on( 'floader-ready', function( event, cnf ) {
@@ -115,6 +144,8 @@ function AppInterface( ui ) {
   ipcRenderer.on( 'floader-error', function( event, cnf ) {
     self.subEvent('floader-error', event, cnf );
   });
+
+
 }
 
 /*

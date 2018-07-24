@@ -96,13 +96,15 @@ function CollapsibleMenu( name, arr ) {
   }
 
   this.pushNode= function( node ) {
-    this.addNode( this.anker.children.length-1, node );
+    return this.addNode( this.anker.children.length-1, node );
   }
 
   this.addNode= function( pos, node ) {
     let n= new MenuNode( node );
     this.nodes.push( n );
     n.attachTo( this.anker, pos );
+
+    return n;
   }
 }
 

@@ -5,7 +5,9 @@ const {UIConsole} = require('./console.js');
 const {AppInterface} = require('./applicationInterface.js');
 const {Editor} = require('./editor.js');
 const {CollapsibleMenu}= require('./collapsible.js');
+const {ColorPicker} = require('./colorPicker.js');
 const Split= require('split.js');
+
 
 function UserInterface() {
   //set scale for font size to standard(1)
@@ -18,8 +20,10 @@ function UserInterface() {
   this.uiMenu= new CollapsibleMenu('sidebar-menu', [] );
 
   //set up editor functionality
-  this.uiEditor= new Editor( this.interface, { ankorName: 'editor', backColor: '#282c34', 
+  this.uiEditor= new Editor( this.interface, { ankorName: 'editor', backColor: '#282c34',
                                compColor: 'white', gridColor: '#abb2bf', friendlyErrors: true } );
+  //
+  this.uiColorPicker= null;
 
   //set up uiconsole functionality with default values
   this.uiConsole= new UIConsole("console", {
@@ -70,8 +74,8 @@ function UserInterface() {
   this.setUISize= function( x ) {
     this.fontScale= x/100; //convert from % to value
 
-    $( ".UIScale" ).css( "font-size", String( this.fontScale * 100 ) + "%" );
-    $( ".UIScale h1" ).css( "font-size", String( this.fontScale * 100 ) + "%" );
+    $( ".UIScale" ).css( "font-size", String( x ) + "%" );
+    $( ".UIScale h1" ).css( "font-size", String( x ) + "%" );
     //$( ".UIIcon" ).css( "font-size", "300%" );
   }
 
@@ -85,6 +89,12 @@ function UserInterface() {
   //Method functionality: scale down font
   this.zoomOut= function() {
     this.setUISize(this.fontScale * 100 - 10);
+  }
+/********************************************************************************************************************/
+  //Method functionality: reset scale
+  this.actualSize= function() {
+    this.fontScale= 1;
+    this.setUISize(this.fontScale * 100);
   }
 
 /********************************************************************************************************************/
@@ -196,7 +206,7 @@ function UserInterface() {
 
 /********************************************************************************************************************/
   //Method functionality: remove console window
-  this.hideConsole = function() {
+  this.hideConsole= function() {
     //hide current window
     $( "#console-wrapper" ).css("display", "none");
     //delete current slidebars
@@ -217,4 +227,39 @@ function UserInterface() {
       this.onlyShowEditor();
     }
   }
+/********************************************************************************************************************/
+
+  this.sidebarMenu= function() {
+    /*let arr = [
+      {name: "Panel Root", html: "<input type='text'></input>"},
+      {name: "Files", html: "files angezeigt"},
+      {name: "output", html: "output angezeigt" },
+      {name: "tools", html: "output angezeigt" }
+    ];
+
+    for(let i=0;i<arr.length;i++)
+    {
+      this.uiMenu.pushNode(arr[i]);
+    }*/
+
+    this.uiColorPicker= new ColorPicker( this.uiMenu.pushNode( {name: "Color Picker", html: ""} ) );
+    this.uiColorPicker.addCallback( function(c) {
+                                      console.log("Picker hat jetzt die Farbe: " );
+                                      console.log(c);
+                                    } );
+
+    /*this.picker= new ColorPicker();
+    this.uiMenu.pushNode( this.picker.node() );
+
+    this.picker= new ColorPicker( this.uiMenu.pushNode() );
+
+    this.panels= new PanbelViewMenu();
+    this.uiMenu.pushNode( this.panels.node() );
+
+    this.panels.addToRoot( 3, 7 )
+
+    */
+  }
+
+
 }

@@ -82,7 +82,7 @@ function ObjPipe() {
   }
 }
 
-// Pack a buffetr into a Utf-16 string
+// Pack a buffer into a Utf-16 string
 function packBuffer(buf) {
   return String.fromCharCode.apply(null, new Uint16Array(buf));
 }

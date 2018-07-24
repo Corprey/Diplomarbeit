@@ -1,5 +1,5 @@
 const electron = require("electron");
-const {app, BrowserWindow, remote, ipcMain} = electron;
+const {app, BrowserWindow, remote, ipcMain, Menu} = electron;
 const localShortcut= require('electron-localshortcut');
 const storage = require("electron-json-storage");
 const {FileLoader}= require("./fileLoader.js");
@@ -76,6 +76,75 @@ function Application() {
   this.mainWindow= new BrowserWindow();
   this.mainWindow.maximize();
   this.mainWindow.loadURL(`file://${__dirname}/index.html`);
+  this.menu= null;
+
+  const template = [
+    {
+      label:'File',
+      submenu: [
+        {label:'New File'},
+        {label:'New Project'},
+        {type: 'separator'},
+        {label:'Save'},
+        {label:'Save As...'},
+        {label:'Save All'}
+      ]
+    },
+    {
+      label: 'Edit',
+      submenu: [
+        {role: 'undo'},
+        {role: 'redo'},
+        {type: 'separator'},
+        {role: 'cut'},
+        {role: 'copy'},
+        {role: 'paste'},
+        {role: 'pasteandmatchstyle'},
+        {role: 'delete'},
+        {role: 'selectall'}
+      ]
+    },
+    {
+      label: 'View',
+      submenu: [
+        {label:'Show Console', click() { self.uiCommand("showConsole"); }},
+        {label:'Show Timeline', click() { self.uiCommand("showTimeline"); }},
+        {label:'Show All', click() { self.uiCommand("showAll"); }},
+        {type: 'separator'},
+        {label:'Jump To Origin', click() { self.editorCommand("panOrigin"); }},
+        {label:'Debug', click() { self.editorCommand("toggleDebug"); }},
+        {type: 'separator'},
+        {label: 'Actual Size', click() { self.uiCommand("actualSize"); }},
+        {label: 'Zoom In', click() { self.uiCommand("zoomIn"); }},
+        {label: 'Zoom Out', click() { self.uiCommand("zoomOut"); }},
+        {type: 'separator'},
+        {role: 'reload'},
+        {role: 'forcereload'},
+        {role: 'toggledevtools'},
+
+      ]
+    },
+    {
+      role: 'window',
+      submenu: [
+        {role: 'minimize'},
+        {role: 'togglefullscreen'},
+        {role: 'close'}
+      ]
+    },
+    {
+      role: 'help',
+      submenu: [
+        {
+          label: 'Learn More',
+          click () { require('electron').shell.openExternal('https://electronjs.org') }
+        }
+      ]
+    }
+  ]
+
+  this.menu= Menu.buildFromTemplate(template);
+  Menu.setApplicationMenu(this.menu);
 
   this.eventHandler= new EventHandler( this.mainWindow, [ { trig: 'Ctrl+Alt+D', func: 'eventDebugToggle' },
                                                           { trig: 'Ctrl+T',     func: 'eventPanOrigin'   } ] );
@@ -126,6 +195,12 @@ function Application() {
     this.mainWindow.webContents.send( 'editor-command', cmd, conf );
   }
 
+  //Send ui command
+  this.uiCommand= function( cmd ) {
+    this.mainWindow.webContents.send( 'ui-command', cmd );
+  }
+
+
   //Output string in the node-Console
   ipcMain.on( 'console', function( event, msg ) {
     console.log( msg );
@@ -151,6 +226,7 @@ function Application() {
   ipcMain.on( 'load-frame', function( event ) {
     self.loadFrame();
   });
+
 
 /********************************************************************************************************************/
   // Error method to crash main program and output error string to new context window
