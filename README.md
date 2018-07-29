@@ -1,4 +1,4 @@
 # Diplomarbeit
-Diplomarbeit an der HTL-Hollabrunn
+Diploma thesis at the HTL-Hollabrunn
 
-Das ist ein Test!
+Made by Preymann and Vanek
