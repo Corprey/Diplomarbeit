@@ -24,6 +24,7 @@ html, body {
   margin: 0;
   padding: 0;
 
+
 }
 /********************************************************************************************************************/
 /*Console-Text prperties*/
@@ -214,19 +215,39 @@ html, body {
     cursor: pointer;
 }
 
-input[type="number"].ui-colorpicker-box::-webkit-inner-spin-button,
-input[type="number"].ui-colorpicker-box::-webkit-outer-spin-button {
+
+
+input[type="number"].ui-colorpicker-box::-webkit-inner-spin-button {
   -webkit-appearance: none;
- cursor:pointer;
- display:block;
- width:8px;
- color: #333;
- text-align:center;
- position:relative;
-   background: #21252b url("./icons/spinner_icon.png") no-repeat center center;
+  opacity: 1
+    cursor:pointer;
+    display:block;
+    width:8px;
+    color: #333;
+    text-align:center;
+    position:relative;
 
 }
+input[type=number].ui-colorpicker-box::-webkit-inner-spin-button:hover,
+input[type=number].ui-colorpicker-box::-webkit-inner-spin-button:active {
+  background: #21252b url('./icons/spinner.png') no-repeat 50% 50%;
+  width: 10px;
+  height: 10px;
+  margin-top: 2px;
+  margin-bottom: 1px;
+  padding: 4px;
+
+
+
+}
+
+
+
+
 /*
+,
+input[type="number"].ui-colorpicker-box::-webkit-outer-spin-button
+
 .ui-colorpicker-box::-webkit-inner-spin-button:hover,
 .ui-colorpicker-box::-webkit-inner-spin-button:active{
     opacity: .8;
@@ -259,7 +280,8 @@ input[type="number"].ui-colorpicker-box::-webkit-outer-spin-button {
 #toolbar-wrapper {
   background-color: #21252b;
   border-bottom: solid black 1px;
-  height: 6vh;
+  height: 60px;
+  overflow: hidden;
 }
 
 .tool {
