@@ -1,10 +1,13 @@
 'use strict'
 const Common= require('./common.js');
 
+/*
+* Icon Class managing the DOM Elements for each button
+*/
 function ToolbarIcon(cnf) {
 
   let config= new Common.DefaultConfig( cnf,
-                                        { name: "tool", iconType: 'fas', iconImg: 'fa-search-plus', action: 'ui.zoomIn();' },
+                                        { name: "tool", iconType: 'fas', iconImg: 'fa-search-plus', action: function(){ console.log('Unassigned'); } },
                                         function( prop, val ) {
                                           console.error("Error in ToolbarIcon Class Constructor: Missing configuration argument: "+ prop+
                                                         "\nSetting default value: "+ val );
@@ -28,9 +31,12 @@ function ToolbarIcon(cnf) {
 
 //adds given event to the given element
 ToolbarIcon.prototype.addEvent= function(anker, action) {
-  anker.addEventListener("click", function(){
-                                    eval(action);
-                                  });
+  if( typeof action === 'string' ) {                          // evaluate function as handler if param is string
+    anker.addEventListener("click", new Function( action ) );
+
+  } else {
+    anker.addEventListener("click", action );                 // set param as handler otherwise
+  }
 }
 
 //adds new icon to toolbar div
@@ -39,7 +45,9 @@ ToolbarIcon.prototype.attachTo= function(anker) {
 }
 
 
-
+/*
+* Toolbar Class holding all buttons
+*/
 function Toolbar(name, arr) {
   this.anker= document.getElementById(name);
   this.icons= [];
