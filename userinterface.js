@@ -5,6 +5,7 @@ const {UIConsole} = require('./console.js');
 const {AppInterface} = require('./applicationInterface.js');
 const {Editor} = require('./editor.js');
 const {CollapsibleMenu}= require('./collapsible.js');
+const {Toolbar}= require('./toolbar.js');
 const {ColorPicker} = require('./colorPicker.js');
 const Split= require('split.js');
 
@@ -22,7 +23,11 @@ function UserInterface() {
   //set up editor functionality
   this.uiEditor= new Editor( this.interface, { ankorName: 'editor', backColor: '#282c34',
                                compColor: 'white', gridColor: '#abb2bf', friendlyErrors: true } );
+
   //
+  this.uiToolbar= new Toolbar('toolbar-wrapper', []);
+
+  //reserve colorPicker
   this.uiColorPicker= null;
 
   //set up uiconsole functionality with default values
@@ -260,6 +265,26 @@ function UserInterface() {
 
     */
   }
+/********************************************************************************************************************/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 }

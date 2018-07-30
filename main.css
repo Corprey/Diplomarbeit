@@ -4,12 +4,12 @@
 /*General UI Settings*/
 .UIScale {
   font-family: "Segoe UI", Frutiger, "Frutiger Linotype", "Dejavu Sans", "Helvetica Neue", Arial, sans-serif;
-	font-size: 90%;
+	font-size: 100%;
   color: #abb2bf;
 }
 
 .UIScale h1 {
-	font-size: 100%;
+	font-size: 110%;
 }
 
 .UIIcon {
@@ -23,6 +23,7 @@ html, body {
   background-color: #282c34;
   margin: 0;
   padding: 0;
+
 
 }
 /********************************************************************************************************************/
@@ -138,10 +139,6 @@ html, body {
   padding: 0;
 }
 
-#toolbar {
-  border-bottom: solid black 1px;
-}
-
 #timeline {
     overflow: hidden;
 }
@@ -220,25 +217,21 @@ html, body {
 
 input[type="number"].ui-colorpicker-box::-webkit-inner-spin-button,
 input[type="number"].ui-colorpicker-box::-webkit-outer-spin-button {
-   opacity: 1;
   -webkit-appearance: none;
+ cursor:pointer;
+ display:block;
+ width:8px;
+ color: #333;
+ text-align:center;
+ position:relative;
    background: #21252b url("./icons/spinner_icon.png") no-repeat center center;
-   width: 1em;
-   position: absolute;
-   top: 0;
-   right: 0;
-   bottom: 0;
-}
 
-.x-field-select .x-component-outer::after {
-background-color: #74def1;
-z-index: 2;
 }
-
+/*
 .ui-colorpicker-box::-webkit-inner-spin-button:hover,
 .ui-colorpicker-box::-webkit-inner-spin-button:active{
-    /*opacity: .8;*/
-}
+    opacity: .8;
+}*/
 
 
 .ui-colorpicker-box {
@@ -260,3 +253,24 @@ z-index: 2;
   margin-bottom: 5px;
   margin-left: 13px;
 }
+
+/********************************************************************************************************************/
+/* Toolbar Classes */
+
+#toolbar-wrapper {
+  background-color: #21252b;
+  border-bottom: solid black 1px;
+  height: 6vh;
+}
+
+.tool {
+    background-color:  #282c34; /* dark Gray background */
+    border: solid black 1px; /* Remove borders */
+    color: Gray; /* White text */
+    margin: 20px 10px;
+    padding: 5px 5px; /* Some padding */
+    font-size: 18px; /* Set a font size */
+    cursor: pointer; /* Mouse pointer on hover */
+}
+
+/********************************************************************************************************************/

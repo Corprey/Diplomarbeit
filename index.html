@@ -11,16 +11,21 @@
 	<script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
 	<script src="./userinterface.js"></script>
 	<script src="node_modules/jquery/dist/jquery.js"></script>
+
+	<!-- library for color Picker -->
 	<script src='./lib/spectrum.js'></script>
 	<link rel='stylesheet' href='./lib/spectrum.css' />
+
+	<!-- library for icons -->
+	<link rel="stylesheet" href="./lib/all.css">
 
 	<script>if (window.module) module = window.module;</script>
 </head>
 
 <body>
-	<div class="UIScale">
-		<div style="height: 4vh" id="toolbar"><h1>toolbar</h1></div>
-		<div style="height: 94vh" >
+	<div class="UIScale" style=" margin-top: -12px">
+		<div id="toolbar-wrapper"></div>
+		<div style="height: 93vh" >
 			<div id="workspace-wrapper">
 				<div class="split split-horizontal" id="sidebar-wrapper" >
 					<div id= "sidebar">sidebar
