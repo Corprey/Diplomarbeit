@@ -46,7 +46,7 @@ function ColorPicker( node ) {
     box.oninput= function() {
         const prop= name;
         let x= parseInt( this.value );
-        self[ prop ]= (x > 255) ? 255 : x;  // clamp value down to 255
+        self[ prop ]= ( isNaN(x) || (x > 255) ) ? 255 : x;  // clamp value down to 255
         self.updateValues();
         self.updatePreview();
     }
@@ -89,6 +89,13 @@ function ColorPicker( node ) {
     this.previewField.style.backgroundColor= "rgb("+ this.r+ ","+ this.g+ ","+ this.b+ ")";
   }
 
+  this.loadRgb= function( c ) {
+    let color= c.toRgb();
+    self.r= color.r;
+    self.g= color.g;
+    self.b= color.b;
+  }
+
   /* Constructor */
   this.callback= null;
   this.r=127;
@@ -121,12 +128,14 @@ function ColorPicker( node ) {
 
   const self= this;
   $('#ui-colorpicker').on("dragstop.spectrum", function( e, c ) {
-    let color= c.toRgb();
-    self.r= color.r;
-    self.g= color.g;
-    self.b= color.b;
+    self.loadRgb( c );
 
     self.updateValues();
+    self.updatePreview();
+  } );
+
+  $('#ui-colorpicker').on('move.spectrum', function( e, c ) {
+    self.loadRgb( c );
     self.updatePreview();
   } );
 
