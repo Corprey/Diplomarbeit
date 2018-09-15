@@ -1,5 +1,6 @@
 'use strict'
 const {ipcRenderer} = require('electron');
+const Common = require('./common.js');
 
 function AppInterface( ui ) {
 
@@ -158,6 +159,8 @@ function AnimationFile( inf, path, tml ) {
   this.interface.attachReceiver( this, ['floader-ready', 'floader-error', 'floader-frame', 'floader-eof'] );
   this.meta= null;
 
+  this.timeline= tml;
+
   this.interface.loadAnimation( path );
 
   this.close= function() {
@@ -174,11 +177,20 @@ function AnimationFile( inf, path, tml ) {
       case 'floader-frame':
         console.log('got frame data:' );
         console.log(cnf);
-        this.interface.loadFrame();
+
+        for( let i= 0; i!= cnf.panels.length; i++ ) {
+          let panel= cnf.panels[i];
+
+          this.timeline.addFrame( cnf.id, panel.id, panel.type, Common.unpackBuffer( panel.data ) );
+        }
+
+        this.interface.loadFrame(); // load next frame
         break;
 
       case 'floader-eof':
         console.log('Loader eof');
+
+        this.timeline.parseCopyFrames();
         break;
 
       case 'floader-error': console.log(cnf);

@@ -14,6 +14,8 @@ function Frame(t, n, panel, bin) {
   this.data= bin;
   this.frameNumber= n;
 
+  this.references= null;  // all frames that share the same binary data buffer
+
 }
 
 /*
@@ -55,12 +57,67 @@ function TimeLine() {
     this.animation[num].push( new Frame( type, num, panel, data ) );
   }
 
+  // create all references for 'copy' frames
+  this.parseCopyFrames= function() {
+
+    // iterate through all panels in all frames
+    for( let f= 0; f != this.animation.length; f++ ) {
+      let dataSet= this.animation[f];
+
+      for( let p= 0; p!= dataSet.length; p++ ) {
+        let frame= dataSet[p];
+
+        if( frame.type === 'c' ) {  // check if frame is a 'copy' frame
+          let ref = null;
+
+          // get number and panel id of referenced frame
+          let vw= new DataView( frame.data );
+          let num= vw.getUint32( 0, true );
+          let pid= vw.getUint32( 4, true );
+
+          // try to load frame
+          try {
+            ref= this.getFrame( num, pid );
+          } catch( e ) {}
+
+          if( ref === null ) {
+              console.error( "Copy Frame references unknwon frame or panel: @"+ num+ ":" + pid );
+              throw Error( "Copy Frame references unknwon frame or panel: number: " + num + " panel: "+ pid );
+          }
+
+          if( (ref.type === 'c') || (ref.type === 'd') ) {
+            console.error( "Copy Frame may not reference a difference or another copy frame: @"+ num+ ":"+ pid );
+            throw Error( "Copy Frame may not reference a difference or another copy frame: " + num + " panel: "+ pid );
+          }
+
+          // create copy of frame
+          dataSet[p].type= ref.type;
+          if( ref.frameNumber !== frame.frameNumber ) {
+            dataSet[p].data= ref.data;  // just copy the reference if frames are displayed at different times
+
+            if( ref.references === null ) { // init references array
+              ref.references= [ ref ];
+            }
+
+            dataSet[p].references= ref.references;    // save refereces
+            dataSet[p].references.push( dataSet[p] ); // add self to the array
+
+          } else {
+            dataSet[p].data= ref.data.slice(0); // clone the data buffer instead
+          }
+        }
+      }
+    }
+
+  }
+
   // Get number of frame sets
   this.length= function() {
     return this.animation.length;
   }
 
-  this.next= function( wrap ) {
+  // Get next frame; Wrap back to the first end after reaching end if wrap is true
+  this.next= function( wrap= true ) {
     if( this.frameCounter >= this.animation.length-1 ) {
       if( wrap ) {
         this.frameCounter= 0;
@@ -76,6 +133,10 @@ function TimeLine() {
   // Load frame for panel (this code has a complexity of O(N*N) but that's good enough)
   this.getFrame= function( num, panel ) {
     if( num >= this.animation.length ) {
+      if( this.animation.length === 0 ) {
+        return null;
+      }
+
       console.error( "Timeline Frame request out of bounds: number: " + num + " panel: "+ panel);
       throw Error( "Timeline Frame request out of bounds: number: " + num + " panel: "+ panel);
     }
@@ -104,7 +165,16 @@ function TimeLine() {
       throw Error( "Cannot restore buffer for unknown frame: number:" + f.frameNumber + " panel: " + f.panelId );
     }
 
-    frame.data= f.data;
+    if( frame.references === null ) {   // check if the unique owner of its buffer
+      frame.data= f.data;
+
+    } else {
+      // restore all frames that share the same buffer
+      for( let i= 0; i!= frame.references.length; i++ ) {
+        //console.log("Restoring: " + f.frameNumber +":"+ f.panelId + " for " + frame.references[i].frameNumber + ":" + frame.references[i].panelId);
+        frame.references[i].data= f.data;
+      }
+    }
   }
 }
 
@@ -262,25 +332,36 @@ function FrameRenderer( tm, cnf ) {
 
   // Post frames and get them rendered by the threads
   this.begin= function() {
-    let updates= new Common.SimpleSet();
+    if( this.enable === true ) {
+      let updates= new Common.SimpleSet();
 
-    // post all frames to the worker threads
-    for( let i= 0; i!= this.targetBatch.length; i++ ) {
+      // post all frames to the worker threads
+      for( let i= 0; i!= this.targetBatch.length; i++ ) {
 
-      let frame= this.targetBatch[i];             // get frame from batch
-      let panel= this.screens.at(frame.panelId);  // get panel based on frame
+        let frame= this.targetBatch[i];             // get frame from batch
+        let panel= this.screens.at(frame.panelId);  // get panel based on frame
 
-      this.postFrame( panel.workerId, frame );    // post frame to worker
-      updates.add( panel.workerId );              // save that worker needs to be started
+        this.postFrame( panel.workerId, frame );    // post frame to worker
+        updates.add( panel.workerId );              // save that worker needs to be started
+      }
+
+      let self= this;
+      updates.forEach( function( id ) {             // start all workers that got new data
+        self.post(id, 'start');
+      });
+
+      this.targetBatch= [];                         // remove all tasks from the batch
+      this.cycles++;
     }
+  }
 
-    let self= this;
-    updates.forEach( function( id ) {             // start all workers that got new data
-      self.post(id, 'start');
-    });
-
-    this.targetBatch= [];                         // remove all tasks from the batch
-    this.cycles++;
+  // Enable or disable the rendering 
+  this.run= function( en= null ) {
+    if( en === null ) {
+      this.enable= !this.enable;
+    } else {
+      this.enable= en;
+    }
   }
 
   /* Constructor */
@@ -297,6 +378,8 @@ function FrameRenderer( tm, cnf ) {
   this.workerLoad= [];                  // Array where each worker id (index) correlates with the worker's number of panels to render
   this.screens= new ScreenArray(this);  // Array of screens
   this.targetBatch= [];                 // List of frames to render during cycle
+
+  this.enable= false;
 
   this.cycles= 0;
 

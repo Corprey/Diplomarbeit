@@ -84,7 +84,8 @@ function ObjPipe() {
 
 // Pack a buffer into a Utf-16 string
 function packBuffer(buf) {
-  return String.fromCharCode.apply(null, new Uint16Array(buf));
+  return  (buf.buffer !== undefined)  ? String.fromCharCode.apply(null, new Uint16Array( buf.buffer ))
+                                      : String.fromCharCode.apply(null, new Uint16Array( buf ));
 }
 
 // Convert an Utf-16 string to a buffer

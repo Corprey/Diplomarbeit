@@ -90,6 +90,7 @@ function FileLoader( path, i ) {
 
     if( this.isEnd() ) {
       this.intf.sendEvent( 'floader-eof' );
+      this.file.close();
       return;
     }
 

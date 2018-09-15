@@ -4,12 +4,17 @@ self.importScripts('./common.js');
 /*
 * Frame Data Structure
 * For solid image:
-*   Single rgb pixel that is copied -> 3 bytes
+*   Single rgb pixel that is copied -> 3 bytes + 1 padding byte
 *   [r, g, b]
 *
 * For entire image:
 *   Pixel values for every pixel of the image -> 48*48*3 bytes
 *   [r, g, b][r, g, b][r, g, b]...
+*
+* For line image:
+*   Number of pixels to be repeated with the same color as a line
+*   The number is 16bits -> n*5 bytes
+*   [nn, r, g, b][nn, r, g, b][nn, r, g, b]...
 *
 * For difference image:
 *   Pixel values that are different to the previous image including
@@ -81,9 +86,9 @@ let thisInstance= new function() {
       let frame= this.frames.get();
       let img= new ArrayBuffer( panelBytes );
 
-      let frview=  new DataView( frame.data );
-      let prview=  new DataView( this.previous.at( frame.panelId ) );
-      let imgview= new DataView( img );
+      let frview=  new DataView( frame.data );                        // received frame data
+      let prview=  new DataView( this.previous.at( frame.panelId ) ); // previous pixel data
+      let imgview= new DataView( img );                               // new empty pixel data
 
 
 
@@ -94,10 +99,12 @@ let thisInstance= new function() {
         this.renderEntire(frview, prview, imgview, frame);
 
       } else if( frame.type === 'l' ) {   // line
-        // render lines
+        this.renderLines(frview, prview, imgview, frame);
 
-      } else {                            // solid
+      } else if( frame.type === 's' ){    // solid
         this.renderSolid(frview, prview, imgview, frame);
+      } else {
+        console.error(  "Unknown frame type: "+ frame.type );
       }
 
       this.postImage(frame, img);         // return frame buffer and image
@@ -106,9 +113,10 @@ let thisInstance= new function() {
 
   // Render a solid image in a single color
   this.renderSolid= function( frview, prview, imgview, frame ) {
-    if( frview.byteLength != 3 ) { //
-      console.error( "Render Function 'Solid' received wrong buffer length: "+ view.byteLength );
+    if( frview.byteLength != 4 ) { //
+      console.error( "Render Function 'Solid' received wrong buffer length: "+ frview.byteLength );
     }
+    let col= 0;
 
     // get pixel colors
     col= frview.getUint8(0);              // byte 0: r (msB)
@@ -144,6 +152,32 @@ let thisInstance= new function() {
 
       this.writePixel( imgview, prview, pos, col );
       pos+= 4;                                            // image has 4 bytes per pixel
+    }
+  }
+
+
+  // Render a image consisting of concatinated lines
+  this.renderLines= function( frview, prview, imgview, frame ) {
+
+    let pos= 0, col, len;
+    for( let i= 0; i < frview.byteLength; i+= 5 ) {       // frame only has 5 bytes per line
+
+      len= frview.getUint16( i, true );
+      if( i < (frview.byteLength-5) ) {
+        col= frview.getUint32( i+2 );
+        col|= 0xFF;
+
+      } else {
+        col= frview.getUint8(i+2);
+        col= (col << 8) | frview.getUint8(i+3);
+        col= (col << 8) | frview.getUint8(i+4);
+        col= (col << 8) | 0xFF;
+      }
+
+      for( let j= 0; (j!= len) && (pos!= panelBytes); j++ ) {
+        this.writePixel( imgview, prview, pos, col );
+        pos+= 4;
+      }
     }
   }
 

@@ -364,7 +364,7 @@ function Editor( i, cnf ) {
   this.frenderer= new Render.FrameRenderer( this.timeline );
   this.anmFile= null;
 
-  let timelinebuff= new ArrayBuffer( 48*48*3 );
+  /*let timelinebuff= new ArrayBuffer( 48*48*3 );
   let tv= new DataView( timelinebuff );
   for(let i= 0; i< tv.byteLength; i+= 3 ) {
     if( (Math.trunc(i/1152)%2 == 0) && ( i !== 0 ) ) {
@@ -392,7 +392,7 @@ function Editor( i, cnf ) {
       tv2.setUint8(i+2, 138);
     }
   }
-  this.timeline.addFrame( 0, 1, 'e', timelinebuff2 );
+  this.timeline.addFrame( 0, 1, 'e', timelinebuff2 );*/
 
   let self= this;
   this.p5= new p5Module( function(p5) { self.p5Renderer(p5); }, this.config.ankorName );
