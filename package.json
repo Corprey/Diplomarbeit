@@ -8,7 +8,7 @@
     "package": "asar pack test-win32-x64/resources/app test-win32-x64/resources/app.asar",
     "build": "electron-packager . test"
   },
-  "author": "Philipp Vanek",
+  "author": "Matthias Preymann & Philipp Vanek",
   "license": "ISC",
   "devDependencies": {
     "asar": "^0.14.3",

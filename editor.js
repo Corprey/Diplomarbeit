@@ -14,14 +14,25 @@ function vectorAdd( x, y, v ) {
   return new p5Module.Vector( x+v.x, y+v.y, v.z );
 }
 
-// return new p5-Vector with inverted values
+// return same p5-Vector with inverted values
 function vectorInvert( v ) {
-  return p5Module.Vector.mult(v, -1);
+  return v.mult( -1 );
+}
+
+// truncate x and y component of provided vector
+function roundVector( v ) {
+  return v.set( Math.round( v.x ), Math.round( v.y ), 0 );
 }
 
 // create a new p5-Vector from x and y, if they are floats, they are truncated
-function truncVector( x, y ) {
+function crTruncVector( x, y ) {
   return new p5Module.Vector( Math.trunc(x), Math.trunc(y), 0 );
+}
+
+// Check whether a point is inside a specified rectengular area
+function boxSelect( pos, pt, width, height ) {
+  return ( (pt.x >= pos.x) && (pt.x < pos.x+ width ) &&
+           (pt.y >= pos.y) && (pt.y < pos.y+ height)   );
 }
 
 /*
@@ -47,8 +58,8 @@ function DebugScreen( e, spd, col ) {
       this.frameRate= this.editor.p5.frameRate();
       this.scale= this.editor.scale;
       this.position= this.editor.positionOffset.copy();
-      this.mousePosition= truncVector( this.editor.p5.mouseX, this.editor.p5.mouseY );
-      this.mouseGridPosition= truncVector( this.editor.mouseGridPosition.x, this.editor.mouseGridPosition.x );
+      this.mousePosition= crTruncVector( this.editor.p5.mouseX, this.editor.p5.mouseY );
+      this.mouseGridPosition= crTruncVector( this.editor.mouseGridPosition.x, this.editor.mouseGridPosition.x );
       this.canvasSize= new p5Module.Vector( this.editor.canvasWidth, this.editor.canvasHeight );
     }
   }
@@ -84,18 +95,24 @@ function Grid( e, gridcol ) {
   this.enable= true;
   this.resolution= 50;
   this.color= gridcol;
+  this.mouseMapPos= null;
+  this.mousePixelPos= null;
 
-  this.getMousePosition= function() {
+  this.updateMousePosition= function() {
     let p5= this.editor.p5;
     let res= this.resolution* this.editor.scale;  // actual grid resolution on the canvas
 
-    let mouse= p5.createVector( p5.mouseX, p5.mouseY ).add( this.editor.getCanvasOrigin() );  // get mouse position on the map
-    let delta= mouse.x % res;                                  // offset to the next grid point
+    let mouse= this.editor.getCanvasOrigin().add( p5.mouseX, p5.mouseY );   // get mouse position on the map
+    let delta= mouse.x % res;                                               // offset to the next grid point
     mouse.x= mouse.x -delta + ( ( delta < (res/2) )? 0: res ); // go to the next point if the offset is greater than half the resolution
 
     delta= mouse.y % res;
     mouse.y= mouse.y -delta + ( ( delta < (res/2) )? 0: res );
-    return mouse;
+
+    // recycle the vector object of mousePixelPos if it is not null
+    this.mouseMapPos= ( this.mousePixelPos !== null ) ? roundVector( this.mousePixelPos.set( mouse ).div( this.editor.scale ) )
+                                                      : roundVector( p5.createVector( mouse ).div( this.editor.scale )        );
+    this.mousePixelPos= mouse;  // save new mousePixelPos
   }
 
   this.toggleGrid= function() {
@@ -141,7 +158,51 @@ function Grid( e, gridcol ) {
 
 }
 
-function Map() {
+
+function LedPanel( pos, id, e ) {
+  this.editor= e;
+  this.position= new p5Module.Vector( pos.x, pos.y, 0 );
+  this.panelId= id;
+  this.size= 1;
+
+  this.screen= this.editor.frenderer.screens.at( this.panelId );
+
+  // Tests whether a point on the map is inside of the panels area
+  this.canSelect= function( pt ) {
+    return boxSelect( this.position, pt, this.scale );
+  }
+
+  this.draw= function( def= true ) {
+    let p= this.editor.getScaledPos( this.position.x, this.position.y );
+    this.scale= this.editor.scale * 100;
+
+    if( def === true ) {
+      this.editor.p5.image( this.defaultImage, p.x, p.y, this.size, this.size );
+    } else {
+      // use screen img
+    }
+  }
+
+}
+
+// Create and load static default image
+LedPanel.prototype.defaultImage= null;
+LedPanel.init= function( p5 ) {
+    LedPanel.prototype.defaultImage= p5.loadImage('./icons/panel.png');
+}
+
+
+function Map( e ) {
+
+  this.editor= e;
+  this.mouseMapPos= null;
+
+  // calculate the mouse position on the map
+  this.updateMousePosition= function() {
+    let p5= this.editor.p5;
+    this.mouseMapPos= this.editor.getCanvasOrigin().add( p5.mouseX, p5.mouseY ).div( this.editor.scale );
+    console.log( this.mouseMapPos );
+  }
 
   this.update= function() {
 
@@ -176,6 +237,7 @@ function Editor( i, cnf ) {
     return this.p5.createVector( x* this.scale, y* this.scale );
   }
 
+  // check if the mouse courser hovers over the canvas
   this.mouseInCanvas= function() {
     if( (this.p5.mouseX>0) && (this.p5.mouseY>0) ) {    // negative position check
       if( (this.p5.mouseX< this.canvasWidth) && (this.p5.mouseY< this.canvasHeight) ) { // out of bounds check
@@ -203,7 +265,8 @@ function Editor( i, cnf ) {
   // update rendering gscale
   this.setScale= function( s ) {
     this.scale= s;
-    this.mouseGridPosition= this.grid.getMousePosition();
+    this.grid.updateMousePosition();
+    this.map.updateMousePosition();
   }
 
   /* Render Callbacks to P5.js */
@@ -211,11 +274,17 @@ function Editor( i, cnf ) {
     let self= this;
 
     p5.setup= function() {
+      LedPanel.init( p5 );
+
       self.canvas = p5.createCanvas( 400, 400, p5.P2D );
       self.updateCanvas( false );
-      self.mouseGridPosition= self.grid.getMousePosition();     // get inital value for mouse position
-      self.canvas.mouseMoved( function() {                      // add listener for mouse movement on the canvas
-          self.mouseGridPosition= self.grid.getMousePosition();
+
+      self.grid.updateMousePosition();        // get inital value for mouse position
+      self.map.updateMousePosition();
+
+      self.canvas.mouseMoved( function() {    // add listener for mouse movement on the canvas
+          self.grid.updateMousePosition();
+          self.map.updateMousePosition();
         } );
     }
 
@@ -230,12 +299,13 @@ function Editor( i, cnf ) {
       let pos= self.getScaledPos(500, 500);
       p5.ellipse(pos.x, pos.y, 90* self.scale );
 
-      if( self.frenderer.screens.arr.length !== 0 ) {
-        p5.image( self.frenderer.screens.arr[0].curImage ,0,0 ); // <- Just testing if the renderer did it right
-        p5.image( self.frenderer.screens.arr[1].curImage ,50,0 ); // <- Just testing if the renderer did it right
-      }
-      self.frenderer.loadFrames([0, 1]);
-      self.frenderer.begin();   // run the renderer
+      self.haus.draw();
+      // if( self.frenderer.screens.arr.length !== 0 ) {
+      //   p5.image( self.frenderer.screens.arr[0].curImage ,0,0 ); // <- Just testing if the renderer did it right
+      //   p5.image( self.frenderer.screens.arr[1].curImage ,50,0 ); // <- Just testing if the renderer did it right
+      // }
+      // self.frenderer.loadFrames([0, 1]);
+      // self.frenderer.begin();   // run the renderer
 
       // Rendering additional elements
       // draw the origin cross at (0,0)
@@ -251,7 +321,7 @@ function Editor( i, cnf ) {
           if( self.mouseInCanvas() ) {
             p5.noFill();
             p5.stroke('#31bff7');
-            let {x,y} = self.mouseGridPosition;
+            let {x,y} = self.grid.mousePixelPos;
             p5.ellipse( x, y, 8);
           }
         }
@@ -277,6 +347,10 @@ function Editor( i, cnf ) {
           self.clickPosition= p5.createVector(p5.mouseX, p5.mouseY);  // save clicking position to track cursor movement
           self.lastPositionOffset= self.positionOffset.copy();        // save old position to calculate offset from it
         }
+      } else if( p5.mouseButton === p5.LEFT ) {
+        /*if( self.haus.canSelect( self.getScaledMousePosition() ) ) {
+          p5.circle( 0,0, 100 );
+        }*/
       }
     }
 
@@ -304,7 +378,7 @@ function Editor( i, cnf ) {
           self.positionOffset.x+= (event.delta *0.75);
 
         } else {                                  // pan up/down as default
-          self.positionOffset.y+= (event.delta *0.75);
+          self.positionOffset.y-= (event.delta *0.75);
         }
       }
     }
@@ -359,6 +433,7 @@ function Editor( i, cnf ) {
 
   this.debugScreen= null;
   this.grid= new Grid( this, this.config.gridColor );
+  this.map= new Map( this );
 
   this.timeline= new Render.TimeLine();
   this.frenderer= new Render.FrameRenderer( this.timeline );
@@ -404,7 +479,8 @@ function Editor( i, cnf ) {
   this.backColor= this.p5.color( this.config.backColor );
   this.complementCol= this.p5.color( this.config.compColor );
   this.clickPosition= null;
-  this.mouseGridPosition= null;
+
+  this.haus= new LedPanel(  {x:200, y:200}, 5, this );
 }
 
 module.exports.Editor= Editor;
