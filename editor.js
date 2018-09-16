@@ -2,6 +2,7 @@
 const p5Module= require('p5');
 const Common = require('./common.js');
 const Render = require('./frameRenderer.js');
+const Tools  = require('./editorTools.js');
 const {AnimationFile} = require('./applicationInterface.js');
 
 // create a new p5-Vector and subtract another one from it on the fly
@@ -59,7 +60,7 @@ function DebugScreen( e, spd, col ) {
       this.scale= this.editor.scale;
       this.position= this.editor.positionOffset.copy();
       this.mousePosition= crTruncVector( this.editor.p5.mouseX, this.editor.p5.mouseY );
-      this.mouseGridPosition= crTruncVector( this.editor.mouseGridPosition.x, this.editor.mouseGridPosition.x );
+      this.mouseGridPosition= crTruncVector( this.editor.grid.mousePixelPos.x, this.editor.grid.mousePixelPos.y );
       this.canvasSize= new p5Module.Vector( this.editor.canvasWidth, this.editor.canvasHeight );
     }
   }
@@ -192,16 +193,38 @@ LedPanel.init= function( p5 ) {
 }
 
 
-function Map( e ) {
+/*
+*   EditorMap Class holding all dynamic objects to draw
+*
+*/
+function EditorMap( e ) {
 
   this.editor= e;
   this.mouseMapPos= null;
+
+  this.selectionBegin= null;      // Selection
+  this.selectionDimension= null;
 
   // calculate the mouse position on the map
   this.updateMousePosition= function() {
     let p5= this.editor.p5;
     this.mouseMapPos= this.editor.getCanvasOrigin().add( p5.mouseX, p5.mouseY ).div( this.editor.scale );
-    console.log( this.mouseMapPos );
+  }
+
+  this.mkSelection= function( begin, dim ) {
+    this.selectionBegin=      p5Module.Vector.mult( begin, this.editor.scale );
+    this.selectionDimension=  p5Module.Vector.mult( dim,   this.editor.scale );
+  }
+
+  this.endSelection= function() {
+    // Find the items to select and highlight them...
+
+    this.selectionBegin= null;      // Reset the selction area
+    this.selectionDimension= null;
+  }
+
+  this.hasSelection= function() {
+    return (this.selectionBegin !== null) && (this.selectionDimension !== null);
   }
 
   this.update= function() {
@@ -209,10 +232,81 @@ function Map( e ) {
   }
 
   this.draw= function() {
+    let p5= this.editor.p5;
+    p5.push();
 
+    // Selection
+    if( this.hasSelection() ) {
+      p5.strokeWeight( 2 );
+      p5.stroke('#2693F2');
+      p5.fill( '#31bff772' );   // set with alpha ~0.45
+
+      p5.rect( this.selectionBegin.x, this.selectionBegin.y, this.selectionDimension.x, this.selectionDimension.y );
+    }
+
+    p5.pop();
   }
 
 }
+
+
+/*
+* ActionStack Class that keeps track which tool is active and intracts
+* with it by seding events
+*/
+function ActionStack( e ) {
+
+  this.eventUndo= function() {}
+  this.eventRedo= function() {}
+
+  this.eventDoubleClick=  function( p ) { this.curTip.intf.eventDoubleClick( this, p.copy() );                                  }
+  this.eventMousePress=   function( p ) { this.mouseDragBegin= p.copy(); this.curTip.intf.eventMousePress( this, p.copy() );    }
+  this.eventMouseRelease= function()    { this.mouseDragBegin= null;     this.curTip.intf.eventMouseRelease( this );            }
+
+  this.eventMouseDrag= function( p ) {
+    if( this.mouseDragBegin !== null ) {
+      this.curTip.intf.eventMouseDrag( this, this.mouseDragBegin, p5Module.Vector.sub( p, this.mouseDragBegin) );
+    }
+  }
+
+  this.addToolTip= function( t ) {
+    this.toolTips.set( t.intf.name, t );
+  }
+
+  this.setToolTip= function( nm ) {
+    if( this.curTip !== null ) {          // deactivate current tool
+      this.curTip.intf.eventDeactivate( this );
+    }
+
+    if( typeof nm !== 'undefined' ) {     // if no tool name is specified, use the first one
+      this.curTip= this.toolTips.get( nm ) || this.toolTips.values().next().value || null;
+    } else {
+      this.curTip= this.toolTips.values().next().value || null;
+    }
+
+    if( this.curTip === null ) {
+      throw Error( 'Unable to find tool tip: '+ nm + ' or the default tip ' );
+    }
+
+    this.curTip.intf.eventActivate( this ); // activate new tool
+
+  }
+
+  this.editor= e;
+  this.actions= [];
+  this.toolTips= new Map();
+
+  this.actionIndex= -1;
+  this.curTip= null;
+
+  this.addToolTip( new Tools.CursorTip() );
+  this.setToolTip();                        // enable cursor tip as default tooltip
+
+  this.mouseDragBegin= null;
+
+}
+
+
 
 /*
 *   Editor Class that interfaces with the controls and UI,
@@ -269,6 +363,31 @@ function Editor( i, cnf ) {
     this.map.updateMousePosition();
   }
 
+  // Draw the cursor ring on the grid
+  this.drawGridCursor= function() {
+    let p5= this.p5;
+
+    p5.push();
+    p5.stroke(this.complementCol);
+    p5.strokeWeight(3);
+    p5.line(-10, 0, 10, 0);
+    p5.line(0, -10, 0, 10);
+
+    // show the mouse cursor on the canvas grid as a little circle
+    if( this.config.showCursor === true ) {
+      if( this.clickPosition === null ) {
+        if( this.mouseInCanvas() ) {
+          p5.noFill();
+          p5.stroke('#31bff7');
+          let {x,y} = this.grid.mousePixelPos;
+          p5.ellipse( x, y, 8);
+        }
+      }
+    }
+
+    p5.pop();
+  }
+
   /* Render Callbacks to P5.js */
   this.p5Renderer= function(p5) {
     let self= this;
@@ -299,7 +418,6 @@ function Editor( i, cnf ) {
       let pos= self.getScaledPos(500, 500);
       p5.ellipse(pos.x, pos.y, 90* self.scale );
 
-      self.haus.draw();
       // if( self.frenderer.screens.arr.length !== 0 ) {
       //   p5.image( self.frenderer.screens.arr[0].curImage ,0,0 ); // <- Just testing if the renderer did it right
       //   p5.image( self.frenderer.screens.arr[1].curImage ,50,0 ); // <- Just testing if the renderer did it right
@@ -309,25 +427,11 @@ function Editor( i, cnf ) {
 
       // Rendering additional elements
       // draw the origin cross at (0,0)
-      p5.push();
-      p5.stroke(self.complementCol);
-      p5.strokeWeight(3);
-      p5.line(-10, 0, 10, 0);
-      p5.line(0, -10, 0, 10);
-
-      // show the mouse cursor on the canvas grid as a little circle
-      if( self.config.showCursor === true ) {
-        if( self.clickPosition === null ) {
-          if( self.mouseInCanvas() ) {
-            p5.noFill();
-            p5.stroke('#31bff7');
-            let {x,y} = self.grid.mousePixelPos;
-            p5.ellipse( x, y, 8);
-          }
-        }
+      if( self.allowGridCursor === true ) {
+        self.drawGridCursor();
       }
 
-      p5.pop();
+      self.map.draw();
 
       if( self.debugScreen !== null ) {   // update and show the debug screen if one is currently attached
         self.debugScreen.update();
@@ -347,10 +451,9 @@ function Editor( i, cnf ) {
           self.clickPosition= p5.createVector(p5.mouseX, p5.mouseY);  // save clicking position to track cursor movement
           self.lastPositionOffset= self.positionOffset.copy();        // save old position to calculate offset from it
         }
-      } else if( p5.mouseButton === p5.LEFT ) {
-        /*if( self.haus.canSelect( self.getScaledMousePosition() ) ) {
-          p5.circle( 0,0, 100 );
-        }*/
+
+      } else if( p5.mouseButton === p5.LEFT ) {                       // left click controls the tooltip
+        self.actions.eventMousePress( self.map.mouseMapPos );
       }
     }
 
@@ -360,12 +463,21 @@ function Editor( i, cnf ) {
           self.positionOffset= p5Module.Vector.add( self.lastPositionOffset, vectorSub(p5.mouseX, p5.mouseY, self.clickPosition) );
           p5.cursor( p5.HAND );
         }
+
+      } else if( p5.mouseButton === p5.LEFT ) {               // left click controls the tooltip
+        self.actions.eventMouseDrag( self.map.mouseMapPos );
       }
     }
 
     p5.mouseReleased= function() {
       self.clickPosition= null;     // reset click position to stop dragging calculation
       p5.cursor( p5.ARROW );
+
+      self.actions.eventMouseRelease();
+    }
+
+    p5.doubleClicked= function() {
+      self.actions.eventDoubleClick( self.map.mouseMapPos );
     }
 
     p5.mouseWheel= function( event ) {
@@ -433,7 +545,8 @@ function Editor( i, cnf ) {
 
   this.debugScreen= null;
   this.grid= new Grid( this, this.config.gridColor );
-  this.map= new Map( this );
+  this.map= new EditorMap( this );
+  this.actions= new ActionStack( this );
 
   this.timeline= new Render.TimeLine();
   this.frenderer= new Render.FrameRenderer( this.timeline );
@@ -480,7 +593,6 @@ function Editor( i, cnf ) {
   this.complementCol= this.p5.color( this.config.compColor );
   this.clickPosition= null;
 
-  this.haus= new LedPanel(  {x:200, y:200}, 5, this );
 }
 
 module.exports.Editor= Editor;
