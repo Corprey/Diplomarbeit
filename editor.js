@@ -160,30 +160,53 @@ function Grid( e, gridcol ) {
 }
 
 
-function LedPanel( pos, id, e ) {
+function LedPanel( pos, id, e, getScreen= true ) {
   this.editor= e;
   this.position= new p5Module.Vector( pos.x, pos.y, 0 );
   this.panelId= id;
   this.size= 1;
+  this.selected= false;
 
+  if( getScreen === true ) {
+    this.requestScreen();
+  }
+}
+
+// get screen
+LedPanel.prototype.requestScreen= function() {
   this.screen= this.editor.frenderer.screens.at( this.panelId );
+}
 
-  // Tests whether a point on the map is inside of the panels area
-  this.canSelect= function( pt ) {
-    return boxSelect( this.position, pt, this.scale );
+// Tests whether a point on the map is inside of the panels area
+LedPanel.prototype.canSelect= function( pt ) {
+  return boxSelect( this.position, pt, this.size );
+}
+
+// Select or unselect a panel
+LedPanel.prototype.select= function( v = true ) {
+  this.selected= v;
+}
+
+// Draw the panel to the screen if it is currently in view
+LedPanel.prototype.draw= function( def= true ) {
+  let p5 =this.editor.p5;
+  let pos= this.editor.getScaledPos( this.position.x, this.position.y );
+  this.size= this.editor.scale * 100;
+
+  if( def === true ) {
+    p5.image( this.defaultImage, pos.x, pos.y, this.size, this.size );
+  } else {
+    // use screen img
   }
 
-  this.draw= function( def= true ) {
-    let p= this.editor.getScaledPos( this.position.x, this.position.y );
-    this.scale= this.editor.scale * 100;
+  // draw colored frame when selected
+  if( this.selected === true ) {
+    p5.strokeWeight( 2 );
+    p5.stroke('#2693F2');
+    p5.noFill();
 
-    if( def === true ) {
-      this.editor.p5.image( this.defaultImage, p.x, p.y, this.size, this.size );
-    } else {
-      // use screen img
-    }
+    p5.rect( pos.x, pos.y, this.size, this.size );
   }
-
 }
 
 // Create and load static default image
@@ -200,7 +223,10 @@ LedPanel.init= function( p5 ) {
 function EditorMap( e ) {
 
   this.editor= e;
+  this.rederDisabled= true;
   this.mouseMapPos= null;
+
+  this.panels= [];
 
   this.selectionBegin= null;      // Selection
   this.selectionDimension= null;
@@ -223,6 +249,39 @@ function EditorMap( e ) {
     this.selectionDimension= null;
   }
 
+  // Create new LED-Panel
+  this.createPanel= function( pos, id= null ) {
+
+    // if no id is provided, find the firs slot that is free
+    if( id === null ) {
+      for( id= 0; id!= this.panels.length; id++ ) {
+        if( this.panels[id] === null ) {
+          break;
+        }
+      }
+    }
+
+    return new LedPanel( pos, id, this.editor, false );  // create new led panel obj
+                                                        // ...don't request screen yet
+  }
+
+  // Attach panel to panel rendering list
+  this.attachPanel= function( p ) {
+    let id= p.panelId;
+
+    // fill array with empty slots if id is greater than the lenght of the array
+    while( this.panels.length <= id ) {
+      this.panels.push( null );
+    }
+
+    // expect to find an empty slot to write to
+    if( this.panels[id] !== null ) {
+      throw Error( "Led Panel slot is already occupied on the map array: "+ id );
+    }
+
+    this.panels[id]= p;
+  }
+
   this.hasSelection= function() {
     return (this.selectionBegin !== null) && (this.selectionDimension !== null);
   }
@@ -234,6 +293,13 @@ function EditorMap( e ) {
   this.draw= function() {
     let p5= this.editor.p5;
     p5.push();
+
+    // Draw panels to the screen
+    for( let i= 0; i!= this.panels.length; i++ ) {
+      if( this.panels[i] !== null ) {
+        this.panels[i].draw( this.rederDisabled );
+      }
+    }
 
     // Selection
     if( this.hasSelection() ) {
@@ -256,12 +322,21 @@ function EditorMap( e ) {
 */
 function ActionStack( e ) {
 
+  // Push a new action on to the action stack
+  this.pushAction= function( type, data ) {
+    if( this.actionIndex !== this.actions.length-1 ) {
+      this.actions.length= ( this.actionIndex < 0 ) ? 0 : this.actionIndex;
+    }
+    this.actions.push( { tip: this.curTip, action: type, info: data } );
+  }
+
   this.eventUndo= function() {}
   this.eventRedo= function() {}
 
-  this.eventDoubleClick=  function( p ) { this.curTip.intf.eventDoubleClick( this, p.copy() );                                  }
-  this.eventMousePress=   function( p ) { this.mouseDragBegin= p.copy(); this.curTip.intf.eventMousePress( this, p.copy() );    }
-  this.eventMouseRelease= function()    { this.mouseDragBegin= null;     this.curTip.intf.eventMouseRelease( this );            }
+  this.eventDraw=         function( p5 ) { this.curTip.intf.eventDraw( this, p5 ); }
+  this.eventDoubleClick=  function( p )  { this.curTip.intf.eventDoubleClick( this, p.copy() );                                  }
+  this.eventMousePress=   function( p )  { this.mouseDragBegin= p.copy(); this.curTip.intf.eventMousePress( this, p.copy() );    }
+  this.eventMouseRelease= function()     { this.mouseDragBegin= null;     this.curTip.intf.eventMouseRelease( this );            }
 
   this.eventMouseDrag= function( p ) {
     if( this.mouseDragBegin !== null ) {
@@ -300,6 +375,7 @@ function ActionStack( e ) {
   this.curTip= null;
 
   this.addToolTip( new Tools.CursorTip() );
+  this.addToolTip( new Tools.PanelPlaceTip() );
   this.setToolTip();                        // enable cursor tip as default tooltip
 
   this.mouseDragBegin= null;
@@ -431,7 +507,9 @@ function Editor( i, cnf ) {
         self.drawGridCursor();
       }
 
-      self.map.draw();
+      self.map.draw();                // draw elements on the map
+      self.actions.eventDraw( p5 );   // let the tooltip draw if it needs to
+
 
       if( self.debugScreen !== null ) {   // update and show the debug screen if one is currently attached
         self.debugScreen.update();
@@ -446,14 +524,14 @@ function Editor( i, cnf ) {
     }
 
     p5.mousePressed= function() {
-      if( p5.mouseButton === p5.RIGHT ) {
-        if( self.mouseInCanvas() ) {
-          self.clickPosition= p5.createVector(p5.mouseX, p5.mouseY);  // save clicking position to track cursor movement
-          self.lastPositionOffset= self.positionOffset.copy();        // save old position to calculate offset from it
-        }
+      if( self.mouseInCanvas() ) {
+        if( p5.mouseButton === p5.RIGHT ) {
+            self.clickPosition= p5.createVector(p5.mouseX, p5.mouseY);  // save clicking position to track cursor movement
+            self.lastPositionOffset= self.positionOffset.copy();        // save old position to calculate offset from it
 
-      } else if( p5.mouseButton === p5.LEFT ) {                       // left click controls the tooltip
-        self.actions.eventMousePress( self.map.mouseMapPos );
+        } else if( p5.mouseButton === p5.LEFT ) {                       // left click controls the tooltip
+          self.actions.eventMousePress( self.map.mouseMapPos );
+        }
       }
     }
 
@@ -477,7 +555,9 @@ function Editor( i, cnf ) {
     }
 
     p5.doubleClicked= function() {
-      self.actions.eventDoubleClick( self.map.mouseMapPos );
+      if( self.mouseInCanvas() ) {
+        self.actions.eventDoubleClick( self.map.mouseMapPos );
+      }
     }
 
     p5.mouseWheel= function( event ) {
