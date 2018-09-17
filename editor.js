@@ -43,7 +43,7 @@ function boxCapture( arPos, arSize, bPos, width, height ) {
 				 ( (arPos.y + arSize.y) > (bPos.y + height) );
 }
 
-// Takes a boxes values per referece and normalizs them to a boy with
+// Takes a boxes values per referece and normalizs them to a box with
 // the origin in the upper left corner and onyl positive size values
 function normalizeBox( pos, sz ) {
   pos.x+= ( sz.x < 0 ) ? sz.x : 0;
@@ -288,6 +288,17 @@ function PanelSelection( e, m ) {
 
   // Select or unselect a panel that is pointed at
   this.pointSelection= function( pos ) {
+    let p= this.tracePoint( pos );
+
+    if( p !== null ) {
+      this.invertSelectPanel( p ); // If a panel was found and is not selected yet put into Array
+    }
+
+    return p;
+  }
+
+  // Get the panel that is pointed at by 'pos' or return null
+  this.tracePoint= function( pos ) {
     let p= null;
 
     // find first panel that can be selected by the pointing coords
@@ -296,11 +307,6 @@ function PanelSelection( e, m ) {
         p= this.map.panels[i];
         break;
       }
-    }
-
-
-    if( p !== null ) {
-      this.invertSelectPanel( p ); // If a panel was found and is not selected yet put into Array
     }
 
     return p;

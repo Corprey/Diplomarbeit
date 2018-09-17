@@ -22,30 +22,46 @@ function ActionInterface( o, nm, fns ) {
 */
 function CursorTip() {
 
+  this.clickPanel= null;
+
   this.actv= function( ast ) {
     ast.editor.allowGridCursor= true;
   }
 
-
   this.dblClick= function() { console.log("Double click!"); }
 
   this.click= function( ast, pos ) {
-    ast.editor.map.selection.pointSelection( pos );
-    console.log( pos );
+    if( this.clickPanel !== null ) {
+      ast.editor.map.selection.invertSelectPanel( this.clickPanel );
+    }
+
     console.log( ast.editor.map.selection.selection );
   }
 
-  this.press= function( ast ) {
+  this.press= function( ast, pos ) {
     let p5= ast.editor.p5;
+    this.clickPanel= ast.editor.map.selection.tracePoint( pos );
 
     if( ast.editor.isPressed( p5.CONTROL ) === false ) {
-      ast.editor.map.selection.flush();
+      if( (this.clickPanel === null) || ( (this.clickPanel !== null) && (!this.clickPanel.selected) ) ) {
+        ast.editor.map.selection.flush();
+      }
     }
+
     console.log( ast.editor.map.selection.selection );
   }
 
   // Drag Event: Draw Selection
   this.drag= function( ast, begin, distance ) {
+
+    if( this.clickPanel !== null ) {
+      if( this.clickPanel.selected === true ) {
+        if( ast.editor.isPressed( ast.editor.p5.CONTROL ) === false ) {
+          console.log("switch");
+        }
+      }
+    }
+
     ast.editor.allowGridCursor= false;
     ast.editor.map.selection.mkSelection( begin, distance );
   }
@@ -54,7 +70,7 @@ function CursorTip() {
   this.release= function( ast, begin, end, dragged ) {
     ast.editor.allowGridCursor= true;
 
-    // Don't even evaluate a drag area with a magnitude smalle than
+    // Don't even evaluate a drag area with a magnitude smaller than
     // ... could also be a click
     if( dragged && end.sub( begin ).mag() > 10 ) {
       ast.editor.map.selection.endSelection();
@@ -66,6 +82,8 @@ function CursorTip() {
 
   this.intf= new ActionInterface( this, 'cursor-tip', [this.actv, null, this.dblClick, this.click, this.press, this.release, this.drag, null]);
 }
+
+
 
 
 /*
