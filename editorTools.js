@@ -8,10 +8,11 @@ function ActionInterface( o, nm, fns ) {
   this.eventActivate=     fns[0] ? function() { fns[0].apply(this.obj, arguments ); } : def;
   this.eventDeactivate=   fns[1] ? function() { fns[1].apply(this.obj, arguments ); } : def;
   this.eventDoubleClick=  fns[2] ? function() { fns[2].apply(this.obj, arguments ); } : def;
-  this.eventMousePress=   fns[3] ? function() { fns[3].apply(this.obj, arguments ); } : def;
-  this.eventMouseRelease= fns[4] ? function() { fns[4].apply(this.obj, arguments ); } : def;
-  this.eventMouseDrag=    fns[5] ? function() { fns[5].apply(this.obj, arguments ); } : def;
-  this.eventDraw=         fns[6] ? function() { fns[6].apply(this.obj, arguments ); } : def;
+  this.eventClick=        fns[3] ? function() { fns[3].apply(this.obj, arguments ); } : def;
+  this.eventMousePress=   fns[4] ? function() { fns[4].apply(this.obj, arguments ); } : def;
+  this.eventMouseRelease= fns[5] ? function() { fns[5].apply(this.obj, arguments ); } : def;
+  this.eventMouseDrag=    fns[6] ? function() { fns[6].apply(this.obj, arguments ); } : def;
+  this.eventDraw=         fns[7] ? function() { fns[7].apply(this.obj, arguments ); } : def;
 }
 
 
@@ -28,19 +29,42 @@ function CursorTip() {
 
   this.dblClick= function() { console.log("Double click!"); }
 
+  this.click= function( ast, pos ) {
+    ast.editor.map.selection.pointSelection( pos );
+    console.log( pos );
+    console.log( ast.editor.map.selection.selection );
+  }
+
+  this.press= function( ast ) {
+    let p5= ast.editor.p5;
+
+    if( ast.editor.isPressed( p5.CONTROL ) === false ) {
+      ast.editor.map.selection.flush();
+    }
+    console.log( ast.editor.map.selection.selection );
+  }
+
   // Drag Event: Draw Selection
   this.drag= function( ast, begin, distance ) {
     ast.editor.allowGridCursor= false;
-    ast.editor.map.mkSelection( begin, distance );
+    ast.editor.map.selection.mkSelection( begin, distance );
   }
 
   // Release Event: Finalize Selection
-  this.release= function( ast ) {
+  this.release= function( ast, begin, end, dragged ) {
     ast.editor.allowGridCursor= true;
-    ast.editor.map.endSelection();
+
+    // Don't even evaluate a drag area with a magnitude smalle than
+    // ... could also be a click
+    if( dragged && end.sub( begin ).mag() > 10 ) {
+      ast.editor.map.selection.endSelection();
+      console.log( ast.editor.map.selection.selection );
+    } else {
+      ast.editor.map.selection.resetSelectionArea();
+    }
   }
 
-  this.intf= new ActionInterface( this, 'cursor-tip', [this.actv, null, this.dblClick, null, this.release, this.drag, null]);
+  this.intf= new ActionInterface( this, 'cursor-tip', [this.actv, null, this.dblClick, this.click, this.press, this.release, this.drag, null]);
 }
 
 
@@ -62,11 +86,14 @@ function PanelPlaceTip() {
     this.panel.draw( true );
   }
 
-  this.click= function( ast ) {
+  this.press= function( ast ) {
     this.panel.select( false );
     this.panel.requestScreen();
     ast.editor.map.attachPanel( this.panel );
-    console.log( ast.editor.map.panels )
+    console.log( ast.editor.map.panels );
+
+    //ast.pushAction()
+
     this.actv( ast );
   }
 
@@ -74,7 +101,7 @@ function PanelPlaceTip() {
     this.panel= null;
   }
 
-  this.intf= new ActionInterface( this, 'panel-place', [this.actv, this.end, null, this.click, null, null, this.draw]);
+  this.intf= new ActionInterface( this, 'panel-place', [this.actv, this.end, null, null, this.press, null, null, this.draw]);
 }
 
 

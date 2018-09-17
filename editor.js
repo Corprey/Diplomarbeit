@@ -36,6 +36,24 @@ function boxSelect( pos, pt, width, height ) {
            (pt.y >= pos.y) && (pt.y < pos.y+ height)   );
 }
 
+// Check whether a box 'b' is inside a specified rectengular area 'ar'
+function boxCapture( arPos, arSize, bPos, width, height ) {
+  return ( (bPos.x - arPos.x) >= 0 ) && ( (bPos.y - arPos.y) >= 0 ) &&
+				 ( (arPos.x + arSize.x) > (bPos.x + width ) ) &&
+				 ( (arPos.y + arSize.y) > (bPos.y + height) );
+}
+
+// Takes a boxes values per referece and normalizs them to a boy with
+// the origin in the upper left corner and onyl positive size values
+function normalizeBox( pos, sz ) {
+  pos.x+= ( sz.x < 0 ) ? sz.x : 0;
+  pos.y+= ( sz.y < 0 ) ? sz.y : 0;
+
+  sz.x= Math.abs( sz.x );
+  sz.y= Math.abs( sz.y );
+}
+
+
 /*
 *   Debug Screen Class rendering debug information as
 *   text to the screen when enabled
@@ -159,7 +177,7 @@ function Grid( e, gridcol ) {
 
 }
 
-
+const LEDPANELPIXELDIM= 100;
 function LedPanel( pos, id, e, getScreen= true ) {
   this.editor= e;
   this.position= new p5Module.Vector( pos.x, pos.y, 0 );
@@ -177,9 +195,18 @@ LedPanel.prototype.requestScreen= function() {
   this.screen= this.editor.frenderer.screens.at( this.panelId );
 }
 
+LedPanel.prototype.destroy= function() {
+  this.editor.frenderer.screens.remove( this.panelId );
+}
+
 // Tests whether a point on the map is inside of the panels area
 LedPanel.prototype.canSelect= function( pt ) {
-  return boxSelect( this.position, pt, this.size );
+  return boxSelect( this.position, pt, LEDPANELPIXELDIM, LEDPANELPIXELDIM );
+}
+
+// Test whether the panel is inside a specified area
+LedPanel.prototype.isInArea= function( pt, sz ) {
+  return boxCapture( pt, sz, this.position, LEDPANELPIXELDIM, LEDPANELPIXELDIM );
 }
 
 // Select or unselect a panel
@@ -191,7 +218,7 @@ LedPanel.prototype.select= function( v = true ) {
 LedPanel.prototype.draw= function( def= true ) {
   let p5 =this.editor.p5;
   let pos= this.editor.getScaledPos( this.position.x, this.position.y );
-  this.size= this.editor.scale * 100;
+  this.size= this.editor.scale * LEDPANELPIXELDIM;
 
   if( def === true ) {
     p5.image( this.defaultImage, pos.x, pos.y, this.size, this.size );
@@ -216,6 +243,112 @@ LedPanel.init= function( p5 ) {
 }
 
 
+
+
+function PanelSelection( e, m ) {
+  this.editor= e;
+  this.map= m;
+
+  this.selection= [];
+  this.selectionBegin= null;      // Selection Area
+  this.selectionDimension= null;
+
+  // Check if currently a selection area is active
+  this.hasSelectionArea= function() {
+    return (this.selectionBegin !== null) && (this.selectionDimension !== null);
+  }
+
+  // Begin new selection area
+  this.mkSelection= function( begin, dim ) {
+    this.selectionBegin=      p5Module.Vector.mult( begin, this.editor.scale );
+    this.selectionDimension=  p5Module.Vector.mult( dim,   this.editor.scale );
+  }
+
+  // Finalize Selection area and reset area variables
+  this.endSelection= function() {
+    if( this.hasSelectionArea() ) {
+      normalizeBox( this.selectionBegin.div( this.editor.scale ), this.selectionDimension.div( this.editor.scale ) );
+
+      for( let i= 0; i!= this.map.panels.length; i++ ) {
+        let p= this.map.panels[i];
+
+        if( p.isInArea( this.selectionBegin, this.selectionDimension ) ) {
+          this.invertSelectPanel( p );
+        }
+      }
+    }
+    this.resetSelectionArea();
+  }
+
+  // Reset the selction area
+  this.resetSelectionArea= function() {
+    this.selectionBegin= null;
+    this.selectionDimension= null;
+  }
+
+  // Select or unselect a panel that is pointed at
+  this.pointSelection= function( pos ) {
+    let p= null;
+
+    // find first panel that can be selected by the pointing coords
+    for( let i= 0; i!= this.map.panels.length; i++ ) {
+      if( this.map.panels[i].canSelect( pos ) ) {
+        p= this.map.panels[i];
+        break;
+      }
+    }
+
+
+    if( p !== null ) {
+      this.invertSelectPanel( p ); // If a panel was found and is not selected yet put into Array
+    }
+
+    return p;
+  }
+
+  // Invert selection mode of a panel
+  this.invertSelectPanel= function( p ) {
+    let index= this.selection.indexOf( p ); // check if already part of array
+
+    if( p.selected === false ) {    // Select if not slected yet
+      if( index === -1 ) {
+        this.selection.push( p );
+      }
+      p.select();
+
+    } else {                        // Unselect and remove from array
+      if( index > -1 ) {
+        this.selection.splice( index, 1 );
+      }
+
+      p.select( false );
+    }
+  }
+
+  // Remove all elements from the selection array
+  this.flush= function() {
+    for( let i= 0; i!= this.selection.length; i++ ) { // Unselect all panels
+      this.selection[i].select( false );
+    }
+
+    this.selection= [];
+  }
+
+  // Draw a selection area if one is currently active
+  this.show= function() {
+    let p5= this.editor.p5;
+
+    if( this.hasSelectionArea() ) {
+      p5.strokeWeight( 2 );
+      p5.stroke('#2693F2');
+      p5.fill( '#31bff772' );   // set with alpha ~0.45
+
+      p5.rect( this.selectionBegin.x, this.selectionBegin.y, this.selectionDimension.x, this.selectionDimension.y );
+    }
+  }
+
+}
+
 /*
 *   EditorMap Class holding all dynamic objects to draw
 *
@@ -228,25 +361,12 @@ function EditorMap( e ) {
 
   this.panels= [];
 
-  this.selectionBegin= null;      // Selection
-  this.selectionDimension= null;
+  this.selection= new PanelSelection( this.editor, this );
 
   // calculate the mouse position on the map
   this.updateMousePosition= function() {
     let p5= this.editor.p5;
     this.mouseMapPos= this.editor.getCanvasOrigin().add( p5.mouseX, p5.mouseY ).div( this.editor.scale );
-  }
-
-  this.mkSelection= function( begin, dim ) {
-    this.selectionBegin=      p5Module.Vector.mult( begin, this.editor.scale );
-    this.selectionDimension=  p5Module.Vector.mult( dim,   this.editor.scale );
-  }
-
-  this.endSelection= function() {
-    // Find the items to select and highlight them...
-
-    this.selectionBegin= null;      // Reset the selction area
-    this.selectionDimension= null;
   }
 
   // Create new LED-Panel
@@ -282,10 +402,6 @@ function EditorMap( e ) {
     this.panels[id]= p;
   }
 
-  this.hasSelection= function() {
-    return (this.selectionBegin !== null) && (this.selectionDimension !== null);
-  }
-
   this.update= function() {
 
   }
@@ -302,13 +418,7 @@ function EditorMap( e ) {
     }
 
     // Selection
-    if( this.hasSelection() ) {
-      p5.strokeWeight( 2 );
-      p5.stroke('#2693F2');
-      p5.fill( '#31bff772' );   // set with alpha ~0.45
-
-      p5.rect( this.selectionBegin.x, this.selectionBegin.y, this.selectionDimension.x, this.selectionDimension.y );
-    }
+    this.selection.show();
 
     p5.pop();
   }
@@ -334,11 +444,25 @@ function ActionStack( e ) {
   this.eventRedo= function() {}
 
   this.eventDraw=         function( p5 ) { this.curTip.intf.eventDraw( this, p5 ); }
-  this.eventDoubleClick=  function( p )  { this.curTip.intf.eventDoubleClick( this, p.copy() );                                  }
-  this.eventMousePress=   function( p )  { this.mouseDragBegin= p.copy(); this.curTip.intf.eventMousePress( this, p.copy() );    }
-  this.eventMouseRelease= function()     { this.mouseDragBegin= null;     this.curTip.intf.eventMouseRelease( this );            }
+  this.eventDoubleClick=  function( p )  { this.curTip.intf.eventDoubleClick( this, p.copy() );                                        }
+  this.eventMousePress=   function( p )  { this.mouseDragBegin= p.copy(); this.curTip.intf.eventMousePress( this, p.copy() );          }
+
+  this.eventMouseRelease= function( p ) {
+    this.curTip.intf.eventMouseRelease( this, this.mouseDragBegin, p.copy(), this.hasDragged );
+    this.mouseDragBegin= null;
+  }
+
+  this.eventClick= function( p ) {
+    if( !this.hasDragged ) {                          // only register click, if no dragging happend
+      this.curTip.intf.eventClick( this, p.copy() );
+    }
+
+    this.hasDragged= false;
+  }
 
   this.eventMouseDrag= function( p ) {
+    this.hasDragged= true;
+
     if( this.mouseDragBegin !== null ) {
       this.curTip.intf.eventMouseDrag( this, this.mouseDragBegin, p5Module.Vector.sub( p, this.mouseDragBegin) );
     }
@@ -367,6 +491,7 @@ function ActionStack( e ) {
 
   }
 
+  this.hasDragged= false;
   this.editor= e;
   this.actions= [];
   this.toolTips= new Map();
@@ -551,12 +676,18 @@ function Editor( i, cnf ) {
       self.clickPosition= null;     // reset click position to stop dragging calculation
       p5.cursor( p5.ARROW );
 
-      self.actions.eventMouseRelease();
+      self.actions.eventMouseRelease( self.map.mouseMapPos );
     }
 
     p5.doubleClicked= function() {
       if( self.mouseInCanvas() ) {
         self.actions.eventDoubleClick( self.map.mouseMapPos );
+      }
+    }
+
+    p5.mouseClicked= function() {
+      if( self.mouseInCanvas() ) {
+        self.actions.eventClick( self.map.mouseMapPos );
       }
     }
 

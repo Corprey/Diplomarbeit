@@ -223,6 +223,18 @@ function ScreenArray( r ) {
 
      return a;
   }
+
+  // Remove panel with id
+  this.remove= function( index ) {
+    if( index < this.arr.length ) {
+      this.arr[index]= null;
+    }
+  }
+
+  // Check if the array has a certain panel
+  this.hasId= function( index ) {
+    return ( index < this.arr.length ) && ( this.arr[index] !== null );
+  }
 }
 
 
@@ -267,8 +279,10 @@ function FrameRenderer( tm, cnf ) {
         let frame= msg.frame;
         let imgbuff= msg.imgData;
 
-        this.screens.at( frame.panelId ).update( imgbuff ); // update pixels of screen to new image data
-        this.timeline.restoreBuffer( frame );               // return buffer data to frame on timeline
+        if( this.screens.hasId( frame.panelId ) === true ) {  // prevent recreation of a panel if it has been destroyed during rendering cycle time
+          this.screens.at( frame.panelId ).update( imgbuff ); // update pixels of screen to new image data
+        }
+        this.timeline.restoreBuffer( frame );                 // return buffer data to frame on timeline
         break;
 
       default:
@@ -355,7 +369,7 @@ function FrameRenderer( tm, cnf ) {
     }
   }
 
-  // Enable or disable the rendering 
+  // Enable or disable the rendering
   this.run= function( en= null ) {
     if( en === null ) {
       this.enable= !this.enable;
