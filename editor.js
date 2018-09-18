@@ -214,6 +214,11 @@ LedPanel.prototype.select= function( v = true ) {
   this.selected= v;
 }
 
+// Offset position by vector
+LedPanel.prototype.moveBy = function( v ) {
+  this.position.add( v );
+};
+
 // Draw the panel to the screen if it is currently in view
 LedPanel.prototype.draw= function( def= true ) {
   let p5 =this.editor.p5;
@@ -338,6 +343,13 @@ function PanelSelection( e, m ) {
     }
 
     this.selection= [];
+  }
+
+  // Move all selected panels by specified vector
+  this.moveBy= function( v ) {
+    for( let i= 0; i!= this.selection.length; i++ ) {
+      this.selection[i].moveBy( v );
+    }
   }
 
   // Draw a selection area if one is currently active
@@ -470,7 +482,7 @@ function ActionStack( e ) {
     this.hasDragged= true;
 
     if( this.mouseDragBegin !== null ) {
-      this.curTip.intf.eventMouseDrag( this, this.mouseDragBegin, p5Module.Vector.sub( p, this.mouseDragBegin) );
+      this.curTip.intf.eventMouseDrag( this, this.mouseDragBegin, p );
     }
   }
 
@@ -478,7 +490,7 @@ function ActionStack( e ) {
     this.toolTips.set( t.intf.name, t );
   }
 
-  this.setToolTip= function( nm ) {
+  this.setToolTip= function( nm, dt= null ) {
     if( this.curTip !== null ) {          // deactivate current tool
       this.curTip.intf.eventDeactivate( this );
     }
@@ -493,7 +505,7 @@ function ActionStack( e ) {
       throw Error( 'Unable to find tool tip: '+ nm + ' or the default tip ' );
     }
 
-    this.curTip.intf.eventActivate( this ); // activate new tool
+    this.curTip.intf.eventActivate( this, dt ); // activate new tool
 
   }
 
@@ -507,6 +519,7 @@ function ActionStack( e ) {
 
   this.addToolTip( new Tools.CursorTip() );
   this.addToolTip( new Tools.PanelPlaceTip() );
+  this.addToolTip( new Tools.PanelMoveTip() );
   this.setToolTip();                        // enable cursor tip as default tooltip
 
   this.mouseDragBegin= null;
