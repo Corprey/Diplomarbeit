@@ -197,6 +197,7 @@ LedPanel.prototype.requestScreen= function() {
 
 LedPanel.prototype.destroy= function() {
   this.editor.frenderer.screens.remove( this.panelId );
+  this.selected= false;
 }
 
 // Tests whether a point on the map is inside of the panels area
@@ -277,8 +278,10 @@ function PanelSelection( e, m ) {
       for( let i= 0; i!= this.map.panels.length; i++ ) {
         let p= this.map.panels[i];
 
-        if( p.isInArea( this.selectionBegin, this.selectionDimension ) ) {
-          this.invertSelectPanel( p );
+        if( p !== null ) {
+          if( p.isInArea( this.selectionBegin, this.selectionDimension ) ) {
+            this.invertSelectPanel( p );
+          }
         }
       }
     }
@@ -302,19 +305,34 @@ function PanelSelection( e, m ) {
     return p;
   }
 
+  // Create selection from panel ids
+  this.fromIds= function( ids ) {
+    this.flush();                       // remove current selction
+
+    for( let i= 0; i!= ids.length; i++ ) {
+      let p= this.editor.map.get( ids[i] ); // iterate through all ids and add panels
+      if( p !== null ) {
+        this.selection.push( p );
+        p.select();
+      }
+    }
+  }
+
   // Get the panel that is pointed at by 'pos' or return null
   this.tracePoint= function( pos ) {
-    let p= null;
 
     // find first panel that can be selected by the pointing coords
     for( let i= 0; i!= this.map.panels.length; i++ ) {
-      if( this.map.panels[i].canSelect( pos ) ) {
-        p= this.map.panels[i];
-        break;
+      let p= this.map.panels[i];
+
+      if( p !== null ) {
+        if( p.canSelect( pos ) ) {
+          return p;
+        }
       }
     }
 
-    return p;
+    return null;
   }
 
   // Invert selection mode of a panel
@@ -350,6 +368,16 @@ function PanelSelection( e, m ) {
     for( let i= 0; i!= this.selection.length; i++ ) {
       this.selection[i].moveBy( v );
     }
+  }
+
+  // Get Ids of all selected panels
+  this.getIds= function() {
+    let arr= new Array( this.selection.length );
+    for( let i= 0; i!= arr.length; i++ ) {
+      arr[i]= this.selection[i].panelId;
+    }
+
+    return arr;
   }
 
   // Draw a selection area if one is currently active
@@ -420,6 +448,20 @@ function EditorMap( e ) {
     this.panels[id]= p;
   }
 
+  // remove panel from map by id
+  this.removePanel= function( pid ) {
+    if( pid < this.panels.length ) {
+      if( this.panels[pid] !== null ) {
+        this.panels[pid].destroy();
+        this.panels[pid]= null;
+      }
+    }
+  }
+
+  this.get= function( id ) {
+    return (this.panels.length > id) ? this.panels[id] : null;
+  }
+
   this.update= function() {
 
   }
@@ -453,13 +495,31 @@ function ActionStack( e ) {
   // Push a new action on to the action stack
   this.pushAction= function( type, data ) {
     if( this.actionIndex !== this.actions.length-1 ) {
-      this.actions.length= ( this.actionIndex < 0 ) ? 0 : this.actionIndex;
+      this.actions.length= ( this.actionIndex < 0 ) ? 0 : this.actionIndex+1;
     }
     this.actions.push( { tip: this.curTip, action: type, info: data } );
+    this.actionIndex++;
   }
 
-  this.eventUndo= function() {}
-  this.eventRedo= function() {}
+  // Go down in the action stack once and request an 'Undo' from the tool-tip
+  this.eventUndo= function() {
+    if( this.actionIndex !== -1 ) {
+      let action= this.actions[this.actionIndex];
+      action.tip.intf.eventUndo( this, action.type, action.info );
+
+      this.actionIndex--;
+    }
+  }
+
+  // Go up in the action stack once and request a 'Redo' from the tool-tip
+  this.eventRedo= function() {
+    if( this.actionIndex <= this.actions.length-2 ) {
+      this.actionIndex++;
+
+      let action= this.actions[this.actionIndex];
+      action.tip.intf.eventRedo( this, action.type, action.info );
+    }
+  }
 
   this.eventDraw=         function( p5 ) { this.curTip.intf.eventDraw( this, p5 ); }
   this.eventDoubleClick=  function( p )  { this.curTip.intf.eventDoubleClick( this, p.copy() );                                        }

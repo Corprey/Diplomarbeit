@@ -1,4 +1,10 @@
 
+// Chack if all 2D-components of a vector are zero
+function vectorZero( v ) {
+  return (v.x === 0) && (v.y === 0);
+}
+
+
 function ActionInterface( o, nm, fns ) {
 
   this.name= nm;
@@ -13,6 +19,8 @@ function ActionInterface( o, nm, fns ) {
   this.eventMouseRelease= fns[5] ? function() { fns[5].apply(this.obj, arguments ); } : def;
   this.eventMouseDrag=    fns[6] ? function() { fns[6].apply(this.obj, arguments ); } : def;
   this.eventDraw=         fns[7] ? function() { fns[7].apply(this.obj, arguments ); } : def;
+  this.eventUndo=         fns[8] ? function() { fns[8].apply(this.obj, arguments ); } : def;
+  this.eventRedo=         fns[9] ? function() { fns[9].apply(this.obj, arguments ); } : def;
 }
 
 
@@ -87,16 +95,22 @@ function CursorTip() {
     }
   }
 
-  this.intf= new ActionInterface( this, 'cursor-tip', [this.actv, null, this.dblClick, this.click, this.press, this.release, this.drag, null]);
+  this.intf= new ActionInterface( this, 'cursor-tip', [this.actv, null, this.dblClick, this.click, this.press, this.release, this.drag, null, null, null]);
 }
 
 
+/*
+* PanelMoveTip that moves a selection around on the map
+*
+*/
 function PanelMoveTip() {
 
   this.prevMouseGridPos= null;
+  this.beginPos= null;
 
   this.actv= function( ast ) {
-    this.prevMouseGridPos= ast.editor.grid.mouseMapPos.copy();  // get initial mouse value
+    this.prevMouseGridPos= ast.editor.grid.mouseMapPos.copy();            // get initial mouse value
+    this.beginPos= ast.editor.map.selection.selection[0].position.copy(); // get initial position of a panel
     ast.editor.allowGridCursor= false;
   }
 
@@ -111,14 +125,32 @@ function PanelMoveTip() {
   }
 
   this.release= function( ast ) {
-    ast.setToolTip( 'cursor-tip' );   // go back to simple cursor
+    let vec= this.beginPos.mult(-1).add( ast.editor.map.selection.selection[0].position );  // create new vector storing the position difference
+    let ids= ast.editor.map.selection.getIds();   // only save ids instead of pointers, to allow removed panels to be garbage collected
 
+    // only save as an action if somethin actually moved
+    if( vectorZero( vec ) === false ) {
+      ast.pushAction( 'panel-move', {movement: vec, panelIds: ids } );
+    }
+
+    ast.setToolTip( 'cursor-tip' );   // go back to simple cursor
     ast.editor.allowGridCursor= true;
     console.log( 'back' );
   }
 
+  // Move panels backwards
+  this.undo= function( ast, t, d ) {
+    ast.editor.map.selection.fromIds( d.panelIds );
+    ast.editor.map.selection.moveBy( d.movement.copy().mult(-1) );
+  }
 
-  this.intf= new ActionInterface( this, 'panel-move', [this.actv, null, null, null, null, this.release, this.drag, null]);
+  // Move panels forwards again
+  this.redo= function( ast, t, d ) {
+    ast.editor.map.selection.fromIds( d.panelIds );
+    ast.editor.map.selection.moveBy( d.movement );
+  }
+
+  this.intf= new ActionInterface( this, 'panel-move', [this.actv, null, null, null, null, this.release, this.drag, null, this.undo, this.redo]);
 
 }
 
@@ -148,7 +180,8 @@ function PanelPlaceTip() {
     ast.editor.map.attachPanel( this.panel );
     console.log( ast.editor.map.panels );
 
-    //ast.pushAction()
+    ast.pushAction( 'panel-place', { pos: this.panel.position.copy(), panelObj: this.panel } );
+    console.log( ast.actions );
 
     this.actv( ast ); // get new panel to hang of the tool-tip
   }
@@ -157,7 +190,17 @@ function PanelPlaceTip() {
     this.panel= null;
   }
 
-  this.intf= new ActionInterface( this, 'panel-place', [this.actv, this.end, null, null, this.press, null, null, this.draw]);
+  this.undo= function( ast, t, d ) {
+    ast.editor.map.removePanel( d.panelObj.panelId );
+  }
+
+  this.redo= function( ast, t, d ) {
+    d.panelObj.position= d.pos.copy();
+    d.panelObj.requestScreen();
+    ast.editor.map.attachPanel( d.panelObj );
+  }
+
+  this.intf= new ActionInterface( this, 'panel-place', [this.actv, this.end, null, null, this.press, null, null, this.draw, this.undo, this.redo]);
 }
 
 
