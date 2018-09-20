@@ -7,7 +7,7 @@ const Common= require('./common.js');
 function ToolbarIcon(cnf) {
 
   let config= new Common.DefaultConfig( cnf,
-                                        { name: "tool", iconType: 'fas', iconImg: 'fa-search-plus', action: function(){ console.log('Unassigned'); } },
+                                        { name: "tool", iconType: 'fas', iconImg: 'fa-search-plus', action: function(){ console.log('Unassigned'); }, id: 0 },
                                         function( prop, val ) {
                                           console.error("Error in ToolbarIcon Class Constructor: Missing configuration argument: "+ prop+
                                                         "\nSetting default value: "+ val );
@@ -27,16 +27,16 @@ function ToolbarIcon(cnf) {
   this.button.appendChild( this.toolIcon );         // add menu icon
   this.button.classList.add("tool");                // add css classes to button
 
-  this.addEvent(this.button, this.action);          //add event listener to button
+  this.addEvent( this.action );                     //add event listener to button
 }
 
 //adds given event to the given element
-ToolbarIcon.prototype.addEvent= function(anker, action) {
+ToolbarIcon.prototype.addEvent= function( action ) {
   if( typeof action === 'string' ) {                          // evaluate function as handler if param is string
-    anker.addEventListener("click", new Function( action ) );
+    this.button.addEventListener("click", new Function( action ) );
 
   } else {
-    anker.addEventListener("click", action );                 // set param as handler otherwise
+    this.button.addEventListener("click", action );           // set param as handler otherwise
   }
 }
 
@@ -45,21 +45,24 @@ ToolbarIcon.prototype.attachTo= function(anker) {
   anker.appendChild( this.button );
 }
 
+ToolbarIcon.prototype.hasId = function( x ) {
+  return x === this.id;
+}
+
 
 /*
 * RadioButton Class managing the activation and deactivation of its connections
 * Interally it holds a ToolbarIcon as a mixin
 */
 function RadioButton( cnf, menu ) {
-  // override the event callback to additionally call the update method of the button
-  let self= this;
-  let action= cnf.action;
-  cnf.action= function() { self.update(); action(); };
-
   this.menu= menu;
   this.connections= cnf.connections;
-
   this.icon= new ToolbarIcon( cnf );
+
+  // add event callback to call update method
+  let self= this;
+  this.icon.addEvent( function() { self.update(); } );
+
   cnf.defaultEnabled ? this.enable() : this.disable();
 }
 
@@ -93,6 +96,10 @@ RadioButton.prototype.attachTo= function( x ) {
   this.icon.attachTo( x );
 }
 
+RadioButton.prototype.hasId = function( x ) {
+  return this.icon.hasId( x );
+}
+
 
 
 /*
@@ -109,7 +116,7 @@ function Toolbar(name, arr) {
   this.createToolbarIcon= function(cnf) {
     let t;
 
-    if( cnf.type == 'radio' ) {
+    if( ( cnf !== undefined ) && (cnf.type == 'radio' ) ) {
       t= new RadioButton( cnf, this )
     } else {
       t= new ToolbarIcon(cnf);
@@ -125,7 +132,7 @@ function Toolbar(name, arr) {
     for( let i= 0; i!= this.icons.length; i++ ) {
       let icon= this.icons[i];
 
-      if( icon.id === id ) {
+      if( icon.hasId( id ) ) {
         return icon;
       }
     }
