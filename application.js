@@ -45,21 +45,22 @@ function EventHandler( w, sarr ) {
 
   let self= this;
   for( let i= 0; i!= sarr.length; i++ ) {
-    localShortcut.register( this.win, sarr[i].trig, function() { self[ sarr[i].func ](); } );
+    let ev= sarr[i].func;
+    let t= sarr[i].type;
+    localShortcut.register( this.win, sarr[i].trig, function() { self.call( t, ev ); } );
   }
 
   this.unbindAll= function() {
     localshortcut.unregisterAll( this.win )
   }
 
-  this.eventDebugToggle= function() {
-    global.application.editorCommand( 'toggleDebug' );
+  this.call= function( type, event ) {
+    if( type === 'ui' ) {
+      global.application.uiCommand( event );
+    } else {
+      global.application.editorCommand( event );
+    }
   }
-
-  this.eventPanOrigin= function() {
-    global.application.editorCommand( 'panOrigin' );
-  }
-
 
 }
 
@@ -146,8 +147,8 @@ function Application() {
   this.menu= Menu.buildFromTemplate(template);
   Menu.setApplicationMenu(this.menu);
 
-  this.eventHandler= new EventHandler( this.mainWindow, [ { trig: 'Ctrl+Alt+D', func: 'eventDebugToggle' },
-                                                          { trig: 'Ctrl+T',     func: 'eventPanOrigin'   } ] );
+  this.eventHandler= new EventHandler( this.mainWindow, [ { trig: 'Ctrl+Alt+D', func: 'toogleDebug', type:'e' },
+                                                          { trig: 'Ctrl+T',     func: 'panOrigin',   type:'e' } ] );
 
   this.terminate= function() {
     this.eventHandler.unbindAll();
