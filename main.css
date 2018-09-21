@@ -288,10 +288,35 @@ input[type="number"].ui-colorpicker-box::-webkit-outer-spin-button
     background-color:  #282c34; /* dark Gray background */
     border: solid black 1px; /* Remove borders */
     color: Gray; /* White text */
+    outline:0;  /*no automatic border*/
+    height: 35px;
+    width: 35px;
     margin: 20px 10px;
     padding: 5px 5px; /* Some padding */
     font-size: 18px; /* Set a font size */
     cursor: pointer; /* Mouse pointer on hover */
+}
+.tool:hover { /*When hoverd*/
+  border: solid #835e15 2px; /* Remove borders */
+  border-radius: 5px;
+}
+.tool:active { /*while clicked*/
+  background-color:  #131416; /*less dark Gray background */
+}
+
+
+.radioButton-active {
+  background-color:  #131416; /*less dark Gray background */
+  border: solid #835e15 2px; /* Remove borders */
+  border-radius: 5px;
+  outline:0;  /*no automatic border*/
+  height: 35px;
+  width: 35px;
+  color: Gray; /* White text */
+  margin: 20px 10px;
+  padding: 5px 5px; /* Some padding */
+  font-size: 18px; /* Set a font size */
+  cursor: pointer; /* Mouse pointer on hover */
 }
 
 /********************************************************************************************************************/

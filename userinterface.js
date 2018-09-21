@@ -18,17 +18,33 @@ function UserInterface() {
   this.interface= new AppInterface( this );
 
   //create sidebar menu elements and functionality
-  this.uiMenu= new CollapsibleMenu('sidebar-menu', [] );
+  this.uiMenu= new CollapsibleMenu('sidebar-menu', [
+    {name: "Panel Root", html: "<input type='text'></input>"},
+    {name: "Files", html: "files angezeigt"},
+    {name: "output", html: "output angezeigt" },
+    {name: "tools", html: "output angezeigt" }
+  ]);
+  //reserve colorPicker
+  this.uiColorPicker= null;
+
 
   //set up editor functionality
   this.uiEditor= new Editor( this.interface, { ankorName: 'editor', backColor: '#282c34',
                                compColor: 'white', gridColor: '#abb2bf', friendlyErrors: true } );
 
   //
-  this.uiToolbar= new Toolbar('toolbar-wrapper', []);
+  this.uiToolbar= new Toolbar('toolbar-wrapper', [
+    {id: 0, name: "Zoom In",      iconType: 'fas', iconImg: 'fa-search-plus',   action:'ui.zoomIn();'},
+    {id: 1, name: "Zoom Out",     iconType: 'fas', iconImg: 'fa-search-minus',  action:'ui.zoomOut();'},
+    {id: 2, name: "Undo",         iconType: 'fas', iconImg: 'fa-undo',          action:'ui.uiEditor.actions.eventUndo();'},
+    {id: 3, name: "Redo",         iconType: 'fas', iconImg: 'fa-redo',          action:'ui.uiEditor.actions.eventRedo();'},
+    {id: 4, type:"radio", connections: [5,6], name: "Mouse Cursor", iconType: 'fas', iconImg: 'fa-mouse-pointer', action:'ui.uiEditor.actions.setToolTip();'},
+    {id: 5, type:"radio", connections: [4,6], name: "Place Panel",  iconType: 'far', iconImg: 'fa-plus-square',   action:'ui.uiEditor.actions.setToolTip("panel-place");'},
+    {id: 6, type:"radio", connections: [4,5], name: "Paint",        iconType: 'fas', iconImg: 'fa-paint-brush',   action:'ui.uiEditor.actions.setToolTip();'},
 
-  //reserve colorPicker
-  this.uiColorPicker= null;
+
+  ]);
+
 
   //set up uiconsole functionality with default values
   this.uiConsole= new UIConsole("console", {
@@ -61,7 +77,7 @@ function UserInterface() {
 
   // split window into sidebar and workspace (adjustable width)
   this.splitSidebar= this.mkSplit(this.sidebarWrappers(), {
-    sizes: [25, 75], //width in %
+    sizes: [12, 88], //width in %
     minSize: [1,200] //minimal width of element in px
   });
 
@@ -72,7 +88,6 @@ function UserInterface() {
     minSize: [200,1,1], //minimal height of element in px
     direction: 'vertical' //split orientation
   });
-
 
 /********************************************************************************************************************/
   //Method functionality: set UI font size
@@ -232,55 +247,16 @@ function UserInterface() {
       this.onlyShowEditor();
     }
   }
+
 /********************************************************************************************************************/
-
-  this.sidebarMenu= function() {
-    /*let arr = [
-      {name: "Panel Root", html: "<input type='text'></input>"},
-      {name: "Files", html: "files angezeigt"},
-      {name: "output", html: "output angezeigt" },
-      {name: "tools", html: "output angezeigt" }
-    ];
-
-    for(let i=0;i<arr.length;i++)
-    {
-      this.uiMenu.pushNode(arr[i]);
-    }*/
-
+  //Create standard sidebar menu
+  this.createColorPicker= function() {
     this.uiColorPicker= new ColorPicker( this.uiMenu.pushNode( {name: "Color Picker", html: ""} ) );
     this.uiColorPicker.addCallback( function(c) {
                                       console.log("Picker hat jetzt die Farbe: " );
                                       console.log(c);
                                     } );
-
-    /*this.picker= new ColorPicker();
-    this.uiMenu.pushNode( this.picker.node() );
-
-    this.picker= new ColorPicker( this.uiMenu.pushNode() );
-
-    this.panels= new PanbelViewMenu();
-    this.uiMenu.pushNode( this.panels.node() );
-
-    this.panels.addToRoot( 3, 7 )
-
-    */
   }
-/********************************************************************************************************************/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

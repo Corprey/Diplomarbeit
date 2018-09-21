@@ -40,6 +40,32 @@ function AppInterface( ui ) {
       case 'panOrigin':
         this.userInterface.uiEditor.autoPanOrigin();
         break;
+
+       case 'undo':
+        this.userInterface.uiEditor.actions.eventUndo();
+        break;
+
+      case 'redo':
+        this.userInterface.uiEditor.actions.eventRedo();
+        break;
+
+      case 'toolPlacePanel':
+        this.userInterface.uiEditor.actions.setToolTip('panel-place');
+        //deactivate other Radiobuttons
+        this.userInterface.uiToolbar.getById(5).update();
+        break;
+
+      case 'toolPaint':
+        this.userInterface.uiEditor.actions.setToolTip();
+        //deactivate other Radiobuttons
+        this.userInterface.uiToolbar.getById(6).update();
+        break;
+
+      case 'resetTooltip':
+        this.userInterface.uiEditor.actions.setToolTip();
+        //deactivate other Radiobuttons
+        this.userInterface.uiToolbar.getById(4).update();
+        break;
     }
   }
 

@@ -53,6 +53,15 @@ function normalizeBox( pos, sz ) {
   sz.y= Math.abs( sz.y );
 }
 
+// Returns v2 with the sign of v1
+function copySign( v1, v2 ) {
+  if( v1 < 0 ) {
+    return (v2 < 0) ?  v2 : -v2;
+  } else {
+    return (v2 < 0) ? -v2 :  v2;
+  }
+}
+
 
 /*
 *   Debug Screen Class rendering debug information as
@@ -119,19 +128,26 @@ function Grid( e, gridcol ) {
 
   this.updateMousePosition= function() {
     let p5= this.editor.p5;
-    let res= this.resolution* this.editor.scale;  // actual grid resolution on the canvas
 
     let mouse= this.editor.getCanvasOrigin().add( p5.mouseX, p5.mouseY );   // get mouse position on the map
-    let delta= mouse.x % res;                                               // offset to the next grid point
-    mouse.x= mouse.x -delta + ( ( delta < (res/2) )? 0: res ); // go to the next point if the offset is greater than half the resolution
-
-    delta= mouse.y % res;
-    mouse.y= mouse.y -delta + ( ( delta < (res/2) )? 0: res );
+    this.getNearestSnapPos( mouse, this.editor.scale );
 
     // recycle the vector object of mousePixelPos if it is not null
     this.mouseMapPos= ( this.mousePixelPos !== null ) ? roundVector( this.mousePixelPos.set( mouse ).div( this.editor.scale ) )
                                                       : roundVector( p5.createVector( mouse ).div( this.editor.scale )        );
     this.mousePixelPos= mouse;  // save new mousePixelPos
+  }
+
+  // Replaces the position in the provided vector with the nearest grid snapping position
+  this.getNearestSnapPos= function( vec, scl= 1 ) {
+    let res= this.resolution* scl;    // actual grid resolution on the canvas
+    let delta= vec.x % res;           // offset to the next grid point
+    vec.x= vec.x -delta + ( ( Math.abs(delta) < (res/2) )? 0: copySign( delta, res ) ); // go to the next point if the offset is greater than half the resolution
+
+    delta= vec.y % res;
+    vec.y= vec.y -delta + ( ( Math.abs(delta) < (res/2) )? 0: copySign( delta, res ) );
+
+    return vec;
   }
 
   this.toggleGrid= function() {

@@ -85,11 +85,14 @@ RadioButton.prototype.update= function() {
 
 RadioButton.prototype.disable= function() {
   // CSS class ändern
-  // this.icon.button.classList.add();
+   this.icon.button.classList.remove("radioButton-active");
+   this.icon.button.classList.add("tool");
 }
 
 RadioButton.prototype.enable= function() {
   // CSS class ändern
+  this.icon.button.classList.remove("tool");
+  this.icon.button.classList.add("radioButton-active");
 }
 
 RadioButton.prototype.attachTo= function( x ) {
@@ -106,12 +109,6 @@ RadioButton.prototype.hasId = function( x ) {
 * Toolbar Class holding all buttons
 */
 function Toolbar(name, arr) {
-  this.anker= document.getElementById(name);
-  this.icons= [];
-
-  for( let i= 0; i!= arr.length; i++ ) {
-    this.createToolbarIcon( arr[i] );
-  }
 
   this.createToolbarIcon= function(cnf) {
     let t;
@@ -138,6 +135,14 @@ function Toolbar(name, arr) {
     }
 
     return null;
+  }
+
+  //Constructor
+  this.anker= document.getElementById(name);
+  this.icons= [];
+
+  for( let i= 0; i!= arr.length; i++ ) {
+    this.createToolbarIcon( arr[i] );
   }
 }
 

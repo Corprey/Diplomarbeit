@@ -68,8 +68,8 @@ function CursorTip() {
       if( this.clickPanel.selected === true ) {
         if( ast.editor.isPressed( ast.editor.p5.CONTROL ) === false ) {
 
-          ast.editor.map.selection.resetSelectionArea(); // prevent glitching selection area showing up
-          ast.setToolTip( 'panel-move' );                // switch tool tip to 'move-tip'
+          ast.editor.map.selection.resetSelectionArea();   // prevent glitching selection area showing up
+          ast.setToolTip( 'panel-move', this.clickPanel ); // switch tool tip to 'move-tip'
 
           return;
         }
@@ -108,9 +108,15 @@ function PanelMoveTip() {
   this.prevMouseGridPos= null;
   this.beginPos= null;
 
-  this.actv= function( ast ) {
+  this.actv= function( ast, p ) {
+    let origPos= p.position;
+
     this.prevMouseGridPos= ast.editor.grid.mouseMapPos.copy();            // get initial mouse value
-    this.beginPos= ast.editor.map.selection.selection[0].position.copy(); // get initial position of a panel
+    this.beginPos= origPos.copy(); // get initial position of a panel
+
+    let x= ast.editor.grid.getNearestSnapPos( origPos.copy() ).sub( origPos ); // get offset to the next grid snapping point
+    ast.editor.map.selection.moveBy( x );
+
     ast.editor.allowGridCursor= false;
   }
 

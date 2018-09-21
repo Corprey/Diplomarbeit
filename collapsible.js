@@ -82,13 +82,6 @@ MenuNode.prototype.attachTo= function( anker, pos ) {
 
 function CollapsibleMenu( name, arr ) {
 
-  this.anker= document.getElementById(name);
-  this.nodes= [];
-
-  for( let i= 0; i!= arr.length; i++ ) {
-    this.pushNode( arr[i] );
-  }
-
   this.closeAll= function() {
     for( let i= 0; i!= this.nodes.length; i++ ) {
       this.nodes[i].close();
@@ -105,6 +98,14 @@ function CollapsibleMenu( name, arr ) {
     n.attachTo( this.anker, pos );
 
     return n;
+  }
+
+  //Constructor
+  this.anker= document.getElementById(name);
+  this.nodes= [];
+
+  for( let i= 0; i!= arr.length; i++ ) {
+    this.pushNode( arr[i] );
   }
 }
 

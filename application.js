@@ -94,8 +94,8 @@ function Application() {
     {
       label: 'Edit',
       submenu: [
-        {role: 'undo'},
-        {role: 'redo'},
+        {label: 'undo', accelerator: 'Ctrl+Z', click() { self.editorCommand("undo"); }},
+        {label: 'redo', accelerator: 'Ctrl+Y', click() { self.editorCommand("redo"); }},
         {type: 'separator'},
         {role: 'cut'},
         {role: 'copy'},
@@ -112,14 +112,10 @@ function Application() {
         {label:'Show Timeline', click() { self.uiCommand("showTimeline"); }},
         {label:'Show All', click() { self.uiCommand("showAll"); }},
         {type: 'separator'},
-        {label:'Jump To Origin', click() { self.editorCommand("panOrigin"); }},
-        {label:'Debug', click() { self.editorCommand("toggleDebug"); }},
-        {type: 'separator'},
         {label: 'Actual Size', click() { self.uiCommand("actualSize"); }},
         {label: 'Zoom In', click() { self.uiCommand("zoomIn"); }},
         {label: 'Zoom Out', click() { self.uiCommand("zoomOut"); }},
         {type: 'separator'},
-        {role: 'reload'},
         {role: 'forcereload'},
         {role: 'toggledevtools'},
 
@@ -147,8 +143,11 @@ function Application() {
   this.menu= Menu.buildFromTemplate(template);
   Menu.setApplicationMenu(this.menu);
 
-  this.eventHandler= new EventHandler( this.mainWindow, [ { trig: 'Ctrl+Alt+D', func: 'toogleDebug', type:'e' },
-                                                          { trig: 'Ctrl+T',     func: 'panOrigin',   type:'e' } ] );
+  this.eventHandler= new EventHandler( this.mainWindow, [ { trig: 'Ctrl+Alt+D', func: 'toggleDebug', type:'e' },
+                                                          { trig: 'Ctrl+T',     func: 'panOrigin',   type:'e' },
+                                                          { trig: 'P', func: 'toolPlacePanel', type:'e'},
+                                                          { trig: 'Esc', func: 'resetTooltip', type:'e'},
+                                                         ] );
 
   this.terminate= function() {
     this.eventHandler.unbindAll();
