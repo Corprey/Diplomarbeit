@@ -34,13 +34,13 @@ function UserInterface() {
 
   //create toolbar menu elements and functionality
   this.uiToolbar= new Toolbar('toolbar-wrapper', [
-    {id: 0, name: "Zoom In",      iconType: 'fas', iconImg: 'fa-search-plus',   action:'ui.zoomIn();'},
-    {id: 1, name: "Zoom Out",     iconType: 'fas', iconImg: 'fa-search-minus',  action:'ui.zoomOut();'},
-    {id: 2, name: "Undo",         iconType: 'fas', iconImg: 'fa-undo',          action:'ui.uiEditor.actions.eventUndo();'},
-    {id: 3, name: "Redo",         iconType: 'fas', iconImg: 'fa-redo',          action:'ui.uiEditor.actions.eventRedo();'},
-    {id: 4, type: "radio", connections: [5,6], name: "Mouse Cursor", iconType: 'fas', iconImg: 'fa-mouse-pointer', action:'ui.uiEditor.actions.setToolTip();', defaultEnabled: true },
-    {id: 5, type: "radio", connections: [4,6], name: "Place Panel",  iconType: 'far', iconImg: 'fa-plus-square',   action:'ui.uiEditor.actions.setToolTip("panel-place");'},
-    {id: 6, type: "radio", connections: [4,5], name: "Paint",        iconType: 'fas', iconImg: 'fa-paint-brush',   action:'ui.uiEditor.actions.setToolTip();'},
+    {id: 0, name: "Zoom In",      iconType: 'fas', iconImg: 'fa-search-plus',   tooltipText:"Zoom In",  action:'ui.zoomIn();'},
+    {id: 1, name: "Zoom Out",     iconType: 'fas', iconImg: 'fa-search-minus',  tooltipText:"Zoom Out", action:'ui.zoomOut();'},
+    {id: 2, name: "Undo",         iconType: 'fas', iconImg: 'fa-undo',          tooltipText:"Undo",     action:'ui.uiEditor.actions.eventUndo();'},
+    {id: 3, name: "Redo",         iconType: 'fas', iconImg: 'fa-redo',          tooltipText:"Redo",     action:'ui.uiEditor.actions.eventRedo();'},
+    {id: 4, type: "radio", connections: [5,6], name: "Mouse Cursor", iconType: 'fas', iconImg: 'fa-mouse-pointer', tooltipText:'Standard Cursor',  action:'ui.uiEditor.actions.setToolTip();'},
+    {id: 5, type: "radio", connections: [4,6], name: "Place Panel",  iconType: 'far', iconImg: 'fa-plus-square',   tooltipText:'Place Panel',      action:'ui.uiEditor.actions.setToolTip("panel-place");'},
+    {id: 6, type: "radio", connections: [4,5], name: "Paint",        iconType: 'fas', iconImg: 'fa-paint-brush',   tooltipText:'Paint Tool',       action:'ui.uiEditor.actions.setToolTip();'},
 
 
   ]);
@@ -70,6 +70,29 @@ function UserInterface() {
     return Split( divs, config );
   }
 
+  this.addCloseX= function(divId, action) {
+
+    let element= document.getElementById(divId);
+
+    element.closeX= document.createElement("span");    // create button Icon element
+    element.closeX.classList.add("fas");               // set css class
+    element.closeX.classList.add("fa-times");          // set css class
+    element.closeX.classList.add("X");          // set css class
+    element.button= document.createElement("button");  //Create button element
+    element.button.appendChild( element.closeX );         // add menu icon
+    element.button.classList.add("close-X");           // add css classes to button
+    element.appendChild( element.button );
+
+
+
+    if( typeof action === 'string' ) {                          // evaluate function as handler if param is string
+      element.button.addEventListener("click", new Function( action ) );
+
+    } else {
+      element.button.addEventListener("click", action );           // set param as handler otherwise
+    }
+  }
+
 /**************************************************Constructor*******************************************************/
   // make Arrays constant
   this.sidebarWrappers= function() { return ['#sidebar-wrapper', '#editor-wrapper']; }
@@ -88,6 +111,12 @@ function UserInterface() {
     minSize: [200,1,1], //minimal height of element in px
     direction: 'vertical' //split orientation
   });
+
+  this.addCloseX('timeline-wrapper', 'ui.hideTimeline();');
+  this.addCloseX('console-wrapper', 'ui.hideConsole();');
+
+
+
 
 /********************************************************************************************************************/
   //Method functionality: set UI font size

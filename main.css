@@ -12,6 +12,12 @@
 	font-size: 110%;
 }
 
+.outerdiv{
+  height:102%; /*stretch content Div to full body*/
+  overflow:hidden;
+  display: block;
+}
+
 .UIIcon {
 
 }
@@ -24,6 +30,39 @@ html, body {
   margin: 0;
   padding: 0;
 
+
+}
+
+/********************************************************************************************************************/
+/*X to close Timeline and Console*/
+
+#timeline-wrapper {
+  position: relative; /*let X place at relative position*/
+  overflow: hidden; /*so X doesn't overflow*/
+}
+
+#console-wrapper {
+  position: relative; /*let X place at relative position*/
+}
+
+.X {
+  font-size: 10px; /*size of image*/
+  padding: 3px 5px; /*space between image and button-border*/
+}
+.close-X {
+  position: absolute;
+  text-align: center;
+  top: 3px;   /*Button space to top right border*/
+  right: 3px; /*Button space to top right border*/
+  padding: 0; /*image shall fill whole button*/
+  margin: 0;  /*image shall fill whole button*/
+  background-color: #282c34; /*less dark Gray background */
+  color: Gray;
+  border: none; /* Remove borders */
+  outline:0;  /*no automatic border*/
+}
+.close-X:hover{
+  background-color: #131416; /*less dark Gray background */
 
 }
 /********************************************************************************************************************/
@@ -320,3 +359,34 @@ input[type="number"].ui-colorpicker-box::-webkit-outer-spin-button
 }
 
 /********************************************************************************************************************/
+
+.tooltip {
+    position: relative;
+}
+
+.tooltip .tooltipText {
+    visibility: hidden;
+    white-space: pre;
+    background-color: #131416;
+    color: #abb2bf;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+
+    /* Position the tooltip */
+    position: absolute;
+    z-index: 1; /*overlay*/
+    bottom: 0px;
+    left:100%;
+    margin-left: 5px;
+
+    /* Fade in tooltip - takes 1 second to go from 0% to 100% opac: */
+   opacity: 0;
+   transition: opacity 1s;
+   transition-delay: 1s;
+}
+
+.tooltip:hover .tooltipText {
+    visibility: visible;
+    opacity: 1;
+}

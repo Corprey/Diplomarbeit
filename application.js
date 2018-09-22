@@ -92,10 +92,13 @@ function Application() {
       ]
     },
     {
-      label: 'Edit',
+      label: 'Editor',
       submenu: [
-        {label: 'undo', accelerator: 'Ctrl+Z', click() { self.editorCommand("undo"); }},
-        {label: 'redo', accelerator: 'Ctrl+Y', click() { self.editorCommand("redo"); }},
+        {label: 'Undo', accelerator: 'Ctrl+Z', click() { self.editorCommand("undo"); }},
+        {label: 'Redo', accelerator: 'Ctrl+Y', click() { self.editorCommand("redo"); }},
+        {type: 'separator'},
+        {label: 'Jump to Origin', accelerator: 'Ctrl+T', click() { self.editorCommand("panOrigin"); }},
+        {label: 'Debug Screen', accelerator: 'Ctrl+Alt+D', click() { self.editorCommand("toggleDebug"); }},
         {type: 'separator'},
         {role: 'cut'},
         {role: 'copy'},
@@ -143,11 +146,9 @@ function Application() {
   this.menu= Menu.buildFromTemplate(template);
   Menu.setApplicationMenu(this.menu);
 
-  this.eventHandler= new EventHandler( this.mainWindow, [ { trig: 'Ctrl+Alt+D', func: 'toggleDebug', type:'e' },
-                                                          { trig: 'Ctrl+T',     func: 'panOrigin',   type:'e' },
-                                                          { trig: 'Ctrl+A',     func: 'select-all',  type:'e' },
-                                                          { trig: 'P', func: 'toolPlacePanel', type:'e'},
+  this.eventHandler= new EventHandler( this.mainWindow, [ { trig: 'P', func: 'toolPlacePanel', type:'e'},
                                                           { trig: 'Esc', func: 'resetTooltip', type:'e'},
+                                                          { trig: 'Ctrl+A',     func: 'select-all',  type:'e' },
                                                          ] );
 
   this.terminate= function() {
