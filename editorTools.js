@@ -107,8 +107,10 @@ function PanelMoveTip() {
 
   this.prevMouseGridPos= null;
   this.beginPos= null;
+  this.clickPanel= null;
 
   this.actv= function( ast, p ) {
+    this.clickPanel= p;
     let origPos= p.position;
 
     this.prevMouseGridPos= ast.editor.grid.mouseMapPos.copy();            // get initial mouse value
@@ -131,7 +133,7 @@ function PanelMoveTip() {
   }
 
   this.release= function( ast ) {
-    let vec= this.beginPos.mult(-1).add( ast.editor.map.selection.selection[0].position );  // create new vector storing the position difference
+    let vec= this.beginPos.mult(-1).add( this.clickPanel.position );  // create new vector storing the position difference
     let ids= ast.editor.map.selection.getIds();   // only save ids instead of pointers, to allow removed panels to be garbage collected
 
     // only save as an action if somethin actually moved
@@ -141,7 +143,6 @@ function PanelMoveTip() {
 
     ast.setToolTip( 'cursor-tip' );   // go back to simple cursor
     ast.editor.allowGridCursor= true;
-    console.log( 'back' );
   }
 
   // Move panels backwards

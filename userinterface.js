@@ -32,7 +32,7 @@ function UserInterface() {
   this.uiEditor= new Editor( this.interface, { ankorName: 'editor', backColor: '#282c34',
                                compColor: 'white', gridColor: '#abb2bf', friendlyErrors: true } );
 
-  //
+  //create toolbar menu elements and functionality
   this.uiToolbar= new Toolbar('toolbar-wrapper', [
     {id: 0, name: "Zoom In",      iconType: 'fas', iconImg: 'fa-search-plus',   action:'ui.zoomIn();'},
     {id: 1, name: "Zoom Out",     iconType: 'fas', iconImg: 'fa-search-minus',  action:'ui.zoomOut();'},
