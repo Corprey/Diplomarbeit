@@ -7,7 +7,7 @@ const Common= require('./common.js');
 function ToolbarIcon(cnf) {
 
   let config= new Common.DefaultConfig( cnf,
-                                        { name: "tool", iconType: 'fas', iconImg: 'fa-search-plus', action: function(){ console.log('Unassigned'); }, id: 0 },
+                                        { name: "tool", iconType: 'fas', iconImg: 'fa-search-plus', tooltipText:"undefined", action: function(){ console.log('Unassigned'); }, id: 0 },
                                         function( prop, val ) {
                                           console.error("Error in ToolbarIcon Class Constructor: Missing configuration argument: "+ prop+
                                                         "\nSetting default value: "+ val );
@@ -18,14 +18,22 @@ function ToolbarIcon(cnf) {
   this.iconImg= config.iconImg;
   this.action= config.action;
   this.id= config.id;
+  this.tooltipText= config.tooltipText;
 
   this.toolIcon= document.createElement("span");    // create button Icon element
   this.toolIcon.classList.add(this.iconType);       // set css class
   this.toolIcon.classList.add(this.iconImg);        // set css class
 
+  this.tooltip= document.createElement("span");
+  this.tooltip.classList.add("tooltipText");
+  this.tooltip.innerHTML = this.tooltipText;
+
+
+
   this.button= document.createElement("button");    //Create button element
   this.button.appendChild( this.toolIcon );         // add menu icon
-  this.button.classList.add("tool");                // add css classes to button
+  this.button.appendChild( this.tooltip );          // add tooltip
+  this.button.classList.add("tool","tooltip");      // add css classes to button
 
   this.addEvent( this.action );                     //add event listener to button
 }
