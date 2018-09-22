@@ -38,9 +38,9 @@ function UserInterface() {
     {id: 1, name: "Zoom Out",     iconType: 'fas', iconImg: 'fa-search-minus',  action:'ui.zoomOut();'},
     {id: 2, name: "Undo",         iconType: 'fas', iconImg: 'fa-undo',          action:'ui.uiEditor.actions.eventUndo();'},
     {id: 3, name: "Redo",         iconType: 'fas', iconImg: 'fa-redo',          action:'ui.uiEditor.actions.eventRedo();'},
-    {id: 4, type:"radio", connections: [5,6], name: "Mouse Cursor", iconType: 'fas', iconImg: 'fa-mouse-pointer', action:'ui.uiEditor.actions.setToolTip();'},
-    {id: 5, type:"radio", connections: [4,6], name: "Place Panel",  iconType: 'far', iconImg: 'fa-plus-square',   action:'ui.uiEditor.actions.setToolTip("panel-place");'},
-    {id: 6, type:"radio", connections: [4,5], name: "Paint",        iconType: 'fas', iconImg: 'fa-paint-brush',   action:'ui.uiEditor.actions.setToolTip();'},
+    {id: 4, type: "radio", connections: [5,6], name: "Mouse Cursor", iconType: 'fas', iconImg: 'fa-mouse-pointer', action:'ui.uiEditor.actions.setToolTip();', defaultEnabled: true },
+    {id: 5, type: "radio", connections: [4,6], name: "Place Panel",  iconType: 'far', iconImg: 'fa-plus-square',   action:'ui.uiEditor.actions.setToolTip("panel-place");'},
+    {id: 6, type: "radio", connections: [4,5], name: "Paint",        iconType: 'fas', iconImg: 'fa-paint-brush',   action:'ui.uiEditor.actions.setToolTip();'},
 
 
   ]);

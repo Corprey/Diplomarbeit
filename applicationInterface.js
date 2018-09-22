@@ -51,20 +51,21 @@ function AppInterface( ui ) {
 
       case 'toolPlacePanel':
         this.userInterface.uiEditor.actions.setToolTip('panel-place');
-        //deactivate other Radiobuttons
-        this.userInterface.uiToolbar.getById(5).update();
+        this.userInterface.uiToolbar.getById(5).update();           //deactivate other Radiobuttons
         break;
 
       case 'toolPaint':
         this.userInterface.uiEditor.actions.setToolTip();
-        //deactivate other Radiobuttons
-        this.userInterface.uiToolbar.getById(6).update();
+        this.userInterface.uiToolbar.getById(6).update();           //deactivate other Radiobuttons
         break;
 
       case 'resetTooltip':
         this.userInterface.uiEditor.actions.setToolTip();
-        //deactivate other Radiobuttons
-        this.userInterface.uiToolbar.getById(4).update();
+        this.userInterface.uiToolbar.getById(4).update();           //deactivate other Radiobuttons
+        break;
+
+      case 'select-all':
+        this.userInterface.uiEditor.map.selection.fromAll();
         break;
     }
   }

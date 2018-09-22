@@ -2,6 +2,8 @@
 const p5Module= require('p5');
 const Common = require('./common.js');
 const Render = require('./frameRenderer.js');
+
+
 const Tools  = require('./editorTools.js');
 const {AnimationFile} = require('./applicationInterface.js');
 
@@ -328,6 +330,20 @@ function PanelSelection( e, m ) {
     for( let i= 0; i!= ids.length; i++ ) {
       let p= this.editor.map.get( ids[i] ); // iterate through all ids and add panels
       if( p !== null ) {
+        this.selection.push( p );
+        p.select();
+      }
+    }
+  }
+
+  // Select everything on the map
+  this.fromAll= function() {
+    this.flush();                 // remove current selection
+
+    let arr= this.editor.map.panels;
+    for( let i= 0; i!= arr.length; i++ ) {  // iterate through all panels on the map
+      let p= arr[i];
+      if( p !== null ) {                    // add panel if it exists on the map
         this.selection.push( p );
         p.select();
       }

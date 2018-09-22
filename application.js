@@ -145,6 +145,7 @@ function Application() {
 
   this.eventHandler= new EventHandler( this.mainWindow, [ { trig: 'Ctrl+Alt+D', func: 'toggleDebug', type:'e' },
                                                           { trig: 'Ctrl+T',     func: 'panOrigin',   type:'e' },
+                                                          { trig: 'Ctrl+A',     func: 'select-all',  type:'e' },
                                                           { trig: 'P', func: 'toolPlacePanel', type:'e'},
                                                           { trig: 'Esc', func: 'resetTooltip', type:'e'},
                                                          ] );
