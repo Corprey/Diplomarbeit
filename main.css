@@ -370,6 +370,7 @@ input[type="number"].ui-colorpicker-box::-webkit-outer-spin-button
     background-color: #131416;
     color: #abb2bf;
     text-align: center;
+    font-size: 80%;
     border-radius: 6px;
     padding: 5px 0;
 
@@ -383,7 +384,7 @@ input[type="number"].ui-colorpicker-box::-webkit-outer-spin-button
     /* Fade in tooltip - takes 1 second to go from 0% to 100% opac: */
    opacity: 0;
    transition: opacity 1s;
-   transition-delay: 1s;
+   transition-delay: 0.2s;
 }
 
 .tooltip:hover .tooltipText {

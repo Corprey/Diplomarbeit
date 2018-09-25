@@ -34,13 +34,13 @@ function UserInterface() {
 
   //create toolbar menu elements and functionality
   this.uiToolbar= new Toolbar('toolbar-wrapper', [
-    {id: 0, name: "Zoom In",      iconType: 'fas', iconImg: 'fa-search-plus',   tooltipText:"Zoom In",  action:'ui.zoomIn();'},
-    {id: 1, name: "Zoom Out",     iconType: 'fas', iconImg: 'fa-search-minus',  tooltipText:"Zoom Out", action:'ui.zoomOut();'},
-    {id: 2, name: "Undo",         iconType: 'fas', iconImg: 'fa-undo',          tooltipText:"Undo",     action:'ui.uiEditor.actions.eventUndo();'},
-    {id: 3, name: "Redo",         iconType: 'fas', iconImg: 'fa-redo',          tooltipText:"Redo",     action:'ui.uiEditor.actions.eventRedo();'},
-    {id: 4, type: "radio", connections: [5,6], name: "Mouse Cursor", iconType: 'fas', iconImg: 'fa-mouse-pointer', tooltipText:'Standard Cursor',  action:'ui.uiEditor.actions.setToolTip();', defaultEnabled: true },
-    {id: 5, type: "radio", connections: [4,6], name: "Place Panel",  iconType: 'far', iconImg: 'fa-plus-square',   tooltipText:'Place Panel',      action:'ui.uiEditor.actions.setToolTip("panel-place");'},
-    {id: 6, type: "radio", connections: [4,5], name: "Paint",        iconType: 'fas', iconImg: 'fa-paint-brush',   tooltipText:'Paint Tool',       action:'ui.uiEditor.actions.setToolTip();'},
+    {id: 0, name: "Zoom In",      iconType: 'fas', iconImg: 'fa-search-plus',   tooltipText:"  Zoom In  ",  action:'ui.zoomIn();'},
+    {id: 1, name: "Zoom Out",     iconType: 'fas', iconImg: 'fa-search-minus',  tooltipText:"  Zoom Out  ", action:'ui.zoomOut();'},
+    {id: 2, name: "Undo",         iconType: 'fas', iconImg: 'fa-undo',          tooltipText:"  Undo  ",     action:'ui.uiEditor.actions.eventUndo();'},
+    {id: 3, name: "Redo",         iconType: 'fas', iconImg: 'fa-redo',          tooltipText:"  Redo  ",     action:'ui.uiEditor.actions.eventRedo();'},
+    {id: 4, type: "radio", connections: [5,6], name: "Mouse Cursor", iconType: 'fas', iconImg: 'fa-mouse-pointer', tooltipText:'  Standard Cursor  ',  action:'ui.uiEditor.actions.setToolTip();', defaultEnabled: true },
+    {id: 5, type: "radio", connections: [4,6], name: "Place Panel",  iconType: 'far', iconImg: 'fa-plus-square',   tooltipText:'  Place Panel  ',      action:'ui.uiEditor.actions.setToolTip("panel-place");'},
+    {id: 6, type: "radio", connections: [4,5], name: "Paint",        iconType: 'fas', iconImg: 'fa-paint-brush',   tooltipText:'  Paint Tool  ',       action:'ui.uiEditor.actions.setToolTip();'},
 
 
   ]);
@@ -91,6 +91,8 @@ function UserInterface() {
     } else {
       element.button.addEventListener("click", action );           // set param as handler otherwise
     }
+    let self= this;
+    element.button.addEventListener("click", function() { self.uiEditor.updateCanvas(); } );
   }
 
 /**************************************************Constructor*******************************************************/
