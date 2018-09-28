@@ -319,8 +319,16 @@ input[type="number"].ui-colorpicker-box::-webkit-outer-spin-button
 #toolbar-wrapper {
   background-color: #21252b;
   border-bottom: solid black 1px;
-  height: 60px;
+  max-height: 60px;
+
+
+}
+#tools-wrapper{
   overflow: hidden;
+  max-height: 60px;
+  max-width: 50%;
+  display: inline;
+  margin: 0px;
 }
 
 .tool {
@@ -390,4 +398,46 @@ input[type="number"].ui-colorpicker-box::-webkit-outer-spin-button
 .tooltip:hover .tooltipText {
     visibility: visible;
     opacity: 1;
+}
+
+/********************************************************************************************************************/
+
+.ToolbarStatus-wrapper{
+  width:200px;
+  float:right;
+  margin: 18px;
+  display: inline;
+  overflow: visible;
+
+}
+.gridFieldDiv{
+  float: right;
+}
+.positionFieldDiv{
+  float: right;
+}
+
+.toolbarDropdown {
+    position: relative;
+    float:right;
+    display: inline-block;
+    margin: auto;
+}
+
+.toolbarDropdown-content {
+    display: none;
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    z-index: 99;
+    background-color: #f9f9f9;
+    min-width: 16px;
+
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    padding: 12px 16px;
+    z-index: 1;
+}
+
+.toolbarDropdown:hover .toolbarDropdown-content {
+    display: block;
 }

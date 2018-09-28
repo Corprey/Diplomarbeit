@@ -2,8 +2,6 @@
 const p5Module= require('p5');
 const Common = require('./common.js');
 const Render = require('./frameRenderer.js');
-
-
 const Tools  = require('./editorTools.js');
 const {AnimationFile} = require('./applicationInterface.js');
 
@@ -89,7 +87,7 @@ function DebugScreen( e, spd, col ) {
       this.scale= this.editor.scale;
       this.position= this.editor.positionOffset.copy();
       this.mousePosition= crTruncVector( this.editor.p5.mouseX, this.editor.p5.mouseY );
-      this.mouseGridPosition= crTruncVector( this.editor.grid.mousePixelPos.x, this.editor.grid.mousePixelPos.y );
+      this.mouseGridPosition= crTruncVector( this.editor.grid.mouseMapPos.x, this.editor.grid.mouseMapPos.y );
       this.canvasSize= new p5Module.Vector( this.editor.canvasWidth, this.editor.canvasHeight );
     }
   }
@@ -114,19 +112,51 @@ function DebugScreen( e, spd, col ) {
   }
 }
 
+/*
+* Convert distances with unit to map pixel values
+*
+*/
+function UnitConversion() {
+  this.names= {
+    mm: 50/240,
+    cm: 50/24,
+    m:50/0.24,
+    mil: 50/9448.82,
+    in: 50/9.44882,
+    ft:50/0.78740167
+  };
+
+  this.unit= 'cm';
+
+  this.mkFromText= function( v, u ) {
+    if( this.names.hasOwnProperty(u) === false ) {
+      this.unit= Object.keys(this.names)[1];
+    } else {
+      this.unit= u;
+    }
+
+    return v* this.factor();
+  }
+
+  this.factor= function() {
+    return this.names[ this.unit ];
+  }
+}
 
 /*
 *   Grid Class doing all needed grid calculations
 *   and redering the grid to the screen
 */
 
-function Grid( e, gridcol ) {
+function Grid( e, gridcol, mouseCb ) {
   this.editor= e;
   this.enable= true;
   this.resolution= 50;
   this.color= gridcol;
   this.mouseMapPos= null;
   this.mousePixelPos= null;
+  this.conversion= new UnitConversion();
+  this.mouseCallback= mouseCb;
 
   this.updateMousePosition= function() {
     let p5= this.editor.p5;
@@ -138,6 +168,10 @@ function Grid( e, gridcol ) {
     this.mouseMapPos= ( this.mousePixelPos !== null ) ? roundVector( this.mousePixelPos.set( mouse ).div( this.editor.scale ) )
                                                       : roundVector( p5.createVector( mouse ).div( this.editor.scale )        );
     this.mousePixelPos= mouse;  // save new mousePixelPos
+
+    // Update toolbar mouse position
+    let fc= this.conversion.factor();
+    this.mouseCallback( Math.round(this.mouseMapPos.x / fc), Math.round( this.mouseMapPos.y / fc ), this.conversion.unit );
   }
 
   // Replaces the position in the provided vector with the nearest grid snapping position
@@ -192,6 +226,10 @@ function Grid( e, gridcol ) {
     }
   }
 
+  // Set grid width
+  this.setGridWithUnit= function( v, u ) {
+    this.resolution= this.conversion.mkFromText( v, u );
+  }
 
 }
 
@@ -330,20 +368,6 @@ function PanelSelection( e, m ) {
     for( let i= 0; i!= ids.length; i++ ) {
       let p= this.editor.map.get( ids[i] ); // iterate through all ids and add panels
       if( p !== null ) {
-        this.selection.push( p );
-        p.select();
-      }
-    }
-  }
-
-  // Select everything on the map
-  this.fromAll= function() {
-    this.flush();                 // remove current selection
-
-    let arr= this.editor.map.panels;
-    for( let i= 0; i!= arr.length; i++ ) {  // iterate through all panels on the map
-      let p= arr[i];
-      if( p !== null ) {                    // add panel if it exists on the map
         this.selection.push( p );
         p.select();
       }
@@ -849,10 +873,16 @@ function Editor( i, cnf ) {
     this.anmFile= null;
   }
 
+  // Set grid resolution
+  this.setGridResolution= function( v, u ) {
+    this.grid.setGridWithUnit( v, u );
+  }
+
   /* Constructor */
   this.appInterface= i;
   this.config= new Common.DefaultConfig(  cnf,
-                                          { ankorName: null, backColor: 'white', compColor: 'black', gridColor: 'red', friendlyErrors: false, showCursor: true },
+                                          { ankorName: null, backColor: 'white', compColor: 'black', gridColor: 'red', friendlyErrors: false, showCursor: true,
+                                            mouseCb: function(){} },
                                           function( prop, val, fatal ) {
                                             if( fatal === true ) {
                                               throw new Error("Editor Constructor Configuration misses property: "+ prop );
@@ -866,7 +896,7 @@ function Editor( i, cnf ) {
   this.scale= 1;
 
   this.debugScreen= null;
-  this.grid= new Grid( this, this.config.gridColor );
+  this.grid= new Grid( this, this.config.gridColor, this.config.mouseCb );
   this.map= new EditorMap( this );
   this.actions= new ActionStack( this );
 

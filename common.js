@@ -102,6 +102,20 @@ function unpackBuffer(str) {
 }
 
 
+function Builder( anker, ids, html ) {
+
+  anker.innerHTML += html;
+
+  let elm= {};
+
+  for(let i= 0; i!= ids.length; i++ ) {
+    elm[ ids[i] ]= document.getElementById( ids[i] );
+  }
+
+  return elm;
+}
+
+
 /* Hack to make script file loadable via 'importScripts' in a Web-Worker */
 if( typeof WorkerGlobalScope !== 'undefined') {
     this.module= {};
@@ -116,3 +130,4 @@ module.exports.SimpleSet= SimpleSet;
 module.exports.ObjPipe= ObjPipe;
 module.exports.packBuffer= packBuffer;
 module.exports.unpackBuffer= unpackBuffer;
+module.exports.Builder= Builder;

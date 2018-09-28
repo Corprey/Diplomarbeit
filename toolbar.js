@@ -112,6 +112,40 @@ RadioButton.prototype.hasId = function( x ) {
 }
 
 
+function ToolbarStatus(anker) {
+
+  this.anker= anker;
+  const self= this;
+  // Create HTML for Toolbar Status
+  this.elements= Common.Builder( this.anker, ["x", "y", "unitx", "unity", "gridsize", "b0","b1","b2","b3","b4"],
+  '<div class= "ToolbarStatus-wrapper" >'+
+    '<div class= "toolbarDropdown" >' +
+        '<img src= "icons/menu-arrow.svg" width= "12px" height= "12px"> ' +
+        '<div class="toolbarDropdown-content"> '+
+            '<button id= "b0"> 10in </button>' +
+            '<button id= "b1"> 1ft </button>' +
+            '<button id= "b2"> 24cm </button>' +
+            '<button id= "b3"> 50cm </button>' +
+            '<button id= "b4"> 1cm </button>' +
+        '</div>'+
+    '</div>' +
+    '<div class= "gridFieldDiv" > <button> Grid: <span id= "gridsize"> </span> </button> </div>' +
+    '<div class= "positionFieldDiv" >  Pos: <span id= "x" ></span> <span id= "unitx" ></span>  | <span id= "y" ></span> <span id= "unity" ></span> </div> ' +
+  '</div>');
+
+  this.elements.b0.addEventListener( 'click', function()  { ui.uiEditor.setGridResolution( 10, 'in' );} );
+
+
+  this.setMousePosition= function( x, y, u ) {
+    this.elements.x.innerHTML= x;
+    this.elements.y.innerHTML= y;
+    this.elements.unitx.innerHTML= u;
+    this.elements.unity.innerHTML= u;
+  }
+}
+
+
+
 
 /*
 * Toolbar Class holding all buttons
@@ -152,6 +186,7 @@ function Toolbar(name, arr) {
   for( let i= 0; i!= arr.length; i++ ) {
     this.createToolbarIcon( arr[i] );
   }
+  this.status= new ToolbarStatus(this.anker);
 }
 
 module.exports.Toolbar= Toolbar;

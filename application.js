@@ -3,6 +3,7 @@ const {app, BrowserWindow, remote, ipcMain, Menu} = electron;
 const localShortcut= require('electron-localshortcut');
 const storage = require("electron-json-storage");
 const {FileLoader}= require("./fileLoader.js");
+const os= require("os");
 
 function Project( path ) {
 
@@ -31,6 +32,75 @@ function Project( path ) {
           this.printUIConsole( "Could not save file:  " + this.fileName , 'err' );
         }
       });
+  }
+}
+
+
+const defaultFile= {
+  recentlyOpened: [],
+  consoleOpen: true,
+  timelineOpen: true,
+  sideBarMenuWidth: 12,
+  consoleHeight: 12.5,
+  timelineHeight: 12.5,
+  editor: {
+  //  editorScale:
+  //  editorPosition:
+  //  editorGrid:
+  // imperialUnits:
+  }
+
+};
+
+function Settings( cb ) {
+
+  this.settings= null;
+  this.path= os.tmpdir() + "/module-explorer";
+
+  storage.setDataPath( this.path );
+
+  storage.has( 'panel-explorer.json', function(error, hasKey) {
+    if ( error ) {
+      this.printUIConsole("Cannot access filesystem.", 'err' );
+      throw Error( "Cannot access filesystem." );
+    }
+
+    if ( hasKey ) {
+      storage.get( 'panel-explorer.json', function( error, data ) {
+        if( error ) {
+          this.printUIConsole("Cannot load settings file.", 'err' );
+          throw Error( "Cannot load settings file. " );
+        }
+
+        this.settings= data;
+
+        cb();
+      } );
+
+    } else {
+      storage.set( 'panel-explorer.json', defaultFile, function( error ) {
+          if( error ) {
+            this.printUIConsole("Cannot create default settings file.", 'err' );
+            throw Error( "Cannot create default settings file." );
+          }
+
+          this.settings= defaultFile;
+
+          cb();
+      } );
+    }
+  } );
+
+/********************************************************************************************************************/
+
+  this.saveToDisk= function() {
+      storage.setDataPath( this.path );
+
+      storage.set( 'panel-explorer.json', this.settings, function(error) {
+        if(error) {
+          this.printUIConsole( "Could not save settings file" , 'err' );
+        }
+      } );
   }
 }
 
@@ -75,16 +145,24 @@ function Application() {
   this.fileLoader= null;
 
   this.mainWindow= new BrowserWindow();
-  this.mainWindow.maximize();
-  this.mainWindow.loadURL(`file://${__dirname}/index.html`);
+  this.settings= new Settings( function() {
+    self.mainWindow.maximize();
+    self.mainWindow.loadURL(`file://${__dirname}/index.html`);
+   } );
+
   this.menu= null;
 
   const template = [
     {
       label:'File',
       submenu: [
-        {label:'New File'},
         {label:'New Project'},
+        {label:'Load Project'},
+        {label:'Recent Opened...',
+          submenu: [
+            {label: 'startspeaking'},
+            {label: 'stopspeaking'}
+          ]},
         {type: 'separator'},
         {label:'Save'},
         {label:'Save As...'},

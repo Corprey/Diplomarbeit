@@ -11,6 +11,9 @@ const Split= require('split.js');
 
 
 function UserInterface() {
+
+  const self= this;
+
   //set scale for font size to standard(1)
   this.fontScale= 1;
 
@@ -30,10 +33,11 @@ function UserInterface() {
 
   //set up editor functionality
   this.uiEditor= new Editor( this.interface, { ankorName: 'editor', backColor: '#282c34',
-                               compColor: 'white', gridColor: '#abb2bf', friendlyErrors: true } );
+                               compColor: 'white', gridColor: '#abb2bf', friendlyErrors: true,
+                               mouseCb: function(x,y,u){ self.uiToolbar.status.setMousePosition(x,y,u); } } );
 
   //create toolbar menu elements and functionality
-  this.uiToolbar= new Toolbar('toolbar-wrapper', [
+  this.uiToolbar= new Toolbar('tools-wrapper', [
     {id: 0, name: "Zoom In",      iconType: 'fas', iconImg: 'fa-search-plus',   tooltipText:"  Zoom In  ",  action:'ui.zoomIn();'},
     {id: 1, name: "Zoom Out",     iconType: 'fas', iconImg: 'fa-search-minus',  tooltipText:"  Zoom Out  ", action:'ui.zoomOut();'},
     {id: 2, name: "Undo",         iconType: 'fas', iconImg: 'fa-undo',          tooltipText:"  Undo  ",     action:'ui.uiEditor.actions.eventUndo();'},
