@@ -134,9 +134,103 @@ function EventHandler( w, sarr ) {
 
 }
 
+  /*******************************************************************************************************/
+
+function WindowStack( app ) {
+
+  this.createWindow= function( w, h, t, html, isUrl = false ) {
+    let p = this.windows.length > 0 ? this.windows[this.windows.length-1] : this.app.mainWindow;
+
+    console.log( "Creating window: "+ w, h, t, html );
+
+    let win= new BrowserWindow( { parent: p, center: true, width: w, height: h,
+                                       useContentSize: true, resizeable: true, alwaysOnTop: true,
+                                       title: t, autoHideMenuBar: "true" }  );
+    this.windows.push( win );
+
+    //win.setMenu(null);
+    //win.setResizable(false);
+
+    if( isUrl === true ) {
+      console.log( "Loading Url: "+ html );
+      win.loadURL( `file://${__dirname}/${html}`);
+    } else {
+      win.loadURL("data:text/html;charset=utf-8," + encodeURI(html));
+    }
+
+    const self= this;
+    win.on('close', function() { self.closeWindow( false ); } );
+  }
+
+  this.closeWindow= function( closeWin= true ) {
+    let len= this.windows.length;
+
+    if( len > 0 ) {
+      this.sendParentEvent( 'child-closed', {} );
+
+      let win= this.windows[ len -1 ];
+
+      if( closeWin === true ) {
+        win.close();
+      }
+
+      this.windows.length -= 1;
+    }
+  }
+
+  this.sendEvent= function( name, ev, id ) {
+    if( typeof id === 'undefined' ) {
+       id= this.windows.length-1;
+    }
+
+    let len= this.windows.length;
+    if( (len > id) && (id >= 0) ) {
+      this.windows[ id ].webContents.send( name, ev );
+    }
+  }
+
+  this.sendParentEvent= function( name, ev ) {
+    let len= this.windows.length;
+
+    // check if last msg box
+    if( len > 1 ) {
+      this.sendEvent( name, ev, len-2 );  // send to parent msg box
+    } else {
+      this.app.sendEvent( name, ev );   // send to main window
+    }
+  }
 
 
+  this.windows= [];
+  this.app= app;
 
+  const self = this;
+  ipcMain.on( 'msgbox-event', function( event, ev ) {
+
+    let len= self.windows.length;
+
+    switch( ev.type ) {
+      case 'close':
+        self.closeWindow();
+        break;
+
+      case 'submit':
+        self.sendParentEvent( 'child-submit', ev );
+        break;
+
+      case 'openMsg':
+        self.createWindow( ev.width, ev.height, ev.title, ev.html, ev.isUrl );
+        ev.id= self.windows.lenght -1;
+        console.log( "Sending init event. " );
+        self.sendEvent( 'init', ev );
+        break;
+    }
+
+   });
+
+}
+
+  /*******************************************************************************************************/
 
 function Application() {
 
@@ -149,6 +243,8 @@ function Application() {
     self.mainWindow.maximize();
     self.mainWindow.loadURL(`file://${__dirname}/index.html`);
    } );
+
+   this.winStack= new WindowStack( this );
 
   this.menu= null;
 

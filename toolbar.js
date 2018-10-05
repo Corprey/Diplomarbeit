@@ -112,35 +112,43 @@ RadioButton.prototype.hasId = function( x ) {
 }
 
 
-function ToolbarStatus(anker) {
+function ToolbarStatus() {
 
-  this.anker= anker;
+  this.anker= document.getElementById("ToolbarStatus-wrapper");
   const self= this;
   // Create HTML for Toolbar Status
   this.elements= Common.Builder( this.anker, ["x", "y", "unitx", "unity", "gridsize", "b0","b1","b2","b3","b4"],
-  '<div class= "ToolbarStatus-wrapper" >'+
+
     '<div class= "toolbarDropdown" >' +
         '<img src= "icons/menu-arrow.svg" width= "12px" height= "12px"> ' +
         '<div class="toolbarDropdown-content"> '+
-            '<button id= "b0"> 10in </button>' +
-            '<button id= "b1"> 1ft </button>' +
-            '<button id= "b2"> 24cm </button>' +
-            '<button id= "b3"> 50cm </button>' +
-            '<button id= "b4"> 1cm </button>' +
+            '<button id= "b0" class= "gridDropdownButton UIScale"> 10in </button>' +
+            '<button id= "b1" class= "gridDropdownButton UIScale"> 1ft </button>' +
+            '<button id= "b2" class= "gridDropdownButton UIScale"> 1cm </button>' +
+            '<button id= "b3" class= "gridDropdownButton UIScale"> 24cm </button>' +
+            '<button id= "b4" class= "gridDropdownButton UIScale"> 50cm </button>' +
         '</div>'+
     '</div>' +
-    '<div class= "gridFieldDiv" > <button> Grid: <span id= "gridsize"> </span> </button> </div>' +
-    '<div class= "positionFieldDiv" >  Pos: <span id= "x" ></span> <span id= "unitx" ></span>  | <span id= "y" ></span> <span id= "unity" ></span> </div> ' +
-  '</div>');
+    '<div class= "gridFieldDiv" > <button id= "gridButton" class= "UIScale"> Grid: <span id= "gridsize"> </span> </button> </div>' +
+    '<div class= "positionFieldDiv" >  Pos: <span id= "x" ></span> <span id= "unitx" ></span>  | <span id= "y" ></span> <span id= "unity" ></span> </div> '
+);
 
-  this.elements.b0.addEventListener( 'click', function()  { ui.uiEditor.setGridResolution( 10, 'in' );} );
+  this.elements.b0.addEventListener( 'click', function()  { ui.uiEditor.setGridResolution( 10,  'in' );} );
+  this.elements.b1.addEventListener( 'click', function()  { ui.uiEditor.setGridResolution( 1,   'ft' );} );
+  this.elements.b2.addEventListener( 'click', function()  { ui.uiEditor.setGridResolution( 1,   'cm' );} );
+  this.elements.b3.addEventListener( 'click', function()  { ui.uiEditor.setGridResolution( 24,  'cm' );} );
+  this.elements.b4.addEventListener( 'click', function()  { ui.uiEditor.setGridResolution( 50,  'cm' );} );
 
 
-  this.setMousePosition= function( x, y, u ) {
+ this.setMousePosition= function( x, y, u ) {
     this.elements.x.innerHTML= x;
     this.elements.y.innerHTML= y;
     this.elements.unitx.innerHTML= u;
     this.elements.unity.innerHTML= u;
+  }
+
+  this.setGridSize= function( g, u ) {
+    this.elements.gridsize.innerHTML = "" + g+ " "+ u;
   }
 }
 
@@ -150,7 +158,7 @@ function ToolbarStatus(anker) {
 /*
 * Toolbar Class holding all buttons
 */
-function Toolbar(name, arr) {
+function Toolbar(name, arr ) {
 
   this.createToolbarIcon= function(cnf) {
     let t;
@@ -186,7 +194,8 @@ function Toolbar(name, arr) {
   for( let i= 0; i!= arr.length; i++ ) {
     this.createToolbarIcon( arr[i] );
   }
-  this.status= new ToolbarStatus(this.anker);
+
+  this.status= new ToolbarStatus();
 }
 
 module.exports.Toolbar= Toolbar;

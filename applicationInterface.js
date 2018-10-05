@@ -141,6 +141,13 @@ function AppInterface( ui ) {
   }
 
 
+  this.createMessageBox= function( ev ) {
+    ev.type= 'openMsg';
+
+    ipcRenderer.send( 'msgbox-event', ev );
+  }
+
+
 
   /* ipc Receivers */
   ipcRenderer.on( 'ui-console', function( event, type, text ) {
@@ -170,6 +177,14 @@ function AppInterface( ui ) {
 
   ipcRenderer.on( 'floader-error', function( event, cnf ) {
     self.subEvent('floader-error', event, cnf );
+  });
+
+  ipcRenderer.on( 'child-closed', function( event ) {
+    self.userInterface.uiEditor.actions.eventChildClosed();
+  });
+
+  ipcRenderer.on( 'child-submit', function( event, cnf ) {
+    self.userInterface.uiEditor.actions.eventChildSubmit( cnf );
   });
 
 

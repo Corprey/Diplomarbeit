@@ -148,7 +148,7 @@ function UnitConversion() {
 *   and redering the grid to the screen
 */
 
-function Grid( e, gridcol, mouseCb ) {
+function Grid( e, gridcol, mouseCb, gridCb ) {
   this.editor= e;
   this.enable= true;
   this.resolution= 50;
@@ -157,6 +157,7 @@ function Grid( e, gridcol, mouseCb ) {
   this.mousePixelPos= null;
   this.conversion= new UnitConversion();
   this.mouseCallback= mouseCb;
+  this.gridCallback= gridCb;
 
   this.updateMousePosition= function() {
     let p5= this.editor.p5;
@@ -229,6 +230,7 @@ function Grid( e, gridcol, mouseCb ) {
   // Set grid width
   this.setGridWithUnit= function( v, u ) {
     this.resolution= this.conversion.mkFromText( v, u );
+    this.gridCallback( v, u );
   }
 
 }
@@ -625,6 +627,15 @@ function ActionStack( e ) {
 
   }
 
+  this.eventChildClosed= function() {
+    console.log( "Win closed." );
+  }
+
+  this.eventChildSubmit= function( ev ) {
+    console.log( "Win submitted. " );
+    console.log( ev );
+  }
+
   this.hasDragged= false;
   this.editor= e;
   this.actions= [];
@@ -882,7 +893,7 @@ function Editor( i, cnf ) {
   this.appInterface= i;
   this.config= new Common.DefaultConfig(  cnf,
                                           { ankorName: null, backColor: 'white', compColor: 'black', gridColor: 'red', friendlyErrors: false, showCursor: true,
-                                            mouseCb: function(){} },
+                                            mouseCb: function(){}, gridCb: function() {} },
                                           function( prop, val, fatal ) {
                                             if( fatal === true ) {
                                               throw new Error("Editor Constructor Configuration misses property: "+ prop );
@@ -896,7 +907,7 @@ function Editor( i, cnf ) {
   this.scale= 1;
 
   this.debugScreen= null;
-  this.grid= new Grid( this, this.config.gridColor, this.config.mouseCb );
+  this.grid= new Grid( this, this.config.gridColor, this.config.mouseCb, this.config.gridCb );
   this.map= new EditorMap( this );
   this.actions= new ActionStack( this );
 

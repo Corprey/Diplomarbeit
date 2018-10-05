@@ -34,10 +34,12 @@ function UserInterface() {
   //set up editor functionality
   this.uiEditor= new Editor( this.interface, { ankorName: 'editor', backColor: '#282c34',
                                compColor: 'white', gridColor: '#abb2bf', friendlyErrors: true,
-                               mouseCb: function(x,y,u){ self.uiToolbar.status.setMousePosition(x,y,u); } } );
+                              mouseCb: function(x,y,u){ self.uiToolbar.status.setMousePosition(x,y,u); },
+                              gridCb:  function(x,u){ self.uiToolbar ? self.uiToolbar.status.setGridSize(x,u) : null ; } } );
 
   //create toolbar menu elements and functionality
   this.uiToolbar= new Toolbar('tools-wrapper', [
+    {id: 0, name: "Save",         iconType: 'far', iconImg: 'fa-save',          tooltipText:"  Save  ",  action:''},
     {id: 0, name: "Zoom In",      iconType: 'fas', iconImg: 'fa-search-plus',   tooltipText:"  Zoom In  ",  action:'ui.zoomIn();'},
     {id: 1, name: "Zoom Out",     iconType: 'fas', iconImg: 'fa-search-minus',  tooltipText:"  Zoom Out  ", action:'ui.zoomOut();'},
     {id: 2, name: "Undo",         iconType: 'fas', iconImg: 'fa-undo',          tooltipText:"  Undo  ",     action:'ui.uiEditor.actions.eventUndo();'},
@@ -45,9 +47,10 @@ function UserInterface() {
     {id: 4, type: "radio", connections: [5,6], name: "Mouse Cursor", iconType: 'fas', iconImg: 'fa-mouse-pointer', tooltipText:'  Standard Cursor  ',  action:'ui.uiEditor.actions.setToolTip();', defaultEnabled: true },
     {id: 5, type: "radio", connections: [4,6], name: "Place Panel",  iconType: 'far', iconImg: 'fa-plus-square',   tooltipText:'  Place Panel  ',      action:'ui.uiEditor.actions.setToolTip("panel-place");'},
     {id: 6, type: "radio", connections: [4,5], name: "Paint",        iconType: 'fas', iconImg: 'fa-paint-brush',   tooltipText:'  Paint Tool  ',       action:'ui.uiEditor.actions.setToolTip();'},
-
-
   ]);
+
+
+  this.uiEditor.setGridResolution( 24, "cm" );
 
 
   //set up uiconsole functionality with default values
