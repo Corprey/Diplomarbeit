@@ -14,7 +14,7 @@ function paddedInteger(num, size ) {
 }
 
 
-function DefaultConfig( cnf, def, callback ) {
+function DefaultConfig( cnf, def, callback= function(){} ) {
 
   // Iteratre through all properties of the default-config
   for( let prop in def ) {

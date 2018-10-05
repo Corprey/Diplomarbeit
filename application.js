@@ -134,16 +134,20 @@ function EventHandler( w, sarr ) {
 
 }
 
-  /*******************************************************************************************************/
 
+/*
+*   Window Stack Class holding message boxes that rely on each others
+*   inputs
+*/
 function WindowStack( app ) {
 
+  // create new window and push it on the stack
   this.createWindow= function( w, h, t, html, isUrl = false ) {
     let p = this.windows.length > 0 ? this.windows[this.windows.length-1] : this.app.mainWindow;
 
     console.log( "Creating window: "+ w, h, t, html );
 
-    let win= new BrowserWindow( { parent: p, center: true, width: w, height: h,
+    let win= new BrowserWindow( { parent: p, modal: true, center: true, width: w, height: h, show: false,
                                        useContentSize: true, resizeable: true, alwaysOnTop: true,
                                        title: t, autoHideMenuBar: "true" }  );
     this.windows.push( win );
@@ -151,8 +155,12 @@ function WindowStack( app ) {
     //win.setMenu(null);
     //win.setResizable(false);
 
+    win.once('ready-to-show', () => {
+       win.show()
+     });
+
+    // laod site from file or encoded from string
     if( isUrl === true ) {
-      console.log( "Loading Url: "+ html );
       win.loadURL( `file://${__dirname}/${html}`);
     } else {
       win.loadURL("data:text/html;charset=utf-8," + encodeURI(html));
@@ -162,6 +170,7 @@ function WindowStack( app ) {
     win.on('close', function() { self.closeWindow( false ); } );
   }
 
+  // close window via event
   this.closeWindow= function( closeWin= true ) {
     let len= this.windows.length;
 
@@ -178,6 +187,7 @@ function WindowStack( app ) {
     }
   }
 
+  // send event to window in the stack
   this.sendEvent= function( name, ev, id ) {
     if( typeof id === 'undefined' ) {
        id= this.windows.length-1;
@@ -189,6 +199,7 @@ function WindowStack( app ) {
     }
   }
 
+  // Send event to either the next higher or the main Window
   this.sendParentEvent= function( name, ev ) {
     let len= this.windows.length;
 
@@ -203,7 +214,9 @@ function WindowStack( app ) {
 
   this.windows= [];
   this.app= app;
+  this.lastInitData= null;
 
+  // Event handling method
   const self = this;
   ipcMain.on( 'msgbox-event', function( event, ev ) {
 
@@ -221,8 +234,18 @@ function WindowStack( app ) {
       case 'openMsg':
         self.createWindow( ev.width, ev.height, ev.title, ev.html, ev.isUrl );
         ev.id= self.windows.lenght -1;
-        console.log( "Sending init event. " );
-        self.sendEvent( 'init', ev );
+        self.lastInitData= ev;
+        break;
+
+      case 'ready':
+        if( self.lastInitData !== null ) {
+          self.sendEvent( 'init', self.lastInitData );
+          self.lastInitData= null;
+        }
+        break;
+
+      default:
+        console.log("Error: Received invalid msgbox-event: "+ ev.type );
         break;
     }
 

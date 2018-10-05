@@ -4,16 +4,21 @@
 
     <meta charset="utf-8">
   	<title>Grid Settings</title>
-  	<link href="main.css" rel="stylesheet" type="text/css" title="UICss">
+  	<link href="./../main.css" rel="stylesheet" type="text/css" title="UICss">
 
+    <script src="./gridWindow.js" ></script>
 
   </head>
   <body>
 
+    <label for="grid-input">Grid Size: </label>
+    <input type="text" id="grid-input"
+           placeholder="Grid Size"
+           size="10"
+           onkeydown = "if (event.keyCode == 13) document.getElementById('ok-button').click()" >
 
-    Das ist die offizielle Seyko wiki fanpage!!!!!!!
-    von Perytschetten und Provenek!!!
-    (haus)
+    <button id="ok-button" onclick="clickOk();"> Ok </button>
+    <button id="close-button" onclick="clickClose();" > Close </button>
 
   </body>
 </html>
