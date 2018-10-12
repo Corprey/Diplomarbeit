@@ -21,6 +21,8 @@ function ActionInterface( o, nm, fns ) {
   this.eventDraw=         fns[7] ? function() { fns[7].apply(this.obj, arguments ); } : def;
   this.eventUndo=         fns[8] ? function() { fns[8].apply(this.obj, arguments ); } : def;
   this.eventRedo=         fns[9] ? function() { fns[9].apply(this.obj, arguments ); } : def;
+  // child closed
+  // child submit
 }
 
 

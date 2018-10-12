@@ -2,37 +2,78 @@
 const {MessageBox}= require( './../messageBox.js' );
 const Common= require( './../common.js' );
 
+let block= false;
+let prevUnit= null;
+
 // Called on init
 function init( cnf ) {
-
-  console.log( 'I bims, die Syko fanpage!' );
 
   let dat= new Common.DefaultConfig( cnf,
                                     { gridSize: 10, gridUnit: 'cm' }
                                     );
-
+  prevUnit= cnf.gridUnit;
   document.getElementById('grid-input').value= ''+ dat.gridSize+ dat.gridUnit;
-}
-
-function childSubmit( cnf ) {
 
 }
+
+
 
 function childClosed() {
+  block = false;
+
+  let stl= document.getElementById('grid-input').style;
+  stl.borderColor= '#d54e45';
+  stl.outline= '0';
 
 }
 
 // Button click events
 function clickOk() {
-  console.log('Syko ist super!');
+  if( block === false ) {
 
-  let win= { width: 500, height: 500, title: 'error', isUrl: false, html: '<h1>  Hallo meine Syko Fans. </h1>' };
-  box.createMessageBox( win );
+    //seperate number from text
+    let units= ["mm", "cm", "m", "mil", "in", "ft"];
+    let gridInput= document.getElementById('grid-input').value;
+    let value= gridInput.match(/\d+/g);
+    let unit=  gridInput.match(/[a-zA-Z]+/g);
+
+    if(unit === null){
+      unit= [prevUnit];
+    }
+
+    console.log(unit);
+    console.log(units);
+    console.log(units.indexOf(unit[0]));
+    if((unit.length !== 1) || (units.indexOf(unit[0]) < 0) ){
+      createError("Error: invalid unit!");
+    }
+    else if( (!value) || (value<=0)) {
+      createError("Error: invalid value!");
+    }
+    else {
+      let dat={ gridValue: value, gridUnit: unit[0], desc: "grid-event"};
+      box.submit(dat);
+      clickClose();
+    }
+  }
 }
 
 function clickClose() {
+  if( block === false){
+    box.close();
+  }
+}
+
+function keyEvent(event) {
+  if (event.keyCode == 13) document.getElementById('ok-button').click();
+  if (event.keyCode == 27) document.getElementById('close-button').click();
+}
+
+function createError(cnf) {
+  let ev= {width:370, height:100, title:"Error", html:"wins/errorBox.html", isUrl: true, msg: cnf };
+  block = true;
+  box.createMessageBox( ev );
 
 }
 
-
-const box= new MessageBox( init, childSubmit, childClosed );
+const box= new MessageBox( init, null, childClosed );

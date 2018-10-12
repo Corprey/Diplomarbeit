@@ -147,13 +147,25 @@ function WindowStack( app ) {
 
     console.log( "Creating window: "+ w, h, t, html );
 
-    let win= new BrowserWindow( { parent: p, modal: true, center: true, width: w, height: h, show: false,
-                                       useContentSize: true, resizeable: true, alwaysOnTop: true,
-                                       title: t, autoHideMenuBar: "true" }  );
+    let config= { parent: p, modal: true, width: w, height: h, show: false,
+                 useContentSize: true, resizeable: true, alwaysOnTop: true,
+                 title: t, autoHideMenuBar: "true" };
+
+    if( this.windows.length === 0 ) {
+      config.center = true;
+
+    } else {
+      let pos= p.getPosition();
+      config.x = pos.x+ 200;
+      config.y = pos.y+ 200;
+    }
+
+    let win= new BrowserWindow( config  );
+
     this.windows.push( win );
 
     //win.setMenu(null);
-    //win.setResizable(false);
+  //  win.setResizable(false);
 
     win.once('ready-to-show', () => {
        win.show()
@@ -167,24 +179,39 @@ function WindowStack( app ) {
     }
 
     const self= this;
-    win.on('close', function() { self.closeWindow( false ); } );
+    win.on('close', function() {
+        self.closeWindow(false);
+
+        console.log( 'On Close ' + self.windows.length );
+
+        let len= self.windows.length;
+        if( len > 0 ) {
+          console.log( "Focus child" );
+          self.windows[ len -1 ].focus();
+        }
+      } );
   }
 
   // close window via event
   this.closeWindow= function( closeWin= true ) {
     let len= this.windows.length;
 
+    console.log( "Closing window! : " + this.windows.length + " " + closeWin );
+
     if( len > 0 ) {
-      this.sendParentEvent( 'child-closed', {} );
+
 
       let win= this.windows[ len -1 ];
 
       if( closeWin === true ) {
         win.close();
+      } else {
+        this.sendParentEvent( 'child-closed', {} );
+        this.windows.splice(-1,1); //delete last element of array
       }
-
-      this.windows.length -= 1;
     }
+
+    console.log( "Window closed, stack: " + this.windows.length );
   }
 
   // send event to window in the stack
@@ -232,9 +259,13 @@ function WindowStack( app ) {
         break;
 
       case 'openMsg':
-        self.createWindow( ev.width, ev.height, ev.title, ev.html, ev.isUrl );
-        ev.id= self.windows.lenght -1;
-        self.lastInitData= ev;
+        // only the window on top is allowed to create a new one
+        if( ev.caller === self.windows.length- 1 ) {
+          self.createWindow( ev.width, ev.height, ev.title, ev.html, ev.isUrl );
+          ev.id= self.windows.length -1;
+          self.lastInitData= ev;
+          console.log( ev );
+        }
         break;
 
       case 'ready':
@@ -343,9 +374,11 @@ function Application() {
   this.menu= Menu.buildFromTemplate(template);
   Menu.setApplicationMenu(this.menu);
 
-  this.eventHandler= new EventHandler( this.mainWindow, [ { trig: 'P', func: 'toolPlacePanel', type:'e'},
-                                                          { trig: 'Esc', func: 'resetTooltip', type:'e'},
-                                                          { trig: 'Ctrl+A',     func: 'select-all',  type:'e' },
+  this.eventHandler= new EventHandler( this.mainWindow, [ { trig: 'P',       func: 'toolPlacePanel', type:'e'},
+                                                          { trig: 'Esc',     func: 'resetTooltip', type:'e'},
+                                                          { trig: 'Ctrl+A',  func: 'select-all',  type:'e' },
+                                                          { trig: 'G',       func: 'switchGrid',  type:'e' },
+                                                          { trig: 'Ctrl+G',  func: 'toggleGridWin',  type:'e' },
                                                          ] );
 
   this.terminate= function() {

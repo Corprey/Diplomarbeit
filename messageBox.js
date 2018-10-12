@@ -9,10 +9,12 @@ function MessageBox( init, sub, cl ) {
   this.onChildClose=  cl   || null;
 
   this.title= null;
+  this.id= null;
 
   // Create new msg box
   this.createMessageBox= function( ev ) {
     ev.type= 'openMsg';
+    ev.caller= this.id;
     ipcRenderer.send( 'msgbox-event', ev );
   }
 
@@ -32,6 +34,7 @@ function MessageBox( init, sub, cl ) {
   this.eventInit= function( cnf ) {
 
     this.title= cnf.title;
+    this.id= cnf.id;
 
     if( this.onInit !== null ) {
       this.onInit( cnf );

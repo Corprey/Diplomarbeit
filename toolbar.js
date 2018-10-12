@@ -114,10 +114,13 @@ RadioButton.prototype.hasId = function( x ) {
 
 function ToolbarStatus() {
 
+  this.gridUnit= 0;
+  this.gridValue= 0;
+
   this.anker= document.getElementById("ToolbarStatus-wrapper");
   const self= this;
   // Create HTML for Toolbar Status
-  this.elements= Common.Builder( this.anker, ["x", "y", "unitx", "unity", "gridsize", "b0","b1","b2","b3","b4"],
+  this.elements= Common.Builder( this.anker, ["x", "y", "unitx", "unity", "gridButton", "gridsize", "b0","b1","b2","b3","b4"],
 
     '<div class= "toolbarDropdown" >' +
         '<img src= "icons/menu-arrow.svg" width= "12px" height= "12px"> ' +
@@ -139,6 +142,12 @@ function ToolbarStatus() {
   this.elements.b3.addEventListener( 'click', function()  { ui.uiEditor.setGridResolution( 24,  'cm' );} );
   this.elements.b4.addEventListener( 'click', function()  { ui.uiEditor.setGridResolution( 50,  'cm' );} );
 
+  this.elements.gridButton.addEventListener( 'click', function() { self.createGridBox(); } );
+
+  this.createGridBox= function()  {
+      let win= {width:270, height:100, title:"Grid Settings", html:"wins/gridWindow.html", isUrl: true, gridSize: self.gridValue, gridUnit: self.gridUnit };
+      ui.interface.createMessageBox( win );
+    }
 
  this.setMousePosition= function( x, y, u ) {
     this.elements.x.innerHTML= x;
@@ -149,6 +158,9 @@ function ToolbarStatus() {
 
   this.setGridSize= function( g, u ) {
     this.elements.gridsize.innerHTML = "" + g+ " "+ u;
+
+    this.gridUnit= u;
+    this.gridValue= g;
   }
 }
 

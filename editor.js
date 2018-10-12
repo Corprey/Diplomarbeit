@@ -634,6 +634,17 @@ function ActionStack( e ) {
   this.eventChildSubmit= function( ev ) {
     console.log( "Win submitted. " );
     console.log( ev );
+
+    switch( ev.desc ) {
+
+      case 'grid-event':
+        this.editor.setGridResolution(ev.gridValue, ev.gridUnit);
+        break;
+
+      default:
+        console.error( "Unknwon event descriptor on Action Stack: "+ ev.desc );
+        break;
+    }
   }
 
   this.hasDragged= false;

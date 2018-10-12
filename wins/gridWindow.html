@@ -4,21 +4,25 @@
 
     <meta charset="utf-8">
   	<title>Grid Settings</title>
-  	<link href="./../main.css" rel="stylesheet" type="text/css" title="UICss">
-
+  	<link href="./messageBox.css" rel="stylesheet" type="text/css" title="UICss">
     <script src="./gridWindow.js" ></script>
+
 
   </head>
   <body>
+    <div id= "gridWindow">
+      <label class="UIScale" for="grid-input">Grid Size: </label>
+      <input type="text" style="width: 60px" id="grid-input"
+             placeholder="Grid Size"
+             size="10"
+             autofocus
+             onFocus="this.select()"
+             onkeydown = "keyEvent(event);" >
+      <br />
 
-    <label for="grid-input">Grid Size: </label>
-    <input type="text" id="grid-input"
-           placeholder="Grid Size"
-           size="10"
-           onkeydown = "if (event.keyCode == 13) document.getElementById('ok-button').click()" >
-
-    <button id="ok-button" onclick="clickOk();"> Ok </button>
-    <button id="close-button" onclick="clickClose();" > Close </button>
+      <button id="ok-button" onclick="clickOk();"> Ok </button>
+      <button id="close-button" onclick="clickClose();" > Close </button>
+    </div>
 
   </body>
 </html>

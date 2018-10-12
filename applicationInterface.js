@@ -66,6 +66,13 @@ function AppInterface( ui ) {
         //deactivate other Radiobuttons
         this.userInterface.uiToolbar.getById(4).update();
         break;
+
+      case 'toggleGridWin':
+        this.userInterface.uiToolbar.status.createGridBox();
+        break;
+
+      case 'switchGrid':
+        break;
     }
   }
 
@@ -143,7 +150,7 @@ function AppInterface( ui ) {
 
   this.createMessageBox= function( ev ) {
     ev.type= 'openMsg';
-
+    ev.caller= -1;
     ipcRenderer.send( 'msgbox-event', ev );
   }
 

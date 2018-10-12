@@ -273,8 +273,8 @@ input[type="number"].ui-colorpicker-box::-webkit-inner-spin-button {
     color: #333;
     text-align:center;
     position:relative;
-
 }
+
 input[type=number].ui-colorpicker-box::-webkit-inner-spin-button:hover,
 input[type=number].ui-colorpicker-box::-webkit-inner-spin-button:active {
   background: #21252b url('./icons/spinner.png') no-repeat 50% 50%;
@@ -283,22 +283,7 @@ input[type=number].ui-colorpicker-box::-webkit-inner-spin-button:active {
   margin-top: 2px;
   margin-bottom: 1px;
   padding: 4px;
-
-
-
 }
-
-
-
-
-/*
-,
-input[type="number"].ui-colorpicker-box::-webkit-outer-spin-button
-
-.ui-colorpicker-box::-webkit-inner-spin-button:hover,
-.ui-colorpicker-box::-webkit-inner-spin-button:active{
-    opacity: .8;
-}*/
 
 
 .ui-colorpicker-box {
@@ -343,7 +328,7 @@ input[type="number"].ui-colorpicker-box::-webkit-outer-spin-button
     background-color:  #282c34; /* dark Gray background */
     border: solid black 1px; /* Remove borders */
     color: Gray; /* White text */
-    outline:0;  /*no automatic border*/
+    outline:0;  /*no selection border*/
     height: 35px;
     width: 35px;
     margin: 20px 10px;
