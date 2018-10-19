@@ -11,8 +11,11 @@ function MessageBox( init, sub, cl ) {
   this.title= null;
   this.id= null;
 
+  this.blocked= false;
+
   // Create new msg box
   this.createMessageBox= function( ev ) {
+    this.blocked= true;
     ev.type= 'openMsg';
     ev.caller= this.id;
     ipcRenderer.send( 'msgbox-event', ev );
@@ -42,10 +45,21 @@ function MessageBox( init, sub, cl ) {
   }
 
 
+  // On child closed
+  this.eventChildClosed= function() {
+
+    this.blocked= false;
+
+    if( this.onChildClose !== null ) {
+      this.onChildClose();
+    }
+  }
+
+
   // IPC listeners
   const self= this;
   ipcRenderer.on( 'child-closed', function( event ) {
-    ( self.onChildClose !== null ) ? self.onChildClose() : null;
+    self.eventChildClosed();
   });
 
   ipcRenderer.on( 'child-submit', function( event, cnf ) {

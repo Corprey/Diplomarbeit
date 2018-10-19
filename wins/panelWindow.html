@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+  <head>
+
+    <meta charset="utf-8">
+  	<title>Grid Settings</title>
+  	<link href="./messageBox.css" rel="stylesheet" type="text/css" title="UICss">
+    <script src="./panelWindow.js" ></script>
+
+
+  </head>
+  <body>
+    <div id= "panelWindow" class= "UIScale">
+      <div id= "labels">
+          <div class= "textContainer"> <label class="UIScale" for="panelId">Panel Id: </label> </div>
+          <div class= "textContainer"> <label class="UIScale" for="panelLeg">Panel Leg: </label> </div>
+          <div class= "textContainer"> <label class="UIScale" for="parentPanel">Previous Panel: </label> </div>
+          <div class= "textContainer"> <label class="UIScale" for="childPanel">Next Panel: </label> </div>
+          <div class= "textContainer"> <label class="UIScale" for="xPos"> Position X | Y: </label> </div>
+          <div class= "fanContainer"> <label class="UIScale" for="fanVal"> Fan Power: </label> </div>
+          <div class= "colCorContainer"> <label class="UIScale"> Colour Correction: </label> </div>
+      </div>
+
+      <div class="vl"></div>
+
+      <div id= "values">
+        <div class= "textContainer"> <input type="text" style="width: 60px" id="panelId" class= "panelInput" placeholder="Id"
+               autofocus onFocus="this.select()" onkeydown = "keyEvent(event);" > </div>
+
+        <div class= "textContainer"> <span id="panelLeg"     class="UIScale panelInput">test</span> </div>
+        <div class= "textContainer"> <span id="parentPanel"  class="UIScale panelInput">test</span> </div>
+        <div class= "textContainer"> <span id="childPanel"   class="UIScale panelInput">test</span> </div>
+
+        <div class= "textContainer"> <input type="text" style="width: 60px" id="xPos" class= "panelInput"
+                                      placeholder="X" onkeydown = "keyEvent(event);" >
+                                     <input type="text" style="width: 60px" id="yPos" class= "panelInput"
+                                      placeholder="Y" onkeydown = "keyEvent(event);" > </div>
+
+        <div class= "fanContainer"> <input type= "range" min="0" max="200" value= "100" step= "10" class= "slider" oninput='setBrightness(this.value, "fanVal")' />
+                                     <span id= "fanVal" class= "UIScale">100%</span> <br />
+                                     <span class="UIScale"> 0% </span> <span class="UIScale" style= "margin-left: 60px"> 200% </span></div>
+
+        <div class= "colCorContainer"> <input type= "range" min="0" max="500" value= "100" step= "10" class= "slider" oninput='slideEvent(this.value, "brightVal")' />
+                                     <span id= "brightVal" class= "UIScale">100%</span> Brightness <br />
+
+                                     <input type= "range" min="0" max="500" value= "100" step= "10" class= "slider" oninput='slideEvent(this.value, "rVal")' />
+                                     <span id= "rVal" class= "UIScale">100%</span> Red <br />
+
+                                     <input type= "range" min="0" max="500" value= "100" step= "10" class= "slider" oninput='slideEvent(this.value, "gVal")' />
+                                     <span id= "gVal" class= "UIScale">100%</span> Green <br />
+
+                                     <input type= "range" min="0" max="500" value= "100" step= "10" class= "slider" oninput='slideEvent(this.value, "bVal")' />
+                                     <span id= "bVal" class= "UIScale">100%</span> Blue <br />
+                                     <span class="UIScale"> 0% </span> <span class="UIScale" style= "margin-left: 60px"> 500% </span></div>
+      </div>
+
+
+
+
+  <!--    <br />
+      <button class="ok-button" onclick="clickOk();"> Ok </button>
+      <button class="close-button" onclick="clickClose();" > Close </button>
+    </div>
+-->
+  </body>
+</html>

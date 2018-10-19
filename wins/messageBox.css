@@ -13,17 +13,10 @@ html, body {
   width: -webkit-fill-available;
   height: 100vh;
 	overflow: hidden;
+  margin: 0;
   background-color: #282c34;
 
   padding: 0;
-}
-
-#gridWindow {
-  margin: 0 auto;
-  margin-top: 25px;
-  display: block;
-  width: 140px;
-  height: 50px;
 }
 
 input[type="text"] {
@@ -32,8 +25,6 @@ input[type="text"] {
   border-style: solid;
   border-color: #21252b;
   -webkit-box-shadow: none;
-
-  margin-left: 5px;
 
 }
 
@@ -78,15 +69,6 @@ button {
 
 }
 
-#ok-button {
-  margin-left: 25px;
-}
-
-#close-button {
-  margin-right: 25px;
-}
-
-
 select {
    background: #21252b;
    background-color: #21252b;
@@ -115,3 +97,126 @@ select option {
    width: 268px;
    border-color: #21252b;
 }
+
+.slider {
+  -webkit-appearance: none;
+  margin-bottom: 2px;
+  width: 150px;
+  height: 5px;
+  border-radius: 5px;
+  background: #4b5362;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+}
+
+.slider:hover {
+  opacity: 1;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: #74def1;
+    cursor: pointer;
+}
+
+.ok-button {
+  margin-left: 25px;
+}
+
+.close-button {
+  margin-right: 25px;
+}
+
+
+/********************************************************************************************************************/
+/* Grid Window */
+
+#gridWindow {
+  margin: 0 auto;
+  margin-top: 25px;
+  display: block;
+  width: 140px;
+  height: 50px;
+}
+
+/********************************************************************************************************************/
+/* Panel Window */
+#panelWindow {
+  margin-top: 10px;
+}
+
+.panelInput {
+
+  float: left;
+  display: block;
+  margin-top: 0px;
+  margin-left: 0px;
+}
+
+.textContainer {
+  margin-top: 3px;
+  height: 20px;
+}
+
+.fanContainer {
+  margin-top: 30px;
+  height: 50px;
+}
+.colCorContainer {
+  margin-top: 30px;
+  height: 50px;
+}
+
+#xPos {
+  margin-right: 10px;
+}
+
+#labels {
+  float: left;
+  text-align: right;
+  width: 43%;
+  margin-right: 15px;
+}
+
+#values {
+  float: left;
+  width: 40%;
+  margin-left: 20px;
+}
+
+.vl {
+  float: left;
+  width: 1%;
+  border-left: 1px solid #abb2bf;
+  height: 315px;
+  margin-left: 10px;
+  margin-top: -10px;
+  top: 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**/

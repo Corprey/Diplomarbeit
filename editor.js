@@ -62,6 +62,15 @@ function copySign( v1, v2 ) {
   }
 }
 
+// Create a random pastel color
+function randomPastelColor() {
+  let r= p5Module.map( Math.random(), 0, 1, 80, 200 );
+  let g= p5Module.map( Math.random(), 0, 1, 80, 200 );
+  let b= p5Module.map( Math.random(), 0, 1, 80, 200 );
+
+  return p5Module.Color( r, g, b );
+}
+
 
 /*
 *   Debug Screen Class rendering debug information as
@@ -143,11 +152,11 @@ function UnitConversion() {
   }
 }
 
+
 /*
 *   Grid Class doing all needed grid calculations
 *   and redering the grid to the screen
 */
-
 function Grid( e, gridcol, mouseCb, gridCb ) {
   this.editor= e;
   this.enable= true;
@@ -235,6 +244,11 @@ function Grid( e, gridcol, mouseCb, gridCb ) {
 
 }
 
+
+/*
+*   Panel Class holding information for single
+*   LED Panel on the map
+*/
 const LEDPANELPIXELDIM= 100;
 function LedPanel( pos, id, e, getScreen= true ) {
   this.editor= e;
@@ -242,6 +256,8 @@ function LedPanel( pos, id, e, getScreen= true ) {
   this.panelId= id;
   this.size= 1;
   this.selected= false;
+  this.panelLegId= -1;
+  this.panelLegIndex= -1;
 
   if( getScreen === true ) {
     this.requestScreen();
@@ -256,6 +272,10 @@ LedPanel.prototype.requestScreen= function() {
 LedPanel.prototype.destroy= function() {
   this.editor.frenderer.screens.remove( this.panelId );
   this.selected= false;
+
+  if( this.panelLegId >= 0 ) {
+    this.editor.map.legs.detachPanel( this.id, this.panelLegId );
+  }
 }
 
 // Tests whether a point on the map is inside of the panels area
@@ -277,6 +297,14 @@ LedPanel.prototype.select= function( v = true ) {
 LedPanel.prototype.moveBy = function( v ) {
   this.position.add( v );
 };
+
+// Detach the panel from its leg
+LedPanel.prototype.detachFromLeg= function() {
+  if( this.panelLegId >= 0 ) {
+    this.editor.map.legs.detachPanel( this.id, this.panelLegId );
+    this.panelLegId = -1;
+  }
+}
 
 // Draw the panel to the screen if it is currently in view
 LedPanel.prototype.draw= function( def= true ) {
@@ -307,8 +335,178 @@ LedPanel.init= function( p5 ) {
 }
 
 
+/*
+*   PanelLeg Class holding information for
+*   single thread of Led Panels
+*/
+function PanelLeg( i ) {
+  this.arr=[];
+  this.id= i;
+  this.color= randomPastelColor();
+
+  // Remove panel by id
+  this.removePanel= function( pid ) {
+    let index = this.arr.indexOf( pid );
+    if (index > -1) {
+      this.arr.splice(index, 1);
+
+      // Update all index values of the panels in the leg
+      for(let i= index; i < this.arr.length(); i++ ) {
+        panel.panelLegIndex--;
+      }
+    }
+  }
+
+  // Attach new panel
+  this.attachPanel= function( panel, index = -1 ) {
+    if( index < 0 ) {
+      index = this.arr.length;
+    }
+    this.arr.splice( index, 0, panel.id );
+    panel.panelLegId= this.id;
+    panel.panelLegIndex= index;
+
+    // Update all index values of the panels in the leg
+    for(let i= index; i < this.arr.length(); i++ ) {
+      panel.panelLegIndex++;
+    }
+  }
 
 
+  // Clean up the all the legs data
+  this.destroy= function( map ) {
+    for( let i= 0; i!= this.arr.length; i++ ) {
+
+      let panel= map.get( this.arr[i] );
+      if( panel !== null ) {
+        panel.detachFromLeg();
+      }
+    }
+  }
+
+  // Get the previous panel on the leg
+  this.previous= function( pid ) {
+    let index= this.arr.indexOf( pid );
+    if( index > -1 ) {
+      if( index === 0 ) {
+        return -1;
+      }
+
+      return this.arr[ index-1 ];
+    }
+  }
+
+  // Get the next panel on the leg
+  this.next= function( pid ) {
+    let index= this.arr.indexOf( pid );
+    if( index > -1 ) {
+      if( index === this.arr.length -1 ) {
+        return -1;
+      }
+
+      return this.arr[ index+1 ];
+    }
+  }
+
+  //
+  this.draw= function( editor, map ) {
+    let p5= editor.p5;
+    let middle= 50 * editor.scale;
+    let offset= 10 * editor.scale;
+
+    p5.stroke( this.color );
+    p5.strokeWeight( 3 );
+
+    for( let i= 0; i< this.arr.length-1; i++ ) {
+      let pb= map.get( this.arr[i] );
+      let pe= map.get( this.arr[i+1] );
+
+      if( (pb !== null) && (pe !== null) ) {
+        p5.line( pb.position.x+ middle+ offset, pb.position.y+ middle,
+                 pe.position.x+ middle- offset, pe.position.y+ middle );
+
+      }
+    }
+  }
+
+}
+
+
+function PanelLegArray( m ) {
+  this.arr=[];
+  this.map= m;
+
+  this.addLeg= function( id= -1 ) {
+    // expansed the array if the id is greater than the length
+    if( this.arr.length < id ) {
+      while( this.arr.length < id ) {
+        this.arr.push( null );
+      }
+
+    } else {
+      // search for smallest available slot if no id was provided
+      if( id < 0 ) {
+        for( let i= 0; i!= this.arr.length; i++ ) {
+          if( this.arr[i] === null ) {
+            id= i;
+            break;
+          }
+        }
+
+      // check if leg id already exists if an id was provided
+      } else {
+        for( let i= 0; i!= this.arr.length; i++ ) {
+          if( this.arr[i] !== null ) {
+            return false;
+          }
+        }
+      }
+    }
+
+    this.arr[id]= new PanelLeg( id );
+  }
+
+  this.get= function( lid ) {
+    return (this.arr.length > lid) ? this.arr[lid] : null;
+  }
+
+  this.detachPanel= function( pid, lid ) {
+    let leg= this.get( lid );
+    if( leg !== null ) {
+      leg.removePanel( pid );
+    }
+  }
+
+  this.attachPanel= function( lid, pid, index= -1 ) {
+    let leg= this.get(lid);
+    if( leg === null ) {
+      return false;
+    }
+
+    leg.attachPanel( pid, index );
+    return true;
+  }
+
+  this.render= function() {
+    p5.push();
+
+    for( let i= 0; i!= this.arr.length; i++ ) {
+      if( this.arr[i] !== null ) {
+        this.arr[i].draw();
+      }
+    }
+
+    p5.pop();
+  }
+
+}
+
+
+/*
+*   Panel selection class drawing and managing
+*   all selected panels, does all click tracing and
+*   movements
+*/
 function PanelSelection( e, m ) {
   this.editor= e;
   this.map= m;
@@ -464,6 +662,7 @@ function EditorMap( e ) {
   this.mouseMapPos= null;
 
   this.panels= [];
+  this.legs= new PanelLegArray( this );
 
   this.selection= new PanelSelection( this.editor, this );
 
@@ -504,6 +703,10 @@ function EditorMap( e ) {
     }
 
     this.panels[id]= p;
+
+    if( p.panelLegId >= 0 ) {
+      this.legs.attachPanel( p.panelLegId, p.id, p.panelLegIndex );
+    }
   }
 
   // remove panel from map by id
