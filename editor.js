@@ -62,13 +62,19 @@ function copySign( v1, v2 ) {
   }
 }
 
-// Create a random pastel color
-function randomPastelColor() {
-  let r= p5Module.map( Math.random(), 0, 1, 80, 200 );
-  let g= p5Module.map( Math.random(), 0, 1, 80, 200 );
-  let b= p5Module.map( Math.random(), 0, 1, 80, 200 );
+// Linear map of 'v' which is in range 'a' to 'b'
+// to a return value which is in range 'x' to 'y'
+function linearMap( v, a, b, x, y ) {
+  return ( ( v / (b-a) ) * (y-x) ) + x;
+}
 
-  return p5Module.Color( r, g, b );
+// Create a random pastel color
+function randomPastelColor( p5 ) {
+  let r= linearMap( Math.random(), 0, 1, 30, 190 );
+  let g= linearMap( Math.random(), 0, 1, 30, 190 );
+  let b= linearMap( Math.random(), 0, 1, 30, 190 );
+
+  return p5.color( r, g, b );
 }
 
 
@@ -301,7 +307,7 @@ LedPanel.prototype.moveBy = function( v ) {
 // Detach the panel from its leg
 LedPanel.prototype.detachFromLeg= function() {
   if( this.panelLegId >= 0 ) {
-    this.editor.map.legs.detachPanel( this.id, this.panelLegId );
+    this.editor.map.legs.detachPanel( this.panelLegId, this.panelId );
     this.panelLegId = -1;
   }
 }
@@ -336,39 +342,47 @@ LedPanel.init= function( p5 ) {
 
 
 /*
-*   PanelLeg Class holding information for
+*   Panel-Leg Class holding information for
 *   single thread of Led Panels
 */
-function PanelLeg( i ) {
+function PanelLeg( i, p5 ) {
   this.arr=[];
   this.id= i;
-  this.color= randomPastelColor();
+  this.color= randomPastelColor( p5 );
 
   // Remove panel by id
-  this.removePanel= function( pid ) {
-    let index = this.arr.indexOf( pid );
+  this.removePanel= function( map, panel ) {
+    let index = this.arr.indexOf( panel.panelId );
     if (index > -1) {
       this.arr.splice(index, 1);
+      panel.panelLegId= -1;
+      panel.panelLegIndex= -1;
 
       // Update all index values of the panels in the leg
-      for(let i= index; i < this.arr.length(); i++ ) {
-        panel.panelLegIndex--;
+      for(let i= index; i < this.arr.length; i++ ) {
+        let p= map.get( this.arr[i] );
+        if( p !== null ) {
+          p.panelLegIndex--;
+        }
       }
     }
   }
 
   // Attach new panel
-  this.attachPanel= function( panel, index = -1 ) {
+  this.attachPanel= function( map, panel, index = -1 ) {
     if( index < 0 ) {
       index = this.arr.length;
     }
-    this.arr.splice( index, 0, panel.id );
+    this.arr.splice( index, 0, panel.panelId );
     panel.panelLegId= this.id;
     panel.panelLegIndex= index;
 
     // Update all index values of the panels in the leg
-    for(let i= index; i < this.arr.length(); i++ ) {
-      panel.panelLegIndex++;
+    for(let i= index +1; i < this.arr.length; i++ ) {
+      let p= map.get( this.arr[i] );
+      if( p !== null ) {
+        p.panelLegIndex++;
+      }
     }
   }
 
@@ -408,22 +422,25 @@ function PanelLeg( i ) {
     }
   }
 
-  //
+  // Draw connections between the panels to canvas
   this.draw= function( editor, map ) {
     let p5= editor.p5;
-    let middle= 50 * editor.scale;
-    let offset= 10 * editor.scale;
+    let scl= editor.scale;
+    let middle= 50 * scl;
+    let offset= 10 * scl;
 
     p5.stroke( this.color );
-    p5.strokeWeight( 3 );
+    p5.strokeWeight( 5 );
 
+    // Go through all panels (except the last one) and draw the connection
+    // between the current and the next one
     for( let i= 0; i< this.arr.length-1; i++ ) {
       let pb= map.get( this.arr[i] );
       let pe= map.get( this.arr[i+1] );
 
       if( (pb !== null) && (pe !== null) ) {
-        p5.line( pb.position.x+ middle+ offset, pb.position.y+ middle,
-                 pe.position.x+ middle- offset, pe.position.y+ middle );
+        p5.line( scl*pb.position.x+ middle+ offset, scl*pb.position.y+ middle,
+                 scl*pe.position.x+ middle- offset, scl*pe.position.y+ middle );
 
       }
     }
@@ -453,6 +470,12 @@ function PanelLegArray( m ) {
           }
         }
 
+        // create new element if no empty slot is found
+        if( id < 0 ) {
+          id= this.arr.length;
+          this.arr.push( null );
+        }
+
       // check if leg id already exists if an id was provided
       } else {
         for( let i= 0; i!= this.arr.length; i++ ) {
@@ -463,40 +486,41 @@ function PanelLegArray( m ) {
       }
     }
 
-    this.arr[id]= new PanelLeg( id );
+    this.arr[id]= new PanelLeg( id, this.map.editor.p5 );
   }
 
   this.get= function( lid ) {
     return (this.arr.length > lid) ? this.arr[lid] : null;
   }
 
-  this.detachPanel= function( pid, lid ) {
+  this.detachPanel= function( lid, pid ) {
     let leg= this.get( lid );
-    if( leg !== null ) {
-      leg.removePanel( pid );
+    let panel= this.map.get( pid );
+
+    if( (leg !== null) && (panel !== null) ) {
+      leg.removePanel( this.map, panel );
     }
   }
 
   this.attachPanel= function( lid, pid, index= -1 ) {
-    let leg= this.get(lid);
-    if( leg === null ) {
+    let leg= this.get( lid );
+    let panel= this.map.get( pid );
+
+    if( (leg === null) || (panel === null) ) {
       return false;
     }
 
-    leg.attachPanel( pid, index );
+    leg.attachPanel( this.map, panel, index );
     return true;
   }
 
   this.render= function() {
-    p5.push();
 
     for( let i= 0; i!= this.arr.length; i++ ) {
       if( this.arr[i] !== null ) {
-        this.arr[i].draw();
+        this.arr[i].draw( this.map.editor, this.map );
       }
     }
-
-    p5.pop();
   }
 
 }
@@ -727,7 +751,7 @@ function EditorMap( e ) {
 
   }
 
-  this.draw= function() {
+  this.draw= function( showLegs= false ) {
     let p5= this.editor.p5;
     p5.push();
 
@@ -740,6 +764,10 @@ function EditorMap( e ) {
 
     // Selection
     this.selection.show();
+
+    if( showLegs === true ) {
+      this.legs.render();
+    }
 
     p5.pop();
   }
@@ -992,7 +1020,7 @@ function Editor( i, cnf ) {
         self.drawGridCursor();
       }
 
-      self.map.draw();                // draw elements on the map
+      self.map.draw( true );                // draw elements on the map
       self.actions.eventDraw( p5 );   // let the tooltip draw if it needs to
 
 

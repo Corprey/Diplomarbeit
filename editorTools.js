@@ -109,9 +109,11 @@ function PanelMoveTip() {
 
   this.prevMouseGridPos= null;
   this.beginPos= null;
+  this.clickPanel= null;
 
   this.actv= function( ast, p ) {
     let origPos= p.position;
+    this.clickPanel= p;
 
     this.prevMouseGridPos= ast.editor.grid.mouseMapPos.copy();            // get initial mouse value
     this.beginPos= origPos.copy(); // get initial position of a panel
@@ -133,12 +135,14 @@ function PanelMoveTip() {
   }
 
   this.release= function( ast ) {
-    let vec= this.beginPos.mult(-1).add( ast.editor.map.selection.selection[0].position );  // create new vector storing the position difference
-    let ids= ast.editor.map.selection.getIds();   // only save ids instead of pointers, to allow removed panels to be garbage collected
+    if( this.clickPanel !== null ) {
+      let vec= this.beginPos.mult(-1).add( this.clickPanel.position );  // create new vector storing the position difference
+      let ids= ast.editor.map.selection.getIds();   // only save ids instead of pointers, to allow removed panels to be garbage collected
 
-    // only save as an action if somethin actually moved
-    if( vectorZero( vec ) === false ) {
-      ast.pushAction( 'panel-move', {movement: vec, panelIds: ids } );
+      // only save as an action if something actually moved
+      if( vectorZero( vec ) === false ) {
+        ast.pushAction( 'panel-move', {movement: vec, panelIds: ids } );
+      }
     }
 
     ast.setToolTip( 'cursor-tip' );   // go back to simple cursor
