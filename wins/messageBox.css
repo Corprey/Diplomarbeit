@@ -180,28 +180,48 @@ select option {
 #labels {
   float: left;
   text-align: right;
-  width: 43%;
+  width: 46%;
   margin-right: 15px;
 }
 
 #values {
   float: left;
-  width: 40%;
+  width: 46%;
   margin-left: 20px;
 }
 
 .vl {
   float: left;
   width: 1%;
-  border-left: 1px solid #abb2bf;
-  height: 315px;
+  border-left: 2px solid #21252b;
+  height: 350px;
   margin-left: 10px;
   margin-top: -10px;
   top: 0;
 }
 
+.hl {
+  float: left;
+  width: 100%;
+  border-top: 2px solid #21252b;
+  height: 1px;
+}
+#panel-ok-button {
+  width: 50px;
+  margin-left: -27px;
+}
 
+#panel-close-button {
+  width: 50px;
+  margin-left: 1px;
+}
 
+#panel-buttons {
+  float: right;
+  clear: left;
+  margin-top: 15px;
+  width: 54%;
+}
 
 
 

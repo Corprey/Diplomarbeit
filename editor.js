@@ -387,7 +387,7 @@ function PanelLeg( i, p5 ) {
   }
 
 
-  // Clean up the all the legs data
+  // Clean up all the legs data
   this.destroy= function( map ) {
     for( let i= 0; i!= this.arr.length; i++ ) {
 
@@ -454,7 +454,7 @@ function PanelLegArray( m ) {
   this.map= m;
 
   this.addLeg= function( id= -1 ) {
-    // expansed the array if the id is greater than the length
+    // expand the array if the id is greater than the length
     if( this.arr.length < id ) {
       while( this.arr.length < id ) {
         this.arr.push( null );
@@ -478,15 +478,14 @@ function PanelLegArray( m ) {
 
       // check if leg id already exists if an id was provided
       } else {
-        for( let i= 0; i!= this.arr.length; i++ ) {
-          if( this.arr[i] !== null ) {
-            return false;
-          }
+        if(this.arr[id] !== null ) {
+          return false;
         }
       }
     }
 
     this.arr[id]= new PanelLeg( id, this.map.editor.p5 );
+    return true;
   }
 
   this.get= function( lid ) {
@@ -870,6 +869,13 @@ function ActionStack( e ) {
 
       case 'grid-event':
         this.editor.setGridResolution(ev.gridValue, ev.gridUnit);
+        break;
+
+      case 'panel-config-event':
+        //attach Panel to leg
+        //Set position of Panel
+        //change fan fanPower
+        //colour Correction
         break;
 
       default:

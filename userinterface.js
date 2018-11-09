@@ -22,7 +22,7 @@ function UserInterface() {
 
   //create sidebar menu elements and functionality
   this.uiMenu= new CollapsibleMenu('sidebar-menu', [
-    {name: "Panel Root", html: "<input type='text'></input>"},
+    {name: "Panel Chains", html: "<input type='text'></input>"},
     {name: "Files", html: "files angezeigt"},
     {name: "output", html: "output angezeigt" },
     {name: "tools", html: "output angezeigt" }

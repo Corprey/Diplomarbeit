@@ -1,4 +1,5 @@
 'use strict'
+
 // Create String filled with the specified charater
 function filledString( character , length) {
   return new Array(length + 1).join( character )
@@ -30,6 +31,36 @@ function DefaultConfig( cnf, def, callback= function(){} ) {
     }
   }
 }
+
+//validates the Position/Grid input if number and unit are legal
+function checkPosInput(ele, prevUnit, box) {
+
+  let units= ["mm", "cm", "m", "mil", "in", "ft"];
+  let input= document.getElementById(ele).value;
+  let dat= {};
+
+  //seperate number from text
+  dat.value= input.match(/^-?\d+/g);
+  dat.unit=  input.match(/[a-zA-Z]+/g);
+
+  if(dat.unit === null){ // missing unit -> keep last unit
+    dat.unit= [prevUnit];
+  }
+
+  if((dat.unit.length !== 1) || (units.indexOf(dat.unit[0]) < 0) ){
+    box.createErrorBox("Error: invalid unit!");
+  }
+  else if(!dat.value) {
+    box.createErrorBox("Error: invalid value!");
+  }
+  else {
+    return dat;
+  }
+  return null;
+}
+
+
+
 
 // Swaps the CSS Classes of a DOM Element (only the first one is checked)
 function swapCSSClass( element, ca, cb ) {
@@ -125,6 +156,7 @@ if( typeof WorkerGlobalScope !== 'undefined') {
 module.exports.filledString= filledString;
 module.exports.paddedInteger= paddedInteger;
 module.exports.DefaultConfig= DefaultConfig;
+module.exports.checkPosInput= checkPosInput;
 module.exports.swapCSSClass= swapCSSClass;
 module.exports.SimpleSet= SimpleSet;
 module.exports.ObjPipe= ObjPipe;

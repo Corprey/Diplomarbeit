@@ -44,7 +44,6 @@ function MessageBox( init, sub, cl ) {
     }
   }
 
-
   // On child closed
   this.eventChildClosed= function() {
 
@@ -55,6 +54,11 @@ function MessageBox( init, sub, cl ) {
     }
   }
 
+  //creates messageBox error window
+  this.createErrorBox= function(cnf) {
+    let ev= {width:370, height:100, title:"Error", html:"wins/errorBox.html", isUrl: true, msg: cnf };
+    this.createMessageBox( ev );
+  }
 
   // IPC listeners
   const self= this;
@@ -75,6 +79,7 @@ function MessageBox( init, sub, cl ) {
   let ev= { type: 'ready' };
   ipcRenderer.send( 'msgbox-event', ev ); // Send ready event, to receive init event
 }
+
 
 
 module.exports.MessageBox= MessageBox;
