@@ -38,7 +38,34 @@ function CursorTip() {
     ast.editor.allowGridCursor= true;
   }
 
-  this.dblClick= function() { console.log("Double click!"); }
+  this.dblClick= function(ast) {
+
+    // If a panel was clicked, invert its selecetion status
+    if( this.clickPanel !== null ) {
+      e= ast.editor;
+
+      //Window properties
+      let win= {width:700, height:415, title:"Grid Settings", html:"wins/panelWindow.html", isUrl: true};
+
+      //Convert position
+      win.gridUnit= e.grid.conversion.unit;
+      win.posX= Math.round(1/e.grid.conversion.mkFromText(1/this.clickPanel.position.x, win.gridUnit));
+      win.posY= Math.round(1/e.grid.conversion.mkFromText(1/this.clickPanel.position.y, win.gridUnit));
+
+      //Define panel Leg parameters for panelWindow
+      win.panelLeg= this.clickPanel.panelLegIndex;
+      if(win.panelLeg >= 0) {
+        win.index= this.clickPanel.panelLegId;
+        win.parentPanel= e.legs.arr[win.panelLeg].previous;
+        win.childPanel= e.legs.arr[win.panelLeg].next;
+      } else {
+        win.parentPanel= win.childPanel= win.panelLeg= "-";
+        win.index= 0;
+      }
+      //Open panelWindow
+      ui.interface.createMessageBox( win );
+    }
+  }
 
   this.click= function( ast, pos ) {
     // If a panel was clicked, invert its selecetion status

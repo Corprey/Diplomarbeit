@@ -776,7 +776,7 @@ function EditorMap( e ) {
 
 /*
 * ActionStack Class that keeps track which tool is active and intracts
-* with it by seding events
+* with it by sending events
 */
 function ActionStack( e ) {
 
