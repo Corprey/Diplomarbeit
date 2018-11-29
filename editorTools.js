@@ -11,18 +11,19 @@ function ActionInterface( o, nm, fns ) {
   this.obj= o;
 
   let def= function() {};
-  this.eventActivate=     fns[0] ? function() { fns[0].apply(this.obj, arguments ); } : def;
-  this.eventDeactivate=   fns[1] ? function() { fns[1].apply(this.obj, arguments ); } : def;
-  this.eventDoubleClick=  fns[2] ? function() { fns[2].apply(this.obj, arguments ); } : def;
-  this.eventClick=        fns[3] ? function() { fns[3].apply(this.obj, arguments ); } : def;
-  this.eventMousePress=   fns[4] ? function() { fns[4].apply(this.obj, arguments ); } : def;
-  this.eventMouseRelease= fns[5] ? function() { fns[5].apply(this.obj, arguments ); } : def;
-  this.eventMouseDrag=    fns[6] ? function() { fns[6].apply(this.obj, arguments ); } : def;
-  this.eventDraw=         fns[7] ? function() { fns[7].apply(this.obj, arguments ); } : def;
-  this.eventUndo=         fns[8] ? function() { fns[8].apply(this.obj, arguments ); } : def;
-  this.eventRedo=         fns[9] ? function() { fns[9].apply(this.obj, arguments ); } : def;
-  // child closed
-  // child submit
+  this.eventActivate=     fns[0]  ? function() { fns[0].apply(this.obj, arguments ); }  : def;
+  this.eventDeactivate=   fns[1]  ? function() { fns[1].apply(this.obj, arguments ); }  : def;
+  this.eventDoubleClick=  fns[2]  ? function() { fns[2].apply(this.obj, arguments ); }  : def;
+  this.eventClick=        fns[3]  ? function() { fns[3].apply(this.obj, arguments ); }  : def;
+  this.eventMousePress=   fns[4]  ? function() { fns[4].apply(this.obj, arguments ); }  : def;
+  this.eventMouseRelease= fns[5]  ? function() { fns[5].apply(this.obj, arguments ); }  : def;
+  this.eventMouseDrag=    fns[6]  ? function() { fns[6].apply(this.obj, arguments ); }  : def;
+  this.eventDraw=         fns[7]  ? function() { fns[7].apply(this.obj, arguments ); }  : def;
+  this.eventUndo=         fns[8]  ? function() { fns[8].apply(this.obj, arguments ); }  : def;
+  this.eventRedo=         fns[9]  ? function() { fns[9].apply(this.obj, arguments ); }  : def;
+  this.eventChildSubmit=  fns[10] ? function() { fns[10].apply(this.obj, arguments ); } : def;
+  this.eventChildClosed=  fns[11] ? function() { fns[11].apply(this.obj, arguments ); } : def;
+
 }
 
 
@@ -38,11 +39,11 @@ function CursorTip() {
     ast.editor.allowGridCursor= true;
   }
 
-  this.dblClick= function(ast) {
+  this.dblClick= function( ast ) {
 
     // If a panel was clicked, invert its selecetion status
     if( this.clickPanel !== null ) {
-      e= ast.editor;
+      let e= ast.editor;
 
       //Window properties
       let win= {width:700, height:415, title:"Panel Settings", html:"wins/panelWindow.html", isUrl: true};
@@ -75,7 +76,56 @@ function CursorTip() {
       }
 
       //Open panelWindow
-      ui.interface.createMessageBox( win );
+      ast.createMessageBox( win );
+    }
+  }
+
+  this.closed= function( ast, win, ev ) {
+
+    //attach Panel to leg
+    //Set position of Panel
+    //change fan fanPower
+    //colour Correction
+
+
+    let pid= ev.panelId;
+    let panel= ast.editor.map.get( pid );
+    if( panel != null ) {
+
+      let changes= {};
+
+      // check for position values
+      if( (ev.posX !== undefined) && (ev.posY !== undefined) ) {
+        //calculate new position
+        let x= Math.round(ast.editor.grid.conversion.mkFromText( ev.posX.value, ev.posX.unit ));
+        let y= Math.round(ast.editor.grid.conversion.mkFromText( ev.posY.value, ev.posY.unit ));
+        let newPos= ast.editor.p5.createVector( x, y );
+
+        // save old position in changes and set new position
+        changes.position= panel.position;
+        panel.position= newPos;
+      }
+
+      // push new action
+      ast.pushAction( 'panel-config', {panelId: pid, changes: changes } );
+    }
+  }
+
+  this.swapConfig= function( ast, t, d ) {
+    let pid= d.panelId;
+    let changes= d.changes;
+
+    // get panel object
+    let panel= ast.editor.map.get( pid );
+    if( panel != null ) {
+
+      // swap position
+      if( changes.hasOwnProperty( 'position' ) === true ) {
+        let curPos= panel.position;
+        panel.position= changes.position;
+        changes.position= curPos;
+      }
+
     }
   }
 
@@ -136,7 +186,7 @@ function CursorTip() {
     }
   }
 
-  this.intf= new ActionInterface( this, 'cursor-tip', [this.actv, null, this.dblClick, this.click, this.press, this.release, this.drag, null, null, null]);
+  this.intf= new ActionInterface( this, 'cursor-tip', [this.actv, null, this.dblClick, this.click, this.press, this.release, this.drag, null, this.swapConfig, this.swapConfig, this.closed]);
 }
 
 

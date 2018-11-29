@@ -3,7 +3,7 @@ const {MessageBox}= require( './../messageBox.js' );
 const Common= require( './../common.js' );
 
 let prevUnit= null;
-let panel= null;
+let panelId;
 
 // Called on init
 function init( cnf ) {
@@ -20,7 +20,7 @@ function init( cnf ) {
   document.getElementById('parentPanel').innerHTML= ''+ dat.parentPanel;
   document.getElementById('childPanel').innerHTML= ''+ dat.childPanel;
   prevUnit= cnf.gridUnit;
-  panel= cnf.panel;
+  panelId= cnf.panelId;
 }
 
 function childClosed() {
@@ -33,7 +33,7 @@ function clickOk() {
 
     //check if legal input
     let data= {};
-    data.panel= panel;
+    data.panelId= panelId;
     data.index= document.getElementById('panelIndex').value;
     data.fanPow= document.getElementById('fanPower').value;
     data.red= document.getElementById('redval').value;

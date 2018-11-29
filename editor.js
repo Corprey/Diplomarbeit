@@ -863,29 +863,22 @@ function ActionStack( e ) {
 
   }
 
-  this.setPanelPosition= function(pid, x, y) {
 
-    ///let beginPos= p.position.copy(); //save start position
-    let panel= this.editor.map.get( pid );
-    if( panel != null ) {
+  this.createMessageBox= function( win ) {
+    if( this.msgBox === null ) {
+      this.msgBox= win;
+      ui.interface.createMessageBox( win );
 
-      //calculate new position
-      let newPos= p.position.copy();
-      newPos.x= Math.round(this.editor.grid.conversion.mkFromText( x.value, x.unit ));
-      newPos.y= Math.round(this.editor.grid.conversion.mkFromText( y.value, y.unit ));
-
-      let vec= beginPos.mult(-1).add(newPos); // create new vector storing the position difference
-      p.moveBy(vec); //move actual panel position
-
-      let ids= p.panelId; // only save ids instead of pointers, to allow removed panels to be garbage collected
-      // only save as an action if something actually moved
-      if( vectorZero( vec ) === false ) {
-        ast.pushAction( 'panel-move', {movement: vec, panelIds: ids } );
-      }
+    } else {
+      console.error( 'Cannot open another message box.' );
     }
   }
 
   this.eventChildClosed= function() {
+    if( this.msgBox !== null ) {
+      this.curTip.intf.eventChildClosed( this, this.msgBox );
+    }
+    this.msgBox= null;
     console.log( "Win closed." );
   }
 
@@ -900,11 +893,7 @@ function ActionStack( e ) {
         break;
 
       case 'panel-config-event':
-        //attach Panel to leg
-        //Set position of Panel
-        this.setPanelPosition(ev.panel, ev.posX, ev.posY);
-        //change fan fanPower
-        //colour Correction
+        this.curTip.intf.eventChildSubmit( this, this.msgBox, ev );
         break;
 
       default:
@@ -917,6 +906,8 @@ function ActionStack( e ) {
   this.editor= e;
   this.actions= [];
   this.toolTips= new Map();
+
+  this.msgBox= null;
 
   this.actionIndex= -1;
   this.curTip= null;
