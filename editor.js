@@ -156,6 +156,8 @@ function UnitConversion() {
   this.factor= function() {
     return this.names[ this.unit ];
   }
+
+
 }
 
 
@@ -334,11 +336,13 @@ LedPanel.prototype.draw= function( def= true ) {
   }
 }
 
+
 // Create and load static default image
 LedPanel.prototype.defaultImage= null;
 LedPanel.init= function( p5 ) {
     LedPanel.prototype.defaultImage= p5.loadImage('./icons/panel.png');
 }
+
 
 
 /*
@@ -408,6 +412,7 @@ function PanelLeg( i, p5 ) {
 
       return this.arr[ index-1 ];
     }
+    return -1;
   }
 
   // Get the next panel on the leg
@@ -420,6 +425,7 @@ function PanelLeg( i, p5 ) {
 
       return this.arr[ index+1 ];
     }
+    return -1;
   }
 
   // Draw connections between the panels to canvas
@@ -489,7 +495,7 @@ function PanelLegArray( m ) {
   }
 
   this.get= function( lid ) {
-    return (this.arr.length > lid) ? this.arr[lid] : null;
+    return ((this.arr.length > lid) && (lid >= 0)) ? this.arr[lid] : null;
   }
 
   this.detachPanel= function( lid, pid ) {
@@ -857,6 +863,28 @@ function ActionStack( e ) {
 
   }
 
+  this.setPanelPosition= function(pid, x, y) {
+
+    ///let beginPos= p.position.copy(); //save start position
+    let panel= this.editor.map.get( pid );
+    if( panel != null ) {
+
+      //calculate new position
+      let newPos= p.position.copy();
+      newPos.x= Math.round(this.editor.grid.conversion.mkFromText( x.value, x.unit ));
+      newPos.y= Math.round(this.editor.grid.conversion.mkFromText( y.value, y.unit ));
+
+      let vec= beginPos.mult(-1).add(newPos); // create new vector storing the position difference
+      p.moveBy(vec); //move actual panel position
+
+      let ids= p.panelId; // only save ids instead of pointers, to allow removed panels to be garbage collected
+      // only save as an action if something actually moved
+      if( vectorZero( vec ) === false ) {
+        ast.pushAction( 'panel-move', {movement: vec, panelIds: ids } );
+      }
+    }
+  }
+
   this.eventChildClosed= function() {
     console.log( "Win closed." );
   }
@@ -874,12 +902,13 @@ function ActionStack( e ) {
       case 'panel-config-event':
         //attach Panel to leg
         //Set position of Panel
+        this.setPanelPosition(ev.panel, ev.posX, ev.posY);
         //change fan fanPower
         //colour Correction
         break;
 
       default:
-        console.error( "Unknwon event descriptor on Action Stack: "+ ev.desc );
+        console.error( "Unknown event descriptor on Action Stack: "+ ev.desc );
         break;
     }
   }
@@ -1009,9 +1038,9 @@ function Editor( i, cnf ) {
 
       self.grid.render();       // render the grid
 
-      p5.fill('#fae');          // test circle
+      /*p5.fill('#fae');          // test circle
       let pos= self.getScaledPos(500, 500);
-      p5.ellipse(pos.x, pos.y, 90* self.scale );
+      p5.ellipse(pos.x, pos.y, 90* self.scale );*/
 
       // if( self.frenderer.screens.arr.length !== 0 ) {
       //   p5.image( self.frenderer.screens.arr[0].curImage ,0,0 ); // <- Just testing if the renderer did it right

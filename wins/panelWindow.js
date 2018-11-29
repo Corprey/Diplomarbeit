@@ -3,6 +3,7 @@ const {MessageBox}= require( './../messageBox.js' );
 const Common= require( './../common.js' );
 
 let prevUnit= null;
+let panel= null;
 
 // Called on init
 function init( cnf ) {
@@ -14,11 +15,12 @@ function init( cnf ) {
                                     );
   document.getElementById('xPos').value= ''+ dat.posX+ dat.gridUnit;
   document.getElementById('yPos').value= ''+ dat.posY+ dat.gridUnit;
-  document.getElementById('panelId').value= ''+ dat.index;
+  document.getElementById('panelIndex').value= ''+ dat.index;
   document.getElementById('panelLeg').innerHTML= ''+ dat.panelLeg;
   document.getElementById('parentPanel').innerHTML= ''+ dat.parentPanel;
   document.getElementById('childPanel').innerHTML= ''+ dat.childPanel;
   prevUnit= cnf.gridUnit;
+  panel= cnf.panel;
 }
 
 function childClosed() {
@@ -31,7 +33,8 @@ function clickOk() {
 
     //check if legal input
     let data= {};
-    data.id= document.getElementById('panelId').value;
+    data.panel= panel;
+    data.index= document.getElementById('panelIndex').value;
     data.fanPow= document.getElementById('fanPower').value;
     data.red= document.getElementById('redval').value;
     data.green= document.getElementById('greenval').value;
@@ -39,7 +42,7 @@ function clickOk() {
 
          if( (data.posX= Common.checkPosInput('xPos', prevUnit, box) ) === null ) {}
     else if( (data.posY= Common.checkPosInput('yPos', prevUnit, box) ) === null ) {}
-    else if( (data.id= checkId(data.id) ) === null ) { box.createErrorBox("Error: Id is not a number"); }
+    else if( (data.index= checkIndex(data.index) ) === null ) { box.createErrorBox("Error: Index is not a number"); }
     else {  //Submit
       data.desc= "panel-config-event";
       box.submit(data);
@@ -62,9 +65,9 @@ function keyEvent(event) {
   if (event.keyCode == 27) document.getElementById('close-button').click();
 }
 
-function checkId(id) {
-      id= id.match(/^[0-9]\d*$/g);
-    return id;
+function checkIndex(index) {
+      index= index.match(/^[0-9]\d*$/g);
+    return index;
 }
 
 //Slider-events

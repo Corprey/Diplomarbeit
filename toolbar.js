@@ -145,7 +145,7 @@ function ToolbarStatus() {
   this.elements.gridButton.addEventListener( 'click', function() { self.createGridBox(); } );
 
   this.createGridBox= function()  {
-      let win= {width:270, height:100, title:"Grid Settings", html:"wins/panelWindow.html", isUrl: true, gridSize: self.gridValue, gridUnit: self.gridUnit };
+      let win= {width:270, height:100, title:"Grid Settings", html:"wins/gridWindow.html", isUrl: true, gridSize: self.gridValue, gridUnit: self.gridUnit };
       ui.interface.createMessageBox( win );
     }
 

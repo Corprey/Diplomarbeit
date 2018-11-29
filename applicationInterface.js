@@ -151,6 +151,7 @@ function AppInterface( ui ) {
   this.createMessageBox= function( ev ) {
     ev.type= 'openMsg';
     ev.caller= -1;
+    console.log(ev);
     ipcRenderer.send( 'msgbox-event', ev );
   }
 

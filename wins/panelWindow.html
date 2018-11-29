@@ -3,7 +3,6 @@
   <head>
 
     <meta charset="utf-8">
-  	<title>Grid Settings</title>
   	<link href="./messageBox.css" rel="stylesheet" type="text/css" title="UICss">
     <script src="./panelWindow.js" ></script>
 
@@ -12,7 +11,7 @@
   <body>
     <div id= "panelWindow" class= "UIScale">
       <div id= "labels">
-          <div class= "textContainer"> <label class="UIScale" for="panelId">Panel Id: </label> </div>
+          <div class= "textContainer"> <label class="UIScale" for="panelIndex">Panel Id: </label> </div>
           <div class= "textContainer"> <label class="UIScale" for="panelLeg">Panel Chain: </label> </div>
           <div class= "textContainer"> <label class="UIScale" for="parentPanel">Previous Panel: </label> </div>
           <div class= "textContainer"> <label class="UIScale" for="childPanel">Next Panel: </label> </div>
@@ -24,7 +23,7 @@
       <div class="vl"></div>
 
       <div id= "values">
-        <div class= "textContainer"> <input type="text" style="width: 60px" id="panelId" class= "panelInput" placeholder="Id"
+        <div class= "textContainer"> <input type="text" style="width: 60px" id="panelIndex" class= "panelInput" placeholder="Id"
                autofocus onFocus="this.select()" onkeydown = "keyEvent(event);" > </div>
 
         <div class= "textContainer"> <span id="panelLeg"     class="UIScale panelInput"></span> </div>

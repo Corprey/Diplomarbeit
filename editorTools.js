@@ -45,23 +45,35 @@ function CursorTip() {
       e= ast.editor;
 
       //Window properties
-      let win= {width:700, height:415, title:"Grid Settings", html:"wins/panelWindow.html", isUrl: true};
+      let win= {width:700, height:415, title:"Panel Settings", html:"wins/panelWindow.html", isUrl: true};
+
+      //Panel
+      win.panelId= this.clickPanel.panelId;
 
       //Convert position
       win.gridUnit= e.grid.conversion.unit;
-      win.posX= Math.round(1/e.grid.conversion.mkFromText(1/this.clickPanel.position.x, win.gridUnit));
-      win.posY= Math.round(1/e.grid.conversion.mkFromText(1/this.clickPanel.position.y, win.gridUnit));
+      win.posX= Math.round(this.clickPanel.position.x/e.grid.conversion.factor());
+      win.posY= Math.round(this.clickPanel.position.y/e.grid.conversion.factor());
 
       //Define panel Leg parameters for panelWindow
       win.panelLeg= this.clickPanel.panelLegIndex;
-      if(win.panelLeg >= 0) {
-        win.index= this.clickPanel.panelLegId;
-        win.parentPanel= e.legs.arr[win.panelLeg].previous;
-        win.childPanel= e.legs.arr[win.panelLeg].next;
+      win.index= this.clickPanel.panelLegId;
+      let leg= e.map.legs.get( win.panelLeg );
+
+      // Load leg data
+      if( leg !== null ) {
+        if( (win.parentPanel= leg.previous( win.index ) ) === -1 ) {
+          win.parentPanel= '-';
+        }
+        if( (win.childPanel= leg.next( win.index ) ) === -1 ) {
+          win.childPanel= '-';
+        }
       } else {
+        // Set dummy value on error
         win.parentPanel= win.childPanel= win.panelLeg= "-";
         win.index= 0;
       }
+
       //Open panelWindow
       ui.interface.createMessageBox( win );
     }
