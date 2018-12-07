@@ -266,6 +266,8 @@ function LedPanel( pos, id, e, getScreen= true ) {
   this.selected= false;
   this.panelLegId= -1;
   this.panelLegIndex= -1;
+  this.fanpower= 100;
+  this.colorCorr= {red: 100, green: 100, blue:100};
 
   if( getScreen === true ) {
     this.requestScreen();
@@ -459,10 +461,15 @@ function PanelLegArray( m ) {
   this.arr=[];
   this.map= m;
 
+  this.cbAddLeg= null;
+  this.cbAddPanel= null;
+  this.cbDeletePanel= null;
+
+
   this.addLeg= function( id= -1 ) {
     // expand the array if the id is greater than the length
-    if( this.arr.length < id ) {
-      while( this.arr.length < id ) {
+    if( this.arr.length <= id ) {
+      while( this.arr.length <= id ) {
         this.arr.push( null );
       }
 
@@ -491,7 +498,15 @@ function PanelLegArray( m ) {
     }
 
     this.arr[id]= new PanelLeg( id, this.map.editor.p5 );
+
+
+      if( this.cbAddLeg !== null) {
+          this.cbAddLeg( id );
+      }
+
     return true;
+
+
   }
 
   this.get= function( lid ) {
@@ -503,6 +518,10 @@ function PanelLegArray( m ) {
     let panel= this.map.get( pid );
 
     if( (leg !== null) && (panel !== null) ) {
+
+      if( this.cbDeletePanel !== null) {
+          this.cbDeletePanel( lid, pid );
+      }
       leg.removePanel( this.map, panel );
     }
   }
@@ -516,6 +535,9 @@ function PanelLegArray( m ) {
     }
 
     leg.attachPanel( this.map, panel, index );
+    if( this.cbAddPanel !== null) {
+        this.cbAddPanel( lid, index );
+    }
     return true;
   }
 

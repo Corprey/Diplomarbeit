@@ -40,14 +40,18 @@ function checkPosInput(ele, prevUnit, box) {
   let dat= {};
 
   //seperate number from text
-  dat.value= input.match(/^-?\d+/g);
-  dat.unit=  input.match(/[a-zA-Z]+/g);
+  let value= input.match(/^-?\d+/g);
+  let unit=  input.match(/[a-zA-Z]+/g);
+
+  //get rid of unnecessary array (created by match function)
+  dat.value= value[0];
+  dat.unit= (unit !== null) ? unit[0] : null;
 
   if(dat.unit === null){ // missing unit -> keep last unit
-    dat.unit= [prevUnit];
+    dat.unit= prevUnit;
   }
 
-  if((dat.unit.length !== 1) || (units.indexOf(dat.unit[0]) < 0) ){
+  if((dat.unit == null ) || (units.indexOf(dat.unit) < 0) ){
     box.createErrorBox("Error: invalid unit!");
   }
   else if(!dat.value) {
@@ -146,6 +150,34 @@ function Builder( anker, ids, html ) {
   return elm;
 }
 
+// returns differences between two objects as new object
+function mkDifference( a, b ) {
+  let diff= {};
+  let keys= Object.keys(a);
+
+  for( let i= 0; i!= keys.length; i++ ) {
+    let key= keys[i];
+    if( typeof a[key] === 'object' && a[key] !== null ) {
+      if( typeof b[key] === 'object' && b[key] !== null ) {
+
+        let x= mkDifference(  a[key] , b[key] );
+        if( Object.keys(x).length > 0 ) {
+          diff[key]= x;
+        }
+      } else {
+        diff[key]= b[key];
+      }
+
+    } else {
+      if( a[key] != b[key] ) {
+        diff[key]= b[key];
+      }
+    }
+  }
+
+  return diff;
+}
+
 
 /* Hack to make script file loadable via 'importScripts' in a Web-Worker */
 if( typeof WorkerGlobalScope !== 'undefined') {
@@ -163,3 +195,4 @@ module.exports.ObjPipe= ObjPipe;
 module.exports.packBuffer= packBuffer;
 module.exports.unpackBuffer= unpackBuffer;
 module.exports.Builder= Builder;
+module.exports.mkDifference= mkDifference;

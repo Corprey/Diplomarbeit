@@ -33,7 +33,7 @@ function clickOk() {
          if (ele === null) {}
     else if(ele.value <= 0) { box.createErrorBox("Error: invalid value!"); }
     else {
-      let dat= { gridValue: ele.value, gridUnit: ele.unit[0], desc: "grid-event"};
+      let dat= { gridValue: ele.value, gridUnit: ele.unit, desc: "grid-event"};
       box.submit(dat);
       clickClose();
     }

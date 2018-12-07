@@ -35,20 +35,20 @@
                                      <input type="text" style="width: 60px" id="yPos" class= "panelInput"
                                       placeholder="Y" onkeydown = "keyEvent(event);" > </div>
 
-        <div class= "fanContainer"> <input id= "fanPower" type= "range" min="0" max="200" value= "100" step= "10" class= "slider" oninput='setBrightness(this.value, "fanVal")' />
+        <div class= "fanContainer"> <input id= "fanPower" type= "range" min="0" max="200" step= "10" class= "slider" oninput='setBrightness(this.value, "fanVal")' />
                                      <span id= "fanVal" class= "UIScale">100%</span> <br />
                                      <span class="UIScale"> 0% </span> <span class="UIScale" style= "margin-left: 90px"> 200% </span></div>
 
-        <div class= "colCorContainer"> <input type= "range" min="0" max="500" value= "100" step= "10" class= "slider" oninput='slideEvent(this.value, "brightVal")' />
-                                     <span id= "brightVal" class= "UIScale">100%</span> Brightness <br />
+        <div class= "colCorContainer"> <input type= "range" min="0" max="500" value= "100" step= "15" class= "slider" oninput='slideEvent(this.value, "brightVal")' />
+                                     <span id= "brightVal" class= "UIScale">105%</span> Brightness <br />
 
-                                     <input id= "redval" type= "range" min="0" max="500" value= "100" step= "10" class= "slider" oninput='slideEvent(this.value, "rVal")' />
+                                     <input id= "redval" type= "range" min="0" max="500" step= "5" class= "slider" oninput='slideEvent(this.value, "rVal")' />
                                      <span id= "rVal" class= "UIScale">100%</span> Red <br />
 
-                                     <input id= "greenval" type= "range" min="0" max="500" value= "100" step= "10" class= "slider" oninput='slideEvent(this.value, "gVal")' />
+                                     <input id= "greenval" type= "range" min="0" max="500" step= "5" class= "slider" oninput='slideEvent(this.value, "gVal")' />
                                      <span id= "gVal" class= "UIScale">100%</span> Green <br />
 
-                                     <input id= "blueval" type= "range" min="0" max="500" value= "100" step= "10" class= "slider" oninput='slideEvent(this.value, "bVal")' />
+                                     <input id= "blueval" type= "range" min="0" max="500" step= "5" class= "slider" oninput='slideEvent(this.value, "bVal")' />
                                      <span id= "bVal" class= "UIScale">100%</span> Blue <br />
                                      <span class="UIScale"> 0% </span> <span class="UIScale" style= "margin-left: 90px"> 500% </span></div>
       </div>

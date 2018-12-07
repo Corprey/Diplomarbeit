@@ -22,7 +22,7 @@ function UserInterface() {
 
   //create sidebar menu elements and functionality
   this.uiMenu= new CollapsibleMenu('sidebar-menu', [
-    {name: "Panel Chains", html: "<input type='text'></input>"},
+    {name: "Panel Chains", html: "<div id= 'panelLegHolder'> </div>"},
     {name: "Files", html: "files angezeigt"},
     {name: "output", html: "output angezeigt" },
     {name: "tools", html: "output angezeigt" }
@@ -36,6 +36,8 @@ function UserInterface() {
                                compColor: 'white', gridColor: '#abb2bf', friendlyErrors: true,
                               mouseCb: function(x,y,u){ self.uiToolbar.status.setMousePosition(x,y,u); },
                               gridCb:  function(x,u){ self.uiToolbar ? self.uiToolbar.status.setGridSize(x,u) : null ; } } );
+
+
 
   //create toolbar menu elements and functionality
   this.uiToolbar= new Toolbar('tools-wrapper', [
@@ -65,6 +67,121 @@ function UserInterface() {
     timeline: true,
     console: true
   };
+/********************************************************************************************************************/
+  // callback if Panel leg is created
+  this.uiEditor.map.legs.cbAddLeg= function( legId ) {
+    // get anker div
+    let anker= document.getElementById("panelLegHolder");
+
+    // when first leg is added
+    if(anker.legArray == null) {
+      anker.legArray= [];
+    }
+
+    // expand the array if the legId is greater than the length
+    if( anker.legArray.length <= legId ) {
+      while( anker.legArray.length <= legId ) {
+         anker.legArray.push( null ); //fill empty spaces
+      }
+
+    } else { // check if leg id already exists
+        if( anker.legArray[legId] !== null ) {
+          return false;
+        }
+      }
+
+    let node= document.createElement("div"); //create div (leg content)
+    let span= document.createElement("p"); //create span (leg name)
+    span.classList.add("panelLegParagraph");
+    span.innerHTML= "chain " + legId;
+    node.appendChild( span );
+
+      // look for next existing leg
+      let i= 0;
+      for(i= legId; i<anker.legArray.length; i++) {
+        if(anker.legArray[i] !== null) {
+          break;
+        }
+      }
+      // insert at positon if a Leg exists afterwards
+      // else insert at end of array
+      anker.legArray[legId]= anker.insertBefore(node, anker.legArray[i]);
+  }
+
+  this.uiEditor.map.legs.cbAddPanel= function(lid, pid) {
+    // get anker div
+    let anker= document.getElementById("panelLegHolder");
+    let arr= anker.legArray[lid];
+
+    if( arr == null) {
+      console.log("no leg found with id" + lid);
+      return false;
+    }
+
+    // when first panel is added
+    if(arr.panelArray == null) {
+      arr.panelArray= [];
+    }
+
+    // expand the array if the panelLegId is greater than the length
+    if( arr.panelArray.length <= pid ) {
+      while( arr.panelArray.length <= pid ) {
+         arr.panelArray.push( null ); //fill empty spaces
+      }
+
+    } else { // check if panelLegId already exists
+        if( arr.panelArray[pid] !== null ) {
+          return false;
+        }
+      }
+
+      let icon= document.createElement("img");                 // create icon element
+      icon.setAttribute("src", "./icons/col-menu-arrow.svg");  // set source of the image
+      icon.classList.add("panelLegTree-icon");                  // set class
+
+      let button= document.createElement("button"); //create span (chain name)
+      button.appendChild( icon );
+      button.appendChild( document.createTextNode( "panel " + pid ) ); // set buttons name
+      button.classList.add("panelLegPanel");
+
+      // look for next existing panel
+      let i= 0;
+      for(i= pid; i<arr.panelArray.length; i++) {
+        if(arr.panelArray[i] !== null) {
+          break;
+        }
+      }
+      // insert at positon if a panel exists afterwards
+      // else insert at end of array
+      arr.panelArray[pid]= arr.insertBefore(button, arr.panelArray[i]);
+  }
+
+  this.uiEditor.map.legs.cbDeletePanel= function(lid, pid) {
+
+    // get anker div
+    let anker= document.getElementById("panelLegHolder");
+    let arr= anker.legArray[lid];
+
+    if( arr == null) {
+      console.log("no leg found with id" + lid);
+      return false;
+
+    } else if(arr.panelArray == null) { // when no panel in Leg
+      console.log("no panel found in leg");
+      return false;
+
+    } else { // check if panelLegId already exists
+        if( arr.panelArray[pid] === null ) {
+          console.log("no panel with id" + pid + "found in leg");
+          return false;
+        }
+      }
+
+    // remove element from content div
+    arr.removeChild(arr.panelArray[pid]);
+    //remove element from panelArray
+    arr.panelArray[pid]= null;
+  }
 /********************************************************************************************************************/
   // make Split with default values and callback
   this.mkSplit= function( divs, config ) {

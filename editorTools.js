@@ -50,11 +50,16 @@ function CursorTip() {
 
       //Panel
       win.panelId= this.clickPanel.panelId;
+      win.fanpower= this.clickPanel.fanpower;
+      win.colorCorr= this.clickPanel.colorCorr;
 
       //Convert position
       win.gridUnit= e.grid.conversion.unit;
-      win.posX= Math.round(this.clickPanel.position.x/e.grid.conversion.factor());
-      win.posY= Math.round(this.clickPanel.position.y/e.grid.conversion.factor());
+      win.pos= {};
+      win.pos.x= win.pos.y= {};
+      win.pos.x.unit= win.pos.y.unit= win.gridUnit;
+      win.pos.x.value= Math.round(this.clickPanel.position.x/e.grid.conversion.factor());
+      win.pos.y.value= Math.round(this.clickPanel.position.y/e.grid.conversion.factor());
 
       //Define panel Leg parameters for panelWindow
       win.panelLeg= this.clickPanel.panelLegIndex;
@@ -82,36 +87,59 @@ function CursorTip() {
 
   this.closed= function( ast, win, ev ) {
 
-    //attach Panel to leg
-    //Set position of Panel
-    //change fan fanPower
-    //colour Correction
-
-
+    let e= ast.editor;
     let pid= ev.panelId;
-    let panel= ast.editor.map.get( pid );
+    let panel= e.map.get( pid );
     if( panel != null ) {
 
       let changes= {};
 
       // check for position values
-      if( (ev.posX !== undefined) && (ev.posY !== undefined) ) {
+      if( ev.pos !== undefined ) {
         //calculate new position
-        let x= Math.round(ast.editor.grid.conversion.mkFromText( ev.posX.value, ev.posX.unit ));
-        let y= Math.round(ast.editor.grid.conversion.mkFromText( ev.posY.value, ev.posY.unit ));
+        let x= Math.round(ast.editor.grid.conversion.mkFromText( ev.pos.x.value, ev.pos.x.unit ));
+        let y= Math.round(ast.editor.grid.conversion.mkFromText( ev.pos.y.value, ev.pos.y.unit ));
         let newPos= ast.editor.p5.createVector( x, y );
 
         // save old position in changes and set new position
         changes.position= panel.position;
         panel.position= newPos;
       }
+      //check for color correction slider values
+      if( ev.colorCorr !== undefined ) {
+        //set color values
+        changes.colorCorr= panel.colorCorr;
+        panel.colorCorr= ev.colorCorr;
+      }
+      //check for fanpower slider value
+      if( ev.fanpower !== undefined ) {
+        //set fanpower
+        changes.fanpower= panel.fanpower;
+        panel.fanpower= ev.fanpower;
+      }
+      //check for panel index for leg
+      if( ev.index !== undefined ) {
+        //set index if attached to existing leg
+        if(panel.panelLegIndex > -1) {
+          changes.index= panel.panelLegId; //store old panel id in legArray
+          let leg= e.map.legs.get( panel.panelLegIndex ); // get index of leg
+          e.map.legs.detachPanel(leg, pid); // detach Panel from leg
+          e.map.legs.attachPanel(leg, pid, ev.index); //reattach it to new position
+        }
+      }
 
-      // push new action
-      ast.pushAction( 'panel-config', {panelId: pid, changes: changes } );
+      if( Object.keys(changes).length > 0 ) {
+        // push new action
+        ast.pushAction( 'panel-config', {panelId: pid, changes: changes } );
+        console.log("action-push", changes);
+      }else {
+        console.log("no action-push");
+      }
     }
   }
 
   this.swapConfig= function( ast, t, d ) {
+    let e= ast.editor;
     let pid= d.panelId;
     let changes= d.changes;
 
@@ -125,7 +153,25 @@ function CursorTip() {
         panel.position= changes.position;
         changes.position= curPos;
       }
-
+      //swap color Correction values
+      if( changes.hasOwnProperty( 'colorCorr' ) === true ) {
+        let curCorr= panel.colorCorr;
+        panel.colorCorr= changes.colorCorr;
+        changes.colorCorr= curCorr;
+      }
+      //swap fanpower values
+      if( changes.hasOwnProperty( 'fanpower' ) === true ) {
+        let curFanPower= panel.fanpower;
+        panel.fanpower= changes.fanpower;
+        changes.fanpower= curFanPower;
+      }
+      //swap panel id in legArray
+      if( changes.hasOwnProperty( 'index' ) === true ) {
+        let curIndex= panel.panelLegId;
+        let leg= e.map.legs.get( panel.panelLegIndex ); // get index of leg
+        e.map.legs.detachPanel(leg, pid); // detach Panel from leg
+        e.map.legs.attachPanel(leg, pid, curIndex); //reattach it to new position
+      }
     }
   }
 
