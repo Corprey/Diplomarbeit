@@ -77,7 +77,6 @@ function UserInterface() {
     if(anker.legArray == null) {
       anker.legArray= [];
     }
-
     // expand the array if the legId is greater than the length
     if( anker.legArray.length <= legId ) {
       while( anker.legArray.length <= legId ) {
@@ -108,7 +107,7 @@ function UserInterface() {
       anker.legArray[legId]= anker.insertBefore(node, anker.legArray[i]);
   }
 
-  this.uiEditor.map.legs.cbAddPanel= function(lid, pid) {
+  this.uiEditor.map.legs.cbAddPanel= function(lid, pid, index) {
     // get anker div
     let anker= document.getElementById("panelLegHolder");
     let arr= anker.legArray[lid];
@@ -122,19 +121,16 @@ function UserInterface() {
     if(arr.panelArray == null) {
       arr.panelArray= [];
     }
-
     // expand the array if the panelLegId is greater than the length
-    if( arr.panelArray.length <= pid ) {
-      while( arr.panelArray.length <= pid ) {
+    if( arr.panelArray.length <= index ) {
+      while( arr.panelArray.length <= index ) {
          arr.panelArray.push( null ); //fill empty spaces
       }
-
     } else { // check if panelLegId already exists
-        if( arr.panelArray[pid] !== null ) {
+        if( arr.panelArray[index] !== null ) {
           return false;
         }
       }
-
       let icon= document.createElement("img");                 // create icon element
       icon.setAttribute("src", "./icons/col-menu-arrow.svg");  // set source of the image
       icon.classList.add("panelLegTree-icon");                  // set class
@@ -146,17 +142,17 @@ function UserInterface() {
 
       // look for next existing panel
       let i= 0;
-      for(i= pid; i<arr.panelArray.length; i++) {
+      for(i= index; i<arr.panelArray.length; i++) {
         if(arr.panelArray[i] !== null) {
           break;
         }
       }
       // insert at positon if a panel exists afterwards
       // else insert at end of array
-      arr.panelArray[pid]= arr.insertBefore(button, arr.panelArray[i]);
+      arr.panelArray[index]= arr.insertBefore(button, arr.panelArray[i]);
   }
 
-  this.uiEditor.map.legs.cbDeletePanel= function(lid, pid) {
+  this.uiEditor.map.legs.cbDeletePanel= function(lid, index) {
 
     // get anker div
     let anker= document.getElementById("panelLegHolder");
@@ -171,16 +167,17 @@ function UserInterface() {
       return false;
 
     } else { // check if panelLegId already exists
-        if( arr.panelArray[pid] === null ) {
-          console.log("no panel with id" + pid + "found in leg");
+        if( arr.panelArray[index] === null ) {
+          console.log("no panel with id" + index + "found in leg");
           return false;
         }
       }
 
     // remove element from content div
-    arr.removeChild(arr.panelArray[pid]);
+    let child= arr.panelArray[index];
+    arr.removeChild(child);
     //remove element from panelArray
-    arr.panelArray[pid]= null;
+    arr.panelArray[index]= null;
   }
 /********************************************************************************************************************/
   // make Split with default values and callback

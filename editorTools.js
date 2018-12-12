@@ -46,7 +46,7 @@ function CursorTip() {
       let e= ast.editor;
 
       //Window properties
-      let win= {width:700, height:415, title:"Panel Settings", html:"wins/panelWindow.html", isUrl: true};
+      let win= {width:700, height:438, title:"Panel Settings", html:"wins/panelWindow.html", isUrl: true};
 
       //Panel
       win.panelId= this.clickPanel.panelId;
@@ -56,22 +56,24 @@ function CursorTip() {
       //Convert position
       win.gridUnit= e.grid.conversion.unit;
       win.pos= {};
-      win.pos.x= win.pos.y= {};
-      win.pos.x.unit= win.pos.y.unit= win.gridUnit;
+      win.pos.x= {}; // can't be written as win.pos.x=win.pos.y={}
+      win.pos.y= {}; // because pos.x will always be set to pos.y
+      win.pos.x.unit= win.gridUnit;
+      win.pos.y.unit= win.gridUnit;
       win.pos.x.value= Math.round(this.clickPanel.position.x/e.grid.conversion.factor());
       win.pos.y.value= Math.round(this.clickPanel.position.y/e.grid.conversion.factor());
 
       //Define panel Leg parameters for panelWindow
-      win.panelLeg= this.clickPanel.panelLegIndex;
-      win.index= this.clickPanel.panelLegId;
+      win.panelLeg= this.clickPanel.panelLegId;
+      win.index= this.clickPanel.panelLegIndex;
       let leg= e.map.legs.get( win.panelLeg );
 
       // Load leg data
       if( leg !== null ) {
-        if( (win.parentPanel= leg.previous( win.index ) ) === -1 ) {
+        if( (win.parentPanel= leg.previous( win.panelId ) ) === -1 ) {
           win.parentPanel= '-';
         }
-        if( (win.childPanel= leg.next( win.index ) ) === -1 ) {
+        if( (win.childPanel= leg.next( win.panelId ) ) === -1 ) {
           win.childPanel= '-';
         }
       } else {
@@ -120,11 +122,13 @@ function CursorTip() {
       //check for panel index for leg
       if( ev.index !== undefined ) {
         //set index if attached to existing leg
-        if(panel.panelLegIndex > -1) {
-          changes.index= panel.panelLegId; //store old panel id in legArray
-          let leg= e.map.legs.get( panel.panelLegIndex ); // get index of leg
-          e.map.legs.detachPanel(leg, pid); // detach Panel from leg
-          e.map.legs.attachPanel(leg, pid, ev.index); //reattach it to new position
+        let leg;
+        if((leg= e.map.legs.get( panel.panelLegId )) !== null) {
+          changes.index= panel.panelLegIndex; //store old panel id in legArray
+          lid= panel.panelLegId;
+          console.log(ev.index);
+          e.map.legs.detachPanel(lid, pid); // detach Panel from leg
+          e.map.legs.attachPanel(lid, pid, ev.index); //reattach it to new position
         }
       }
 
@@ -142,7 +146,6 @@ function CursorTip() {
     let e= ast.editor;
     let pid= d.panelId;
     let changes= d.changes;
-
     // get panel object
     let panel= ast.editor.map.get( pid );
     if( panel != null ) {
@@ -167,10 +170,11 @@ function CursorTip() {
       }
       //swap panel id in legArray
       if( changes.hasOwnProperty( 'index' ) === true ) {
-        let curIndex= panel.panelLegId;
-        let leg= e.map.legs.get( panel.panelLegIndex ); // get index of leg
-        e.map.legs.detachPanel(leg, pid); // detach Panel from leg
-        e.map.legs.attachPanel(leg, pid, curIndex); //reattach it to new position
+        let curIndex= panel.panelLegIndex;
+        //let leg= e.map.legs.get( panel.panelLegId ); // get index of leg
+        e.map.legs.detachPanel(panel.panelLegId, pid); // detach Panel from leg
+        e.map.legs.attachPanel(panel.panelLegId, pid, changes.index); //reattach it to new position
+        changes.index= curIndex;
       }
     }
   }

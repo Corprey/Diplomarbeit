@@ -264,8 +264,8 @@ function LedPanel( pos, id, e, getScreen= true ) {
   this.panelId= id;
   this.size= 1;
   this.selected= false;
-  this.panelLegId= -1;
-  this.panelLegIndex= -1;
+  this.panelLegId= -1; //id for leg in LegArray
+  this.panelLegIndex= -1; //id for panel in Leg
   this.fanpower= 100;
   this.colorCorr= {red: 100, green: 100, blue:100};
 
@@ -284,7 +284,7 @@ LedPanel.prototype.destroy= function() {
   this.selected= false;
 
   if( this.panelLegId >= 0 ) {
-    this.editor.map.legs.detachPanel( this.id, this.panelLegId );
+    this.editor.map.legs.detachPanel( this.panelLegId, this.panelId);
   }
 }
 
@@ -311,7 +311,7 @@ LedPanel.prototype.moveBy = function( v ) {
 // Detach the panel from its leg
 LedPanel.prototype.detachFromLeg= function() {
   if( this.panelLegId >= 0 ) {
-    this.editor.map.legs.detachPanel( this.panelLegId, this.panelId );
+    this.editor.map.legs.detachPanel( this.panelLegId, this.panelId);
     this.panelLegId = -1;
   }
 }
@@ -357,13 +357,13 @@ function PanelLeg( i, p5 ) {
   this.color= randomPastelColor( p5 );
 
   // Remove panel by id
-  this.removePanel= function( map, panel ) {
+  this.removePanel= function( map, pid ) {
+    let panel= map.get( pid );
     let index = this.arr.indexOf( panel.panelId );
     if (index > -1) {
       this.arr.splice(index, 1);
       panel.panelLegId= -1;
       panel.panelLegIndex= -1;
-
       // Update all index values of the panels in the leg
       for(let i= index; i < this.arr.length; i++ ) {
         let p= map.get( this.arr[i] );
@@ -382,7 +382,6 @@ function PanelLeg( i, p5 ) {
     this.arr.splice( index, 0, panel.panelId );
     panel.panelLegId= this.id;
     panel.panelLegIndex= index;
-
     // Update all index values of the panels in the leg
     for(let i= index +1; i < this.arr.length; i++ ) {
       let p= map.get( this.arr[i] );
@@ -516,17 +515,19 @@ function PanelLegArray( m ) {
   this.detachPanel= function( lid, pid ) {
     let leg= this.get( lid );
     let panel= this.map.get( pid );
+    let index= panel.panelLegIndex;
 
     if( (leg !== null) && (panel !== null) ) {
 
       if( this.cbDeletePanel !== null) {
-          this.cbDeletePanel( lid, pid );
+          this.cbDeletePanel( lid, index );
       }
-      leg.removePanel( this.map, panel );
+      leg.removePanel( this.map, pid );
     }
   }
 
   this.attachPanel= function( lid, pid, index= -1 ) {
+    console.log(lid, pid, index);
     let leg= this.get( lid );
     let panel= this.map.get( pid );
 
@@ -536,7 +537,8 @@ function PanelLegArray( m ) {
 
     leg.attachPanel( this.map, panel, index );
     if( this.cbAddPanel !== null) {
-        this.cbAddPanel( lid, index );
+        let newindex= panel.panelLegIndex;
+        this.cbAddPanel( lid, pid, newindex );
     }
     return true;
   }
@@ -756,7 +758,7 @@ function EditorMap( e ) {
     this.panels[id]= p;
 
     if( p.panelLegId >= 0 ) {
-      this.legs.attachPanel( p.panelLegId, p.id, p.panelLegIndex );
+      this.legs.attachPanel( p.panelLegId, p.panelId, p.panelLegIndex );
     }
   }
 

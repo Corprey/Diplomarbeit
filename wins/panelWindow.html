@@ -11,7 +11,8 @@
   <body>
     <div id= "panelWindow" class= "UIScale">
       <div id= "labels">
-          <div class= "textContainer"> <label class="UIScale" for="panelIndex">Panel Id: </label> </div>
+          <div class= "textContainer"> <label class="UIScale" for="panelLegIndex">Panel ID: </label> </div>
+          <div class= "textContainer"> <label class="UIScale" for="panelLegIndex">Panel Chain ID: </label> </div>
           <div class= "textContainer"> <label class="UIScale" for="panelLeg">Panel Chain: </label> </div>
           <div class= "textContainer"> <label class="UIScale" for="parentPanel">Previous Panel: </label> </div>
           <div class= "textContainer"> <label class="UIScale" for="childPanel">Next Panel: </label> </div>
@@ -23,7 +24,8 @@
       <div class="vl"></div>
 
       <div id= "values">
-        <div class= "textContainer"> <input type="text" style="width: 60px" id="panelIndex" class= "panelInput" placeholder="Id"
+        <div class= "textContainer"> <span id="panelId"     class="UIScale panelInput"></span> </div>
+        <div class= "textContainer"> <input type="text" style="width: 60px" id="panelLegIndex" class= "panelInput" placeholder="Id"
                autofocus onFocus="this.select()" onkeydown = "keyEvent(event);" > </div>
 
         <div class= "textContainer"> <span id="panelLeg"     class="UIScale panelInput"></span> </div>

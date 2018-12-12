@@ -19,7 +19,7 @@ function init( cnf ) {
   //set Element values to given arguments
   document.getElementById('xPos').value= ''+ initDat.pos.x.value + initDat.pos.x.unit;
   document.getElementById('yPos').value= ''+ initDat.pos.y.value + initDat.pos.y.unit;
-  document.getElementById('panelIndex').value= ''+ initDat.index;
+  document.getElementById('panelLegIndex').value= ''+ initDat.index;
   document.getElementById('fanPower').value= ''+ initDat.fanpower;
   document.getElementById('fanVal').innerHTML = initDat.fanpower + "%";
   document.getElementById('redval').value= ''+ initDat.colorCorr.red;
@@ -28,6 +28,7 @@ function init( cnf ) {
   document.getElementById('rVal').innerHTML = initDat.colorCorr.red + "%";
   document.getElementById('gVal').innerHTML = initDat.colorCorr.green + "%";
   document.getElementById('bVal').innerHTML = initDat.colorCorr.blue + "%";
+  document.getElementById('panelId').innerHTML= ''+ cnf.panelId;
   document.getElementById('panelLeg').innerHTML= ''+ initDat.panelLeg;
   document.getElementById('parentPanel').innerHTML= ''+ initDat.parentPanel;
   document.getElementById('childPanel').innerHTML= ''+ initDat.childPanel;
@@ -45,7 +46,7 @@ function clickOk() {
     //check if legal input
     let data= {};
     data.panelId= panelId;
-    data.index= document.getElementById('panelIndex').value;
+    data.index= document.getElementById('panelLegIndex').value;
     data.fanpower= document.getElementById('fanPower').value;
     data.colorCorr= {};
     data.colorCorr.red= document.getElementById('redval').value;
@@ -81,7 +82,9 @@ function keyEvent(event) {
 }
 //checks if index is number
 function checkIndex(index) {
-      index= index.match(/^[0-9]\d*$/g);
+      index= index.match(/^[0-9]\d*$/g); //filter everything but numbers
+      index= parseInt(index[0]); //cut value out of array and convert to number
+
     return index;
 }
 //checks if changes to positions were made
@@ -93,8 +96,11 @@ function checkForChange(data) {
   console.log(changes);
   //if at least one position defined set undefined to old value
   if( changes.pos !== undefined ) {
-    changes.pos.x= (changes.pos.x === undefined) ? initDat.pos.x : changes.pos.x;
-    changes.pos.y= (changes.pos.y === undefined) ? initDat.pos.y : changes.pos.y;
+      changes.pos.x= Object.assign(initDat.pos.x, changes.pos.x);
+      changes.pos.y= Object.assign(initDat.pos.y, changes.pos.y);
+
+    //changes.pos.x= (changes.pos.x === undefined) ? initDat.pos.x : changes.pos.x;
+  //  changes.pos.y= (changes.pos.y === undefined) ? initDat.pos.y : changes.pos.y;
   }
   //if at least one color defined set undefined to old value
   if( changes.colorCorr !== undefined ) {
