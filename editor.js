@@ -356,6 +356,10 @@ function PanelLeg( i, p5 ) {
   this.id= i;
   this.color= randomPastelColor( p5 );
 
+  this.getHexColor= function() {
+    return this.color.toString('#rrggbb');
+  }
+
   // Remove panel by id
   this.removePanel= function( map, pid ) {
     let panel= map.get( pid );
@@ -527,11 +531,14 @@ function PanelLegArray( m ) {
   }
 
   this.attachPanel= function( lid, pid, index= -1 ) {
-    console.log(lid, pid, index);
     let leg= this.get( lid );
     let panel= this.map.get( pid );
 
     if( (leg === null) || (panel === null) ) {
+      return false;
+    }
+    if(panel.panelLegIndex > (-1)) {
+      console.log("panel already attached to leg!");
       return false;
     }
 

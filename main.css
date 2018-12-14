@@ -482,14 +482,26 @@ input[type=number].ui-colorpicker-box::-webkit-inner-spin-button:active {
 .panelLegParagraph {
   padding: 3px !important;
   margin: 0px;
+  margin-bottom: 5px;
+  color: black;
+  z-index: 5;
+  position: relative;
 }
 
 .panelLegTree-icon {
-    float: left;
-    height: 1em;
-    width: 1em;
-    margin-top: 0.2em;
-    transform: rotate(270deg);
+  float: left;
+  fill: #abb2bf;
+  height: 60px;
+  width: 2em;
+  margin-right: -18px;
+  margin-top: -37px;
+  position: relative;
+  z-index: 0;
+}
+
+.legButtonWrapper {
+  height: 25px;
+  margin-left: 10px;
 }
 
 .panelLegPanel {
@@ -497,14 +509,10 @@ input[type=number].ui-colorpicker-box::-webkit-inner-spin-button:active {
   color: #abb2bf;
   font-size: 15px;
   cursor: pointer;
-  padding: 5px;
-  width: 100%;
   border: none;
   text-align: left;
   outline: none;
-  border-radius: 2px;
-  margin-left: 10px;
-  display: block;
+  margin-left: 2px;
 }
 
 

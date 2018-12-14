@@ -43,48 +43,52 @@ function CursorTip() {
 
     // If a panel was clicked, invert its selecetion status
     if( this.clickPanel !== null ) {
-      let e= ast.editor;
-
-      //Window properties
-      let win= {width:700, height:438, title:"Panel Settings", html:"wins/panelWindow.html", isUrl: true};
-
-      //Panel
-      win.panelId= this.clickPanel.panelId;
-      win.fanpower= this.clickPanel.fanpower;
-      win.colorCorr= this.clickPanel.colorCorr;
-
-      //Convert position
-      win.gridUnit= e.grid.conversion.unit;
-      win.pos= {};
-      win.pos.x= {}; // can't be written as win.pos.x=win.pos.y={}
-      win.pos.y= {}; // because pos.x will always be set to pos.y
-      win.pos.x.unit= win.gridUnit;
-      win.pos.y.unit= win.gridUnit;
-      win.pos.x.value= Math.round(this.clickPanel.position.x/e.grid.conversion.factor());
-      win.pos.y.value= Math.round(this.clickPanel.position.y/e.grid.conversion.factor());
-
-      //Define panel Leg parameters for panelWindow
-      win.panelLeg= this.clickPanel.panelLegId;
-      win.index= this.clickPanel.panelLegIndex;
-      let leg= e.map.legs.get( win.panelLeg );
-
-      // Load leg data
-      if( leg !== null ) {
-        if( (win.parentPanel= leg.previous( win.panelId ) ) === -1 ) {
-          win.parentPanel= '-';
-        }
-        if( (win.childPanel= leg.next( win.panelId ) ) === -1 ) {
-          win.childPanel= '-';
-        }
-      } else {
-        // Set dummy value on error
-        win.parentPanel= win.childPanel= win.panelLeg= "-";
-        win.index= 0;
-      }
-
-      //Open panelWindow
-      ast.createMessageBox( win );
+      this.openPanelWindow( ast, this.clickPanel );
     }
+  }
+
+  this.openPanelWindow= function( ast, panelObj ) {
+    let e= ast.editor;
+
+    //Window properties
+    let win= {width:700, height:438, title:"Panel Settings", html:"wins/panelWindow.html", isUrl: true};
+
+    //Panel
+    win.panelId= panelObj.panelId;
+    win.fanpower= panelObj.fanpower;
+    win.colorCorr= panelObj.colorCorr;
+
+    //Convert position
+    win.gridUnit= e.grid.conversion.unit;
+    win.pos= {};
+    win.pos.x= {}; // can't be written as win.pos.x=win.pos.y={}
+    win.pos.y= {}; // because pos.x will always be set to pos.y
+    win.pos.x.unit= win.gridUnit;
+    win.pos.y.unit= win.gridUnit;
+    win.pos.x.value= Math.round(panelObj.position.x/e.grid.conversion.factor());
+    win.pos.y.value= Math.round(panelObj.position.y/e.grid.conversion.factor());
+
+    //Define panel Leg parameters for panelWindow
+    win.panelLeg= panelObj.panelLegId;
+    win.index= panelObj.panelLegIndex;
+    let leg= e.map.legs.get( win.panelLeg );
+
+    // Load leg data
+    if( leg !== null ) {
+      if( (win.parentPanel= leg.previous( win.panelId ) ) === -1 ) {
+        win.parentPanel= '-';
+      }
+      if( (win.childPanel= leg.next( win.panelId ) ) === -1 ) {
+        win.childPanel= '-';
+      }
+    } else {
+      // Set dummy value on error
+      win.parentPanel= win.childPanel= win.panelLeg= "-";
+      win.index= 0;
+    }
+
+    //Open panelWindow
+    ast.createMessageBox( win );
   }
 
   this.closed= function( ast, win, ev ) {
@@ -172,8 +176,9 @@ function CursorTip() {
       if( changes.hasOwnProperty( 'index' ) === true ) {
         let curIndex= panel.panelLegIndex;
         //let leg= e.map.legs.get( panel.panelLegId ); // get index of leg
-        e.map.legs.detachPanel(panel.panelLegId, pid); // detach Panel from leg
-        e.map.legs.attachPanel(panel.panelLegId, pid, changes.index); //reattach it to new position
+        let lid= panel.panelLegId;
+        e.map.legs.detachPanel(lid, pid); // detach Panel from leg
+        e.map.legs.attachPanel(lid, pid, changes.index); //reattach it to new position
         changes.index= curIndex;
       }
     }
@@ -230,7 +235,6 @@ function CursorTip() {
     // ... could also be a click
     if( dragged && ( end.sub( begin ).mag() > 10 ) ) {
       ast.editor.map.selection.endSelection();
-      console.log( ast.editor.map.selection.selection );
     } else {
       ast.editor.map.selection.resetSelectionArea();
     }

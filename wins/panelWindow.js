@@ -8,7 +8,7 @@ let initDat= null;
 
 // Called on init
 function init( cnf ) {
-
+  cnf.index= cnf.index +1; //just for visualizing
   initDat= new Common.DefaultConfig( cnf,
                                     { gridUnit: 'cm', pos: {x:0, y:0}, index: 0,
                                       panelLeg: 'none', parentPanel: 'none', childPanel: 'none',
@@ -59,6 +59,7 @@ function clickOk() {
     else if( (data.index= checkIndex(data.index) ) === null ) { box.createErrorBox("Error: Index is not a number"); }
     else {  //Submit
       data= checkForChange(data);
+      data.index= data.index-1; // just for visualizing (line 11)
       data.desc= "panel-config-event";
       console.log(data);
       box.submit(data);
