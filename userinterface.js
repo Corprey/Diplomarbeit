@@ -49,7 +49,7 @@ function UserInterface() {
     {id: 4, type: "radio", connections: [5,6,7], name: "Mouse Cursor", iconType: 'fas', iconImg: 'fa-mouse-pointer', tooltipText:'  Standard Cursor  ',  action:'ui.uiEditor.actions.setToolTip();', defaultEnabled: true },
     {id: 5, type: "radio", connections: [4,6,7], name: "Place Panel",  iconType: 'far', iconImg: 'fa-plus-square',   tooltipText:'  Place Panel  ',      action:'ui.uiEditor.actions.setToolTip("panel-place");'},
     {id: 6, type: "radio", connections: [4,5,7], name: "Paint",        iconType: 'fas', iconImg: 'fa-paint-brush',   tooltipText:'  Paint Tool  ',       action:'ui.uiEditor.actions.setToolTip();'},
-    {id: 7, type: "radio", connections: [4,5,6], name: "Connect",      iconType: 'fas', iconImg: 'fa-project-diagram',   tooltipText:'  Connect Tool  ', action:'ui.uiEditor.actions.setToolTip();'},
+    {id: 7, type: "radio", connections: [4,5,6], name: "Connect",      iconType: 'fas', iconImg: 'fa-project-diagram',   tooltipText:'  Connect Tool  ', action:'ui.uiEditor.actions.setToolTip("leg-connect");'},
   ]);
 
 
@@ -92,17 +92,22 @@ function UserInterface() {
       }
 
     let node= document.createElement("div"); //create div (leg content)
-    let span= document.createElement("p"); //create span (leg name)
-    span.classList.add("panelLegParagraph");
+    let button= document.createElement("button"); //create button (leg name)
+    button.classList.add("panelLegParagraph");
+    button.appendChild( document.createTextNode( "chain " + (legId + 1)) ); // set buttons name
+
+    button.addEventListener("click", function() {
+      ui.uiEditor.actions.setToolTip('leg-connect', legId);
+      ui.uiToolbar.getById(7).update();
+    });
 
     let leg= ui.uiEditor.map.legs.get(legId);
     if( leg !== null ) {
       let color= leg.getHexColor();
-      span.style.backgroundColor= color;
+      button.style.backgroundColor= color;
     }
 
-    span.innerHTML= "chain " + (legId + 1);
-    node.appendChild( span );
+    node.appendChild( button );
 
       // look for next existing leg
       let i= 0;
@@ -116,9 +121,24 @@ function UserInterface() {
       anker.legArray[legId]= anker.insertBefore(node, anker.legArray[i]);
   }
 
+  this.uiEditor.map.legs.cbDeleteLeg= function( lid ) {
+    // get anker div
+    let anker= document.getElementById("panelLegHolder");
+    let leg= anker.legArray[lid];
+
+    if( leg == null) {
+      console.log("no leg found with id" + lid);
+      return false;
+    }
+
+    //removes child (leg) from anker
+    anker.removeChild(leg);
+    //remove element from legArray
+    anker.legArray.splice(lid, 1);
+  }
+
   this.uiEditor.map.legs.cbAddPanel= function(lid, pid, index) {
     // get anker div
-    console.log(lid,pid,index);
     let anker= document.getElementById("panelLegHolder");
     let arr= anker.legArray[lid];
 
@@ -136,12 +156,7 @@ function UserInterface() {
       while( arr.panelArray.length <= index ) {
          arr.panelArray.push( null ); //fill empty spaces
       }
-    } /*else { // check if panelLegId already exists
-        if( arr.panelArray[index] !== null ) {
-          console.log("not empty");
-          return false;
-        }
-      }*/
+    }
       let icon= document.createElement("img");                 // create icon element
       icon.setAttribute("src", "./icons/leg-symbol.svg");  // set source of the image
       icon.classList.add("panelLegTree-icon");                  // set class

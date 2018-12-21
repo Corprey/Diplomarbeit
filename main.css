@@ -13,7 +13,6 @@
 :not(input):not(textarea)::before {
     -webkit-user-select: none;
     user-select: none;
-    cursor: default;
 }
 
 .UIScale h1 {
@@ -37,8 +36,6 @@ html, body {
   background-color: #282c34;
   margin: 0;
   padding: 0;
-
-
 }
 
 /********************************************************************************************************************/
@@ -313,9 +310,8 @@ input[type=number].ui-colorpicker-box::-webkit-inner-spin-button:active {
   background-color: #21252b;
   border-bottom: solid black 1px;
   max-height: 60px;
-
-
 }
+
 #tools-wrapper{
   overflow: hidden;
   height: 60px;
@@ -363,11 +359,13 @@ input[type=number].ui-colorpicker-box::-webkit-inner-spin-button:active {
 
 .tooltip {
     position: relative;
+    cursor: pointer;
 }
 
 .tooltip .tooltipText {
     visibility: hidden;
     white-space: pre;
+    cursor: pointer;
     background-color: #131416;
     color: #abb2bf;
     text-align: center;
@@ -390,6 +388,7 @@ input[type=number].ui-colorpicker-box::-webkit-inner-spin-button:active {
 
 .tooltip:hover .tooltipText {
     visibility: visible;
+    cursor: pointer;
     opacity: 1;
 }
 

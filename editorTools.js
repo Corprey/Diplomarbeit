@@ -333,10 +333,8 @@ function PanelPlaceTip() {
     this.panel.select( false );
     this.panel.requestScreen();
     ast.editor.map.attachPanel( this.panel );
-    console.log( ast.editor.map.panels );
 
     ast.pushAction( 'panel-place', { pos: this.panel.position.copy(), panelObj: this.panel } );
-    console.log( ast.actions );
 
     this.actv( ast ); // get new panel to hang of the tool-tip
   }
@@ -358,8 +356,118 @@ function PanelPlaceTip() {
   this.intf= new ActionInterface( this, 'panel-place', [this.actv, this.end, null, null, this.press, null, null, this.draw, this.undo, this.redo]);
 }
 
+function LegConnectTip() {
+
+  this.clickPanel= null;
+  this.lastPanel= null;
+  this.legId= null;
+
+  this.actv= function( ast, lid= null ) {
+
+    // Set cursor for workspace to cell (big plus)
+    document.body.style.cursor= 'cell';
+    this.legId= lid;
+  }
+
+  this.end= function( ast ) {
+    // Set cursor to standard
+    document.body.style.cursor= "auto";
+    this.legId= null;
+    this.lastPanel= null;
+  }
+
+  this.click= function( ast, pos ) {
+    document.body.style.cursor= 'cell';
+    this.clickPanel= ast.editor.map.selection.tracePoint( pos );
+    let oldLid= null;
+    if( this.clickPanel !== null ) {
+       // if toolbar button was clicked
+      if(this.legId === null) {
+        // if panel has no current leg, create new and attach to it
+        if(this.clickPanel.panelLegId === -1 ) {
+          oldLid= this.clickPanel.panelLegId;
+          let lid;
+          this.legId= ( (lid= ast.editor.map.legs.addLeg()) !== false ) ? lid : null;
+          this.attachToLeg(ast, oldLid);
+        }
+         // if panel already attached to leg
+        else {
+          this.legId= this.clickPanel.panelLegId;
+        }
+      }
+      // if button in sidebar was clicked
+      else {
+        this.attachToLeg(ast, oldLid);
+      }
+      let leg= ast.editor.map.legs.get(this.legId);
+      let lastPid= leg.arr[leg.arr.length -1];
+      this.lastPanel= ast.editor.map.get (lastPid);
+    }
+  }
+  this.attachToLeg= function(ast, oldLid) {
+    if(this.legId !== null) {
+      if( (ast.editor.map.legs.attachPanel(this.legId, this.clickPanel.panelId)) !== false) {
+        let color= ast.editor.map.legs.arr[this.legId].getHexColor();
+        ast.pushAction( 'leg-connect', {lid: this.legId, pid: this.clickPanel.panelId, oldLid: oldLid, color: color} );
+      }
+    }
+
+  }
+
+  this.undo= function( ast, t, d ) {
+    this.legId= (d.lid !== null) ? d.lid : null;
+    ast.editor.map.legs.detachPanel(d.lid, d.pid);
+
+    // if new leg was created in action
+    if(d.oldLid === -1) {
+      ast.editor.map.legs.deleteLeg(d.lid);
+      this.legId= null;
+    }
+
+  }
+
+  this.draw= function( ast, p5 ) {
+    if(( this.legId !== null ) && ( this.lastPanel !== null )) {
+
+      let leg= ast.editor.map.legs.get( this.legId );
+      if( leg !== null ) {
+        p5.push();
+
+        let beg= leg.calcOffset( ast.editor, this.lastPanel.position );
+        let mouse= ast.editor.getCanvasOrigin().add( p5.mouseX, p5.mouseY );
+
+        p5.stroke( leg.getHexColor() );
+        p5.strokeWeight( 5 );
+        p5.line( beg.x, beg.y, mouse.x, mouse.y );
+
+        p5.pop();
+      }
+
+    }
+
+  }
+
+  this.redo= function( ast, t, d ) {
+    this.legId= d.lid;
+
+    // if leg has been removed by undo
+    if(ast.editor.map.legs.get(d.lid) === null) {
+      ast.editor.map.legs.addLeg(d.lid);
+      ast.editor.map.legs.arr[d.lid].setHexColor(d.color);
+
+      let ele= document.getElementById("panelLegHolder");
+      ele.legArray[d.lid].childNodes[0].style.backgroundColor= d.color;
+    }
+    ast.editor.map.legs.attachPanel(d.lid, d.pid);
+  }
+
+  this.intf= new ActionInterface( this, 'leg-connect', [this.actv, this.end, null, null, null, this.click, null, this.draw, this.undo, this.redo]);
+
+}
+
 
 
 module.exports.CursorTip= CursorTip;
 module.exports.PanelPlaceTip= PanelPlaceTip;
 module.exports.PanelMoveTip= PanelMoveTip;
+module.exports.LegConnectTip= LegConnectTip;

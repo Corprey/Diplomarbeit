@@ -354,10 +354,15 @@ LedPanel.init= function( p5 ) {
 function PanelLeg( i, p5 ) {
   this.arr=[];
   this.id= i;
-  this.color= randomPastelColor( p5 );
+  this.p5= p5;
+  this.color= randomPastelColor( this.p5 );
 
   this.getHexColor= function() {
     return this.color.toString('#rrggbb');
+  }
+
+  this.setHexColor= function(str) {
+    this.color= this.p5.color(str);
   }
 
   // Remove panel by id
@@ -433,12 +438,19 @@ function PanelLeg( i, p5 ) {
     return -1;
   }
 
+  this.calcOffset= function( editor, pos, neg= false ) {
+
+    let scl= editor.scale;
+    let middle= 50* scl;
+    let offset= 10* scl;
+
+    let o= neg ? -offset : offset;
+    return { x: scl * pos.x + middle + o,  y: scl * pos.y + middle };
+  }
+
   // Draw connections between the panels to canvas
   this.draw= function( editor, map ) {
     let p5= editor.p5;
-    let scl= editor.scale;
-    let middle= 50 * scl;
-    let offset= 10 * scl;
 
     p5.stroke( this.color );
     p5.strokeWeight( 5 );
@@ -450,8 +462,11 @@ function PanelLeg( i, p5 ) {
       let pe= map.get( this.arr[i+1] );
 
       if( (pb !== null) && (pe !== null) ) {
-        p5.line( scl*pb.position.x+ middle+ offset, scl*pb.position.y+ middle,
-                 scl*pe.position.x+ middle- offset, scl*pe.position.y+ middle );
+
+        let drb= this.calcOffset(editor, pb.position);
+        let dre= this.calcOffset(editor, pe.position, true);
+
+        p5.line( drb.x, drb.y, dre.x, dre.y );
 
       }
     }
@@ -465,6 +480,7 @@ function PanelLegArray( m ) {
   this.map= m;
 
   this.cbAddLeg= null;
+  this.cbDeleteLeg= null;
   this.cbAddPanel= null;
   this.cbDeletePanel= null;
 
@@ -507,9 +523,18 @@ function PanelLegArray( m ) {
           this.cbAddLeg( id );
       }
 
-    return true;
+    return id;
+  }
 
+  this.deleteLeg= function( lid ) {
+    let leg= this.get( lid );
+    leg.destroy( this.map );
 
+    if(this.cbDeleteLeg !== null) {
+        this.cbDeleteLeg( lid );
+    }
+
+    this.arr[lid]= null;
   }
 
   this.get= function( lid ) {
@@ -752,7 +777,7 @@ function EditorMap( e ) {
   this.attachPanel= function( p ) {
     let id= p.panelId;
 
-    // fill array with empty slots if id is greater than the lenght of the array
+    // fill array with empty slots if id is greater than the length of the array
     while( this.panels.length <= id ) {
       this.panels.push( null );
     }
@@ -946,6 +971,7 @@ function ActionStack( e ) {
   this.addToolTip( new Tools.CursorTip() );
   this.addToolTip( new Tools.PanelPlaceTip() );
   this.addToolTip( new Tools.PanelMoveTip() );
+  this.addToolTip( new Tools.LegConnectTip() );
   this.setToolTip();                        // enable cursor tip as default tooltip
 
   this.mouseDragBegin= null;
@@ -1109,7 +1135,8 @@ function Editor( i, cnf ) {
       if( p5.mouseButton === p5.RIGHT ) {
         if( self.clickPosition !== null ) { // calculate new position as offset from old position with curosr movement
           self.positionOffset= p5Module.Vector.add( self.lastPositionOffset, vectorSub(p5.mouseX, p5.mouseY, self.clickPosition) );
-          p5.cursor( p5.HAND );
+          document.body.style.cursor= '-webkit-grabbing'; //grabbing-hand cursor
+          //p5.cursor( p5.HAND );
         }
 
       } else if( p5.mouseButton === p5.LEFT ) {               // left click controls the tooltip
@@ -1119,7 +1146,7 @@ function Editor( i, cnf ) {
 
     p5.mouseReleased= function() {
       self.clickPosition= null;     // reset click position to stop dragging calculation
-      p5.cursor( p5.ARROW );
+      document.body.style.cursor= 'auto'; //default cursor
 
       self.actions.eventMouseRelease( self.map.mouseMapPos );
     }
