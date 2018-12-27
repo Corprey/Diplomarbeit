@@ -547,7 +547,6 @@ function PanelLegArray( m ) {
     let index= panel.panelLegIndex;
 
     if( (leg !== null) && (panel !== null) ) {
-
       if( this.cbDeletePanel !== null) {
           this.cbDeletePanel( lid, index );
       }
@@ -560,6 +559,7 @@ function PanelLegArray( m ) {
     let panel= this.map.get( pid );
 
     if( (leg === null) || (panel === null) ) {
+      console.log("no leg or panel found!");
       return false;
     }
     if(panel.panelLegIndex > (-1)) {
@@ -648,7 +648,7 @@ function PanelSelection( e, m ) {
 
   // Create selection from panel ids
   this.fromIds= function( ids ) {
-    this.flush();                       // remove current selction
+    this.flush();                       // remove current selection
 
     for( let i= 0; i!= ids.length; i++ ) {
       let p= this.editor.map.get( ids[i] ); // iterate through all ids and add panels
@@ -710,6 +710,7 @@ function PanelSelection( e, m ) {
       this.selection[i].moveBy( v );
     }
   }
+
 
   // Get Ids of all selected panels
   this.getIds= function() {
@@ -972,6 +973,7 @@ function ActionStack( e ) {
   this.addToolTip( new Tools.PanelPlaceTip() );
   this.addToolTip( new Tools.PanelMoveTip() );
   this.addToolTip( new Tools.LegConnectTip() );
+  this.addToolTip( new Tools.PanelDetachTip() );
   this.setToolTip();                        // enable cursor tip as default tooltip
 
   this.mouseDragBegin= null;

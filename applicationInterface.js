@@ -73,6 +73,10 @@ function AppInterface( ui ) {
 
       case 'switchGrid':
         break;
+
+      case 'deletePanel':
+        this.userInterface.uiEditor.map.selection.getIds
+        break;
     }
   }
 

@@ -315,7 +315,7 @@ input[type=number].ui-colorpicker-box::-webkit-inner-spin-button:active {
 #tools-wrapper{
   overflow: hidden;
   height: 60px;
-  width: 50%;
+  width: 70%;
   display: inline-block;
   margin: 0px;
 }
@@ -340,7 +340,6 @@ input[type=number].ui-colorpicker-box::-webkit-inner-spin-button:active {
   background-color:  #131416; /*less dark Gray background */
 }
 
-
 .radioButton-active {
   background-color:  #131416; /*less dark Gray background */
   border: solid #835e15 2px; /* Remove borders */
@@ -353,6 +352,16 @@ input[type=number].ui-colorpicker-box::-webkit-inner-spin-button:active {
   padding: 5px 5px; /* Some padding */
   font-size: 18px; /* Set a font size */
   cursor: pointer; /* Mouse pointer on hover */
+}
+
+.toolIcon {
+  -webkit-font-smoothing: antialiased;
+  display: inline-block;
+  font-style: normal;
+  font-variant: normal;
+  text-rendering: auto;
+  line-height: 1;
+  width: 80%;
 }
 
 /********************************************************************************************************************/
@@ -482,9 +491,13 @@ input[type=number].ui-colorpicker-box::-webkit-inner-spin-button:active {
   padding: 3px !important;
   margin: 0px;
   margin-bottom: 5px;
+  border: none;
   color: black;
+  font-size: 15px;
+  font-weight: 500;
   z-index: 5;
   position: relative;
+  width: 90px;
 }
 
 .panelLegTree-icon {

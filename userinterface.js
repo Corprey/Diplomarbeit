@@ -46,10 +46,11 @@ function UserInterface() {
     {id: 1, name: "Zoom Out",     iconType: 'fas', iconImg: 'fa-search-minus',  tooltipText:"  Zoom Out  ", action:'ui.zoomOut();'},
     {id: 2, name: "Undo",         iconType: 'fas', iconImg: 'fa-undo',          tooltipText:"  Undo  ",     action:'ui.uiEditor.actions.eventUndo();'},
     {id: 3, name: "Redo",         iconType: 'fas', iconImg: 'fa-redo',          tooltipText:"  Redo  ",     action:'ui.uiEditor.actions.eventRedo();'},
-    {id: 4, type: "radio", connections: [5,6,7], name: "Mouse Cursor", iconType: 'fas', iconImg: 'fa-mouse-pointer', tooltipText:'  Standard Cursor  ',  action:'ui.uiEditor.actions.setToolTip();', defaultEnabled: true },
-    {id: 5, type: "radio", connections: [4,6,7], name: "Place Panel",  iconType: 'far', iconImg: 'fa-plus-square',   tooltipText:'  Place Panel  ',      action:'ui.uiEditor.actions.setToolTip("panel-place");'},
-    {id: 6, type: "radio", connections: [4,5,7], name: "Paint",        iconType: 'fas', iconImg: 'fa-paint-brush',   tooltipText:'  Paint Tool  ',       action:'ui.uiEditor.actions.setToolTip();'},
-    {id: 7, type: "radio", connections: [4,5,6], name: "Connect",      iconType: 'fas', iconImg: 'fa-project-diagram',   tooltipText:'  Connect Tool  ', action:'ui.uiEditor.actions.setToolTip("leg-connect");'},
+    {id: 4, type: "radio", connections: [5,6,7,8], name: "Mouse Cursor", iconType: 'fas', iconImg: 'fa-mouse-pointer',  tooltipText:'  Standard Cursor  ',  action:'ui.uiEditor.actions.setToolTip();', defaultEnabled: true },
+    {id: 5, type: "radio", connections: [4,6,7,8], name: "Place Panel",  iconType: 'far', iconImg: 'fa-plus-square',    tooltipText:'  Place Panel  ',      action:'ui.uiEditor.actions.setToolTip("panel-place");'},
+    {id: 6, type: "radio", connections: [4,5,7,8], name: "Paint",        iconType: 'fas', iconImg: 'fa-paint-brush',    tooltipText:'  Paint Tool  ',       action:'ui.uiEditor.actions.setToolTip();'},
+    {id: 7, type: "radio", connections: [4,5,6,8], name: "Attach",      iconType: null, iconImg: 'add_leg.svg',         tooltipText:'  Connect Panel  ',    action:'ui.uiEditor.actions.setToolTip("leg-connect");'},
+    {id: 8, type: "radio", connections: [4,5,6,7], name: "Detach",      iconType: null, iconImg: 'remove_leg.svg',      tooltipText:'  Detach Panel  ',     action:'ui.uiEditor.actions.setToolTip("panel-detach");'}
   ]);
 
 
@@ -134,7 +135,7 @@ function UserInterface() {
     //removes child (leg) from anker
     anker.removeChild(leg);
     //remove element from legArray
-    anker.legArray.splice(lid, 1);
+    anker.legArray[lid]= null;
   }
 
   this.uiEditor.map.legs.cbAddPanel= function(lid, pid, index) {

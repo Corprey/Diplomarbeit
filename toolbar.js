@@ -7,7 +7,7 @@ const Common= require('./common.js');
 function ToolbarIcon(cnf) {
 
   let config= new Common.DefaultConfig( cnf,
-                                        { name: "tool", iconType: 'fas', iconImg: 'fa-search-plus', tooltipText:"undefined", action: function(){ console.log('Unassigned'); }, id: 0 },
+                                        { name: "tool", iconType: null, iconImg: 'fa-search-plus', tooltipText:"undefined", action: function(){ console.log('Unassigned'); }, id: 0 },
                                         function( prop, val ) {
                                           console.error("Error in ToolbarIcon Class Constructor: Missing configuration argument: "+ prop+
                                                         "\nSetting default value: "+ val );
@@ -20,9 +20,15 @@ function ToolbarIcon(cnf) {
   this.id= config.id;
   this.tooltipText= config.tooltipText;
 
-  this.toolIcon= document.createElement("span");    // create button Icon element
-  this.toolIcon.classList.add(this.iconType);       // set css class
-  this.toolIcon.classList.add(this.iconImg);        // set css class
+  if(this.iconType !== null) {
+    this.toolIcon= document.createElement("span");    // create button Icon element
+    this.toolIcon.classList.add(this.iconType);       // set css class
+    this.toolIcon.classList.add(this.iconImg);        // set css class
+  } else {
+    this.toolIcon= document.createElement("img");    // create icon element
+    this.toolIcon.setAttribute("src","./icons/" + this.iconImg);  // set source of the image
+    this.toolIcon.classList.add("toolIcon");          // set class
+  }
 
   this.tooltip= document.createElement("span");
   this.tooltip.classList.add("tooltipText");

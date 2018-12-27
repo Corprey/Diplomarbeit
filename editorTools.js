@@ -367,6 +367,12 @@ function LegConnectTip() {
     // Set cursor for workspace to cell (big plus)
     document.body.style.cursor= 'cell';
     this.legId= lid;
+    // if Leg button in sidebar clicked
+    if(this.legId !== null) {
+      let leg= ast.editor.map.legs.get(this.legId);
+      let lastPid= leg.arr[leg.arr.length -1];
+      this.lastPanel= ast.editor.map.get(lastPid);
+    }
   }
 
   this.end= function( ast ) {
@@ -374,6 +380,7 @@ function LegConnectTip() {
     document.body.style.cursor= "auto";
     this.legId= null;
     this.lastPanel= null;
+    this.clickPanel= null;
   }
 
   this.click= function( ast, pos ) {
@@ -401,9 +408,10 @@ function LegConnectTip() {
       }
       let leg= ast.editor.map.legs.get(this.legId);
       let lastPid= leg.arr[leg.arr.length -1];
-      this.lastPanel= ast.editor.map.get (lastPid);
+      this.lastPanel= ast.editor.map.get(lastPid);
     }
   }
+
   this.attachToLeg= function(ast, oldLid) {
     if(this.legId !== null) {
       if( (ast.editor.map.legs.attachPanel(this.legId, this.clickPanel.panelId)) !== false) {
@@ -411,19 +419,6 @@ function LegConnectTip() {
         ast.pushAction( 'leg-connect', {lid: this.legId, pid: this.clickPanel.panelId, oldLid: oldLid, color: color} );
       }
     }
-
-  }
-
-  this.undo= function( ast, t, d ) {
-    this.legId= (d.lid !== null) ? d.lid : null;
-    ast.editor.map.legs.detachPanel(d.lid, d.pid);
-
-    // if new leg was created in action
-    if(d.oldLid === -1) {
-      ast.editor.map.legs.deleteLeg(d.lid);
-      this.legId= null;
-    }
-
   }
 
   this.draw= function( ast, p5 ) {
@@ -442,9 +437,18 @@ function LegConnectTip() {
 
         p5.pop();
       }
-
     }
+  }
 
+  this.undo= function( ast, t, d ) {
+    this.legId= (d.lid !== null) ? d.lid : null;
+    ast.editor.map.legs.detachPanel(d.lid, d.pid);
+
+    // if new leg was created in action
+    if(d.oldLid === -1) {
+      ast.editor.map.legs.deleteLeg(d.lid);
+      this.legId= null;
+    }
   }
 
   this.redo= function( ast, t, d ) {
@@ -452,9 +456,11 @@ function LegConnectTip() {
 
     // if leg has been removed by undo
     if(ast.editor.map.legs.get(d.lid) === null) {
+      //recreate leg with last color
       ast.editor.map.legs.addLeg(d.lid);
       ast.editor.map.legs.arr[d.lid].setHexColor(d.color);
 
+      // set background color of sidebar Leg element
       let ele= document.getElementById("panelLegHolder");
       ele.legArray[d.lid].childNodes[0].style.backgroundColor= d.color;
     }
@@ -465,9 +471,71 @@ function LegConnectTip() {
 
 }
 
+function PanelDetachTip () {
 
+  this.clickPanel= null;
+  this.legId= null;
+
+  this.actv= function( ast ) {
+    // Set cursor for workspace to custom cursor (big minus)
+    document.body.style.cursor= "url(./icons/cursor_minus.svg), pointer";
+  }
+
+  this.end= function( ast ) {
+    // Set cursor to standard
+    document.body.style.cursor= "auto";
+    this.legId= null;
+    this.clickPanel= null;
+  }
+
+  this.click= function( ast, pos ) {
+    document.body.style.cursor= "url(./icons/cursor_minus.svg), pointer";
+    this.clickPanel= ast.editor.map.selection.tracePoint( pos );
+    this.legId= (this.clickPanel !== null) ? this.clickPanel.panelLegId : -1;
+    if(this.legId !== -1) {
+      let leg= ast.editor.map.legs.get(this.legId);
+      if(leg !== null) {
+        let color= ast.editor.map.legs.arr[this.legId].getHexColor();
+        let index= this.clickPanel.panelLegIndex;
+        ast.editor.map.legs.detachPanel(this.legId, this.clickPanel.panelId);
+        if(leg.arr.length === 0) {
+          ast.editor.map.legs.deleteLeg(this.legId);
+        }
+        ast.pushAction( 'panel-detach', {lid: this.legId, pid: this.clickPanel.panelId, index: index, color: color} );
+      }
+    }
+  }
+
+  this.undo= function( ast, t, d ) {
+    // if leg has been removed
+    if(ast.editor.map.legs.get(d.lid) === null) {
+      //recreate leg with last color
+      ast.editor.map.legs.addLeg(d.lid);
+      ast.editor.map.legs.arr[d.lid].setHexColor(d.color);
+
+      // set background color of sidebar Leg element
+      let ele= document.getElementById("panelLegHolder");
+      ele.legArray[d.lid].childNodes[0].style.backgroundColor= d.color;
+    }
+    ast.editor.map.legs.attachPanel(d.lid, d.pid, d.index);
+  }
+
+  this.redo= function( ast, t, d ) {
+    ast.editor.map.legs.detachPanel(d.lid, d.pid);
+
+    //if last Panel of Leg was deleted then delete Leg
+    let leg= ast.editor.map.legs.get(d.lid);
+    if(leg.arr.length === 0) {
+      ast.editor.map.legs.deleteLeg(d.lid);
+    }
+  }
+
+  this.intf= new ActionInterface( this, 'panel-detach', [this.actv, this.end, null, null, null, this.click, null, null, this.undo, this.redo]);
+
+}
 
 module.exports.CursorTip= CursorTip;
 module.exports.PanelPlaceTip= PanelPlaceTip;
 module.exports.PanelMoveTip= PanelMoveTip;
 module.exports.LegConnectTip= LegConnectTip;
+module.exports.PanelDetachTip= PanelDetachTip;

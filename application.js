@@ -379,6 +379,7 @@ function Application() {
                                                           { trig: 'Ctrl+A',  func: 'select-all',  type:'e' },
                                                           { trig: 'G',       func: 'switchGrid',  type:'e' },
                                                           { trig: 'Ctrl+G',  func: 'toggleGridWin',  type:'e' },
+                                                          { trig: 'Delete',  func: 'deletePanel',  type:'e' },
                                                          ] );
 
   this.terminate= function() {

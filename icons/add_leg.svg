@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   aria-hidden="true"
+   data-prefix="fas"
+   data-icon="project-diagram"
+   class="svg-inline--fa fa-project-diagram fa-w-20"
+   role="img"
+   viewBox="0 0 640 600"
+   version="1.1"
+   id="svg827"
+   sodipodi:docname="add_leg.svg"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   width="640"
+   height="600">
+  <metadata
+     id="metadata833">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs831" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     id="namedview829"
+     showgrid="false"
+     inkscape:zoom="0.828125"
+     inkscape:cx="76.918133"
+     inkscape:cy="266.20871"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg827" />
+  <path
+     d="M 384,408 H 256 c -17.67,0 -32,14.33 -32,32 v 128 c 0,17.67 14.33,32 32,32 h 128 c 17.67,0 32,-14.33 32,-32 V 440 c 0,-17.67 -14.33,-32 -32,-32 z M 192,120 C 192,102.33 177.67,88 160,88 H 32 C 14.33,88 0,102.33 0,120 v 128 c 0,17.67 14.33,32 32,32 h 95.72 l 73.16,128.04 C 211.98,388.98 232.4,376 256,376 h 0.28 L 192,263.51 V 216 H 416 V 152 H 192 Z M 608,88 H 480 c -17.67,0 -32,14.33 -32,32 v 128 c 0,17.67 14.33,32 32,32 h 128 c 17.67,0 32,-14.33 32,-32 V 120 c 0,-17.67 -14.33,-32 -32,-32 z"
+     id="path825"
+     style="fill:#808080;fill-opacity:1"
+     inkscape:connector-curvature="0" />
+  <rect
+     style="fill:#808080;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-opacity:1"
+     id="rect4538"
+     width="53.132076"
+     height="176.30188"
+     x="522.86792"
+     y="422.49057" />
+  <rect
+     style="fill:#808080;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-opacity:1"
+     id="rect4538-6"
+     width="53.132076"
+     height="176.30188"
+     x="-539.62268"
+     y="462.4906"
+     transform="rotate(-90)" />
+</svg>
