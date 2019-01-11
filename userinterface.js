@@ -7,12 +7,31 @@ const {Editor} = require('./editor.js');
 const {CollapsibleMenu}= require('./collapsible.js');
 const {Toolbar}= require('./toolbar.js');
 const {ColorPicker} = require('./colorPicker.js');
+const {ScreenMenu} = require('./screenMenu.js');
 const Split= require('split.js');
 
 
 function UserInterface() {
 
   const self= this;
+
+  var ctrlDown = false;
+  var ctrlKey = 17, vKey = 86, cKey = 67, zKey = 90;
+
+  /*document.body.onkeydown = function(e) {
+    if (e.keyCode == 17 || e.keyCode == 91) {
+      ctrlDown = true;
+    }
+    if ((ctrlDown && e.keyCode == zKey) || (ctrlDown && e.keyCode == vKey) || (ctrlDown && e.keyCode == cKey)) {
+      e.preventDefault();
+      console.log("test");
+    }
+  }
+  document.body.onkeyup = function(e) {
+    if (e.keyCode == 17 || e.keyCode == 91) {
+      ctrlDown = false;
+    };
+  }; */
 
   //set scale for font size to standard(1)
   this.fontScale= 1;
@@ -24,12 +43,14 @@ function UserInterface() {
   this.uiMenu= new CollapsibleMenu('sidebar-menu', [
     {name: "Panel Chains", html: "<div id= 'panelLegHolder'> </div>"},
     {name: "Files", html: "files angezeigt"},
-    {name: "output", html: "output angezeigt" },
+    {name: "Screen", html: "<div id= 'screenMenuHolder'> </div>" },
     {name: "tools", html: "output angezeigt" }
   ]);
+
   //reserve colorPicker
   this.uiColorPicker= null;
 
+  this.uiScreenMenu= new ScreenMenu();
 
   //set up editor functionality
   this.uiEditor= new Editor( this.interface, { ankorName: 'editor', backColor: '#282c34',
@@ -265,7 +286,7 @@ function UserInterface() {
 
   // split window into sidebar and workspace (adjustable width)
   this.splitSidebar= this.mkSplit(this.sidebarWrappers(), {
-    sizes: [12, 88], //width in %
+    sizes: [14, 86], //width in %
     minSize: [1,200] //minimal width of element in px
   });
 

@@ -33,9 +33,9 @@ function DefaultConfig( cnf, def, callback= function(){} ) {
 }
 
 //validates the Position/Grid input if number and unit are legal
-function checkPosInput(ele, prevUnit, box) {
+function checkPosInput(ele, prevUnit, box= null) {
 
-  let units= ["mm", "cm", "m", "mil", "in", "ft"];
+  let units= ["mm", "cm", "pl", "m", "mil", "in", "ft"];
   let input= document.getElementById(ele).value;
   let dat= {};
 
@@ -52,10 +52,12 @@ function checkPosInput(ele, prevUnit, box) {
   }
 
   if((dat.unit == null ) || (units.indexOf(dat.unit) < 0) ){
-    box.createErrorBox("Error: invalid unit!");
+    if(box!== null) { box.createErrorBox("Error: invalid unit!"); }
+    else { ui.uiConsole.printError("invalid unit!"); }
   }
   else if(!dat.value) {
-    box.createErrorBox("Error: invalid value!");
+      if(box!== null) {box.createErrorBox("Error: invalid value!"); }
+      else { ui.uiConsole.printError("invalid value!"); }
   }
   else {
     return dat;

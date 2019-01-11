@@ -49,7 +49,7 @@ function UIConsole( conname, cnf ) {
   }
 
 /********************************************************************************************************************/
-  // Fügt neue Zeile hinzu und dated container up
+  // Fügt neue Zeile hinzu und updated container
   this.println= function( str ) {
     this.addLine( str );
     this.emitText();

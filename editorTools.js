@@ -309,6 +309,66 @@ function PanelMoveTip() {
 
 }
 
+//Panel Tip that deletes all selected panels
+function PanelDeleteTip() {
+
+  this.actv= function( ast ) {
+    let ids= ast.editor.map.selection.getIds();
+    let panelObjects= [];
+    let panelLegIds= [];
+    let panelLegColor= [];
+    let panelLegIndices= [];
+
+    // save data of every deleted Panel to array
+    for( let i= 0; i!= ids.length; i++ ) {
+      panelObjects[i]= ast.editor.map.get(ids[i]);
+      panelLegIds[i]= panelObjects[i].panelLegId;
+      panelLegColor[i]= ast.editor.map.legs.arr[ panelLegIds[i] ].getHexColor();
+      panelLegIndices[i]= panelObjects[i].panelLegIndex;
+      ast.editor.map.removePanel( ids[i] );
+    }
+
+    if(panelObjects.length > 0) {
+      ast.pushAction( 'panel-delete', { panelObjects: panelObjects, legIds: panelLegIds,
+                                        legIndices: panelLegIndices, legColor: panelLegColor
+                                      } );
+    }
+    ast.setToolTip( 'cursor-tip' );   // go back to simple cursor
+  }
+
+  this.undo= function( ast, t, d ) {
+    // for each panel which has been deleted
+    for( let i= d.panelObjects.length-1; i >= 0; i-- ) {
+      d.panelObjects[i].requestScreen();
+
+      // if leg was deleted -> recreate leg
+      if(ast.editor.map.legs.get(d.legIds[i]) === null) {
+        //recreate leg with last color
+        ast.editor.map.legs.addLeg(d.legIds[i]);
+        ast.editor.map.legs.arr[d.legIds[i]].setHexColor(d.legColor[i]);
+        // set background color of sidebar Leg element
+        let ele= document.getElementById("panelLegHolder");
+        ele.legArray[d.legIds[i]].childNodes[0].style.backgroundColor= d.legColor[i];
+      }
+        // reassign lost Leg data
+        d.panelObjects[i].panelLegId= d.legIds[i];
+        d.panelObjects[i].panelLegIndex= d.legIndices[i];
+      // recreate Panel
+      ast.editor.map.attachPanel( d.panelObjects[i] );
+
+    }
+  }
+
+  this.redo= function( ast, t, d ) {
+    for( let i= 0; i!= d.panelObjects.length; i++ ) {
+      ast.editor.map.removePanel( d.panelObjects[i].panelId );
+    }
+  }
+
+  this.intf= new ActionInterface( this, 'panel-delete', [this.actv, null, null, null, null, null, null, null, this.undo, this.redo]);
+
+}
+
 /*
 * PanelTip that places panels on the map
 *
@@ -356,6 +416,8 @@ function PanelPlaceTip() {
   this.intf= new ActionInterface( this, 'panel-place', [this.actv, this.end, null, null, this.press, null, null, this.draw, this.undo, this.redo]);
 }
 
+
+// Tip that connects clicked Panels to leg
 function LegConnectTip() {
 
   this.clickPanel= null;
@@ -386,16 +448,14 @@ function LegConnectTip() {
   this.click= function( ast, pos ) {
     document.body.style.cursor= 'cell';
     this.clickPanel= ast.editor.map.selection.tracePoint( pos );
-    let oldLid= null;
     if( this.clickPanel !== null ) {
        // if toolbar button was clicked
       if(this.legId === null) {
         // if panel has no current leg, create new and attach to it
         if(this.clickPanel.panelLegId === -1 ) {
-          oldLid= this.clickPanel.panelLegId;
           let lid;
           this.legId= ( (lid= ast.editor.map.legs.addLeg()) !== false ) ? lid : null;
-          this.attachToLeg(ast, oldLid);
+          this.attachToLeg(ast);
         }
          // if panel already attached to leg
         else {
@@ -404,7 +464,7 @@ function LegConnectTip() {
       }
       // if button in sidebar was clicked
       else {
-        this.attachToLeg(ast, oldLid);
+        this.attachToLeg(ast);
       }
       let leg= ast.editor.map.legs.get(this.legId);
       let lastPid= leg.arr[leg.arr.length -1];
@@ -412,11 +472,11 @@ function LegConnectTip() {
     }
   }
 
-  this.attachToLeg= function(ast, oldLid) {
+  this.attachToLeg= function(ast) {
     if(this.legId !== null) {
       if( (ast.editor.map.legs.attachPanel(this.legId, this.clickPanel.panelId)) !== false) {
         let color= ast.editor.map.legs.arr[this.legId].getHexColor();
-        ast.pushAction( 'leg-connect', {lid: this.legId, pid: this.clickPanel.panelId, oldLid: oldLid, color: color} );
+        ast.pushAction( 'leg-connect', {lid: this.legId, pid: this.clickPanel.panelId, color: color} );
       }
     }
   }
@@ -443,12 +503,6 @@ function LegConnectTip() {
   this.undo= function( ast, t, d ) {
     this.legId= (d.lid !== null) ? d.lid : null;
     ast.editor.map.legs.detachPanel(d.lid, d.pid);
-
-    // if new leg was created in action
-    if(d.oldLid === -1) {
-      ast.editor.map.legs.deleteLeg(d.lid);
-      this.legId= null;
-    }
   }
 
   this.redo= function( ast, t, d ) {
@@ -471,6 +525,7 @@ function LegConnectTip() {
 
 }
 
+// Tip that detaches clicked panels from their leg
 function PanelDetachTip () {
 
   this.clickPanel= null;
@@ -498,9 +553,6 @@ function PanelDetachTip () {
         let color= ast.editor.map.legs.arr[this.legId].getHexColor();
         let index= this.clickPanel.panelLegIndex;
         ast.editor.map.legs.detachPanel(this.legId, this.clickPanel.panelId);
-        if(leg.arr.length === 0) {
-          ast.editor.map.legs.deleteLeg(this.legId);
-        }
         ast.pushAction( 'panel-detach', {lid: this.legId, pid: this.clickPanel.panelId, index: index, color: color} );
       }
     }
@@ -522,20 +574,57 @@ function PanelDetachTip () {
 
   this.redo= function( ast, t, d ) {
     ast.editor.map.legs.detachPanel(d.lid, d.pid);
-
-    //if last Panel of Leg was deleted then delete Leg
-    let leg= ast.editor.map.legs.get(d.lid);
-    if(leg.arr.length === 0) {
-      ast.editor.map.legs.deleteLeg(d.lid);
-    }
   }
 
   this.intf= new ActionInterface( this, 'panel-detach', [this.actv, this.end, null, null, null, this.click, null, null, this.undo, this.redo]);
 
 }
 
+function ScreenResizeTip() {
+
+  this.actv= function (ast, dat) {
+    console.log("actv");
+    ast.pushAction( 'screen-resize', dat );
+    console.log(ast);
+  }
+
+  this.end= function(ast) {
+    console.log("end");
+  }
+
+  this.undo= function (ast, t, d) {
+    console.log("undo");
+    this.swapConfig(ast, d);
+  }
+
+  this.redo= function (ast, t, d) {
+    console.log("redo");
+    this.swapConfig(ast, d);
+  }
+
+  this.swapConfig= function (ast, d) {
+    console.log("swap");
+    ui.uiScreenMenu.setPosition(d);
+    let helppos= d.pos.copy();
+    let helpdim= d.dim.copy();
+    d.pos= ast.editor.map.projection.position.copy();
+    d.dim= ast.editor.map.projection.dimensions.copy();
+    ast.editor.map.projection.position= helppos.copy();
+    ast.editor.map.projection.dimensions= helpdim.copy();
+
+
+
+
+  }
+
+  this.intf= new ActionInterface( this, 'screen-resize', [this.actv, this.end, null, null, null, null, null, null, this.undo, this.redo]);
+
+}
+
 module.exports.CursorTip= CursorTip;
-module.exports.PanelPlaceTip= PanelPlaceTip;
 module.exports.PanelMoveTip= PanelMoveTip;
+module.exports.PanelDeleteTip= PanelDeleteTip;
+module.exports.PanelPlaceTip= PanelPlaceTip;
 module.exports.LegConnectTip= LegConnectTip;
 module.exports.PanelDetachTip= PanelDetachTip;
+module.exports.ScreenResizeTip= ScreenResizeTip;

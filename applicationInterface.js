@@ -75,7 +75,11 @@ function AppInterface( ui ) {
         break;
 
       case 'deletePanel':
-        this.userInterface.uiEditor.map.selection.getIds
+        this.userInterface.uiEditor.actions.setToolTip('panel-delete');
+        break;
+
+      case 'select-all':
+
         break;
     }
   }

@@ -39,8 +39,8 @@ function boxSelect( pos, pt, width, height ) {
 // Check whether a box 'b' is inside a specified rectengular area 'ar'
 function boxCapture( arPos, arSize, bPos, width, height ) {
   return ( (bPos.x - arPos.x) >= 0 ) && ( (bPos.y - arPos.y) >= 0 ) &&
-				 ( (arPos.x + arSize.x) > (bPos.x + width ) ) &&
-				 ( (arPos.y + arSize.y) > (bPos.y + height) );
+				 ( (arPos.x + arSize.x) >= (bPos.x + width ) ) &&
+				 ( (arPos.y + arSize.y) >= (bPos.y + height) );
 }
 
 // Takes a boxes values per referece and normalizs them to a box with
@@ -133,18 +133,19 @@ function DebugScreen( e, spd, col ) {
 */
 function UnitConversion() {
   this.names= {
-    mm: 50/240,
-    cm: 50/24,
-    m:50/0.24,
-    mil: 50/9448.82,
-    in: 50/9.44882,
-    ft:50/0.78740167
+    mm:  100/240,
+    cm:  100/24,
+    pl:  100/1,
+    m:   100/0.24,
+    mil: 100/9448.82,
+    in:  100/9.44882,
+    ft:  100/0.78740167
   };
 
   this.unit= 'cm';
 
   this.mkFromText= function( v, u ) {
-    if( this.names.hasOwnProperty(u) === false ) {
+    if( this.has( u ) === false ) {
       this.unit= Object.keys(this.names)[1];
     } else {
       this.unit= u;
@@ -153,11 +154,69 @@ function UnitConversion() {
     return v* this.factor();
   }
 
+  this.has= function( u ) {
+    return this.names.hasOwnProperty(u);
+  }
+
   this.factor= function() {
     return this.names[ this.unit ];
   }
 
+  this.getFactor= function( u ) {
+    if( this.has( u ) === false ) {
+      console.error( "Unit does not exist." );
+      return;
+    }
 
+    return this.names[ u ];
+  }
+
+}
+
+
+/**
+* Class holding dimension as 2D vector with unit
+**/
+function Dimension( x, y, u, c ) {
+
+
+  this.get= function() {
+    return this.val;
+  }
+
+  this.toPixelSpace= function() {
+    return this.pix;
+  }
+
+  this.set= function( x, y, u, c ) {
+    this.val= new p5Module.Vector(x, y);
+    this.unit= u;
+
+    let factor= c.getFactor( u );
+    this.pix= new p5Module.Vector( x * factor, y * factor );
+  }
+
+  this.copy = function() {
+
+    return new Dimension( this );
+  }
+
+  this.val= null;
+  this.pix= null;
+  this.unit= null;
+
+  if( typeof x === "object" ) {
+    if( x.__proto__.constructor.name === "Dimension" ) {
+      this.val= x.val.copy();
+      this.pix= x.pix.copy();
+      this.unit= x.unit;
+    } else {
+        throw "Type Error: Dimension can only be copy-constructed from another Dimension-object.";
+      }
+
+  } else {
+    this.set( x, y, u, c );
+  }
 }
 
 
@@ -357,16 +416,18 @@ function PanelLeg( i, p5 ) {
   this.p5= p5;
   this.color= randomPastelColor( this.p5 );
 
-  this.getHexColor= function() {
+  }
+
+  PanelLeg.prototype.getHexColor= function() {
     return this.color.toString('#rrggbb');
   }
 
-  this.setHexColor= function(str) {
+  PanelLeg.prototype.setHexColor= function(str) {
     this.color= this.p5.color(str);
   }
 
   // Remove panel by id
-  this.removePanel= function( map, pid ) {
+  PanelLeg.prototype.removePanel= function( map, pid ) {
     let panel= map.get( pid );
     let index = this.arr.indexOf( panel.panelId );
     if (index > -1) {
@@ -384,7 +445,7 @@ function PanelLeg( i, p5 ) {
   }
 
   // Attach new panel
-  this.attachPanel= function( map, panel, index = -1 ) {
+  PanelLeg.prototype.attachPanel= function( map, panel, index = -1 ) {
     if( index < 0 ) {
       index = this.arr.length;
     }
@@ -402,7 +463,7 @@ function PanelLeg( i, p5 ) {
 
 
   // Clean up all the legs data
-  this.destroy= function( map ) {
+  PanelLeg.prototype.destroy= function( map ) {
     for( let i= 0; i!= this.arr.length; i++ ) {
 
       let panel= map.get( this.arr[i] );
@@ -413,7 +474,7 @@ function PanelLeg( i, p5 ) {
   }
 
   // Get the previous panel on the leg
-  this.previous= function( pid ) {
+  PanelLeg.prototype.previous= function( pid ) {
     let index= this.arr.indexOf( pid );
     if( index > -1 ) {
       if( index === 0 ) {
@@ -426,7 +487,7 @@ function PanelLeg( i, p5 ) {
   }
 
   // Get the next panel on the leg
-  this.next= function( pid ) {
+  PanelLeg.prototype.next= function( pid ) {
     let index= this.arr.indexOf( pid );
     if( index > -1 ) {
       if( index === this.arr.length -1 ) {
@@ -438,7 +499,7 @@ function PanelLeg( i, p5 ) {
     return -1;
   }
 
-  this.calcOffset= function( editor, pos, neg= false ) {
+  PanelLeg.prototype.calcOffset= function( editor, pos, neg= false ) {
 
     let scl= editor.scale;
     let middle= 50* scl;
@@ -449,7 +510,7 @@ function PanelLeg( i, p5 ) {
   }
 
   // Draw connections between the panels to canvas
-  this.draw= function( editor, map ) {
+  PanelLeg.prototype.draw= function( editor, map ) {
     let p5= editor.p5;
 
     p5.stroke( this.color );
@@ -471,8 +532,6 @@ function PanelLeg( i, p5 ) {
       }
     }
   }
-
-}
 
 
 function PanelLegArray( m ) {
@@ -551,6 +610,11 @@ function PanelLegArray( m ) {
           this.cbDeletePanel( lid, index );
       }
       leg.removePanel( this.map, pid );
+
+      if( leg.arr.length === 0) {
+        this.deleteLeg( leg.id );
+      }
+
     }
   }
 
@@ -737,6 +801,67 @@ function PanelSelection( e, m ) {
 
 }
 
+
+function ProjectionCanvas( p, d, e ) {
+
+  this.position= p;
+  this.dimensions= d;
+  this.isEnabled= false;
+  this.editor= e;
+
+
+  this.draw= function( e, p5 ) {
+    if( this.isEnabled ) {
+      let pos= e.getScaledPos( this.position.toPixelSpace().x, this.position.toPixelSpace().y );
+
+      p5.strokeWeight( 4 );
+      p5.stroke('#1dd396');
+      p5.fill( '#1dd39630' );
+
+      p5.rect( pos.x, pos.y, this.dimensions.toPixelSpace().x * e.scale, this.dimensions.toPixelSpace().y * e.scale );
+    }
+  }
+
+  this.enable= function( e= true ) {
+    this.isEnabled= e;
+  }
+
+  this.resize= function( xp, yp, up, xd, yd, ud ) {
+    let dat= {pos: this.position.copy(), dim: this.dimensions.copy()};
+
+    this.position.set( xp, yp, up, this.editor.grid.conversion );
+    this.dimensions.set( xd, yd, ud, this.editor.grid.conversion );
+
+    this.editor.actions.setToolTip('screen-resize', dat);
+  }
+
+  this.tracePanels= function( map ) {
+    // TODO
+
+    let hasError= false;
+
+    for( let i=0; i<map.panels.length; i++ ) {
+
+      let panel= map.get(i);
+      if( panel !== null) {
+        if( boxCapture( this.position.toPixelSpace(), this.dimensions.toPixelSpace(),
+                        panel.position, LEDPANELPIXELDIM, LEDPANELPIXELDIM ) ) {
+
+          /**/
+
+
+
+        } else {
+          hasError= true;
+          ui.uiConsole.printError("Panel " + i + " not in screen area!");
+        }
+      }
+    }
+    return !hasError;
+  }
+}
+
+
 /*
 *   EditorMap Class holding all dynamic objects to draw
 *
@@ -751,6 +876,10 @@ function EditorMap( e ) {
   this.legs= new PanelLegArray( this );
 
   this.selection= new PanelSelection( this.editor, this );
+
+  this.projection= new ProjectionCanvas(  new Dimension( 0, 0, "m", e.grid.conversion ),
+                                          new Dimension( 24*4, 24*4, "cm", e.grid.conversion ),
+                                          this.editor);
 
   // calculate the mouse position on the map
   this.updateMousePosition= function() {
@@ -791,7 +920,12 @@ function EditorMap( e ) {
     this.panels[id]= p;
 
     if( p.panelLegId >= 0 ) {
-      this.legs.attachPanel( p.panelLegId, p.panelId, p.panelLegIndex );
+      // save panelLegIndex in temporal variable
+      // and set it to zero for panel
+      // if not done attachPanel to leg would throw error "already attached"
+      let index= p.panelLegIndex;
+      p.panelLegIndex= -1;
+      this.legs.attachPanel( p.panelLegId, p.panelId, index );
     }
   }
 
@@ -823,6 +957,9 @@ function EditorMap( e ) {
         this.panels[i].draw( this.rederDisabled );
       }
     }
+
+    // Projection
+    this.projection.draw( this.editor, p5 );
 
     // Selection
     this.selection.show();
@@ -970,10 +1107,12 @@ function ActionStack( e ) {
   this.curTip= null;
 
   this.addToolTip( new Tools.CursorTip() );
-  this.addToolTip( new Tools.PanelPlaceTip() );
   this.addToolTip( new Tools.PanelMoveTip() );
+  this.addToolTip( new Tools.PanelDeleteTip() );
+  this.addToolTip( new Tools.PanelPlaceTip() );
   this.addToolTip( new Tools.LegConnectTip() );
   this.addToolTip( new Tools.PanelDetachTip() );
+  this.addToolTip( new Tools.ScreenResizeTip() );
   this.setToolTip();                        // enable cursor tip as default tooltip
 
   this.mouseDragBegin= null;

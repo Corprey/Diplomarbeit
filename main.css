@@ -527,6 +527,91 @@ input[type=number].ui-colorpicker-box::-webkit-inner-spin-button:active {
   margin-left: 2px;
 }
 
+/********************************************************************************************************************/
+
+.posInput {
+  width: 50px;
+
+  display: inline;
+  margin-top: 0px;
+  margin-left: 0px;
+  background-color: #282c34;
+  color: #abb2bf;
+  border-style: solid;
+  border-color: #21252b;
+  -webkit-box-shadow: none;
+}
+
+#posInputX {
+  margin-left: 28px;
+}
+
+#showWrapper {
+  margin-top: 5px;
+}
+
+/* hide browser defaul checkbox */
+#showWrapper input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+/* Create a custom checkbox */
+.checkmark {
+  display: inline-block;
+  margin-bottom: -2px;
+  margin-right: 5px;
+  height: 15px;
+  width: 15px;
+  background-color: #282c34;
+  border: 1px solid black;
+  border-radius: 5px;
+
+}
+
+/* On mouse-over, add a grey background color */
+#showWrapper:hover input ~ .checkmark {
+  background-color: #21252b;
+  border: 1px solid #835e15;
+}
+
+/* When the checkbox is checked, add a blue background */
+#showWrapper input:checked ~ .checkmark {
+  background-color: #2196F3;
+  border: 1px solid #282c34;
+}
+
+/* Create the checkmark/indicator (hidden when not checked) */
+.checkmark:after {
+  content: "";
+  position: relative;
+  display: none;
+}
+
+/* Show the checkmark when checked */
+#showWrapper input:checked ~ .checkmark:after {
+  display: block;
+}
+
+/* Style the checkmark/indicator */
+#showWrapper .checkmark:after {
+  left: 5px;
+  top: 2px;
+  width: 3px;
+  height: 6px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  -webkit-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+  transform: rotate(45deg);
+}
+
+
+
+
 
 
 
