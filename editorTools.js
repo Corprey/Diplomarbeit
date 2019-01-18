@@ -130,7 +130,6 @@ function CursorTip() {
         if((leg= e.map.legs.get( panel.panelLegId )) !== null) {
           changes.index= panel.panelLegIndex; //store old panel id in legArray
           lid= panel.panelLegId;
-          console.log(ev.index);
           e.map.legs.detachPanel(lid, pid); // detach Panel from leg
           e.map.legs.attachPanel(lid, pid, ev.index); //reattach it to new position
         }
@@ -139,9 +138,6 @@ function CursorTip() {
       if( Object.keys(changes).length > 0 ) {
         // push new action
         ast.pushAction( 'panel-config', {panelId: pid, changes: changes } );
-        console.log("action-push", changes);
-      }else {
-        console.log("no action-push");
       }
     }
   }
@@ -290,7 +286,6 @@ function PanelMoveTip() {
 
     ast.setToolTip( 'cursor-tip' );   // go back to simple cursor
     ast.editor.allowGridCursor= true;
-    console.log( 'back' );
   }
 
   // Move panels backwards
@@ -323,8 +318,10 @@ function PanelDeleteTip() {
     for( let i= 0; i!= ids.length; i++ ) {
       panelObjects[i]= ast.editor.map.get(ids[i]);
       panelLegIds[i]= panelObjects[i].panelLegId;
-      panelLegColor[i]= ast.editor.map.legs.arr[ panelLegIds[i] ].getHexColor();
       panelLegIndices[i]= panelObjects[i].panelLegIndex;
+      if(panelObjects[i].panelLegId !== -1) {
+        panelLegColor[i]= ast.editor.map.legs.arr[ panelLegIds[i] ].getHexColor();
+      }
       ast.editor.map.removePanel( ids[i] );
     }
 
@@ -340,19 +337,20 @@ function PanelDeleteTip() {
     // for each panel which has been deleted
     for( let i= d.panelObjects.length-1; i >= 0; i-- ) {
       d.panelObjects[i].requestScreen();
-
-      // if leg was deleted -> recreate leg
-      if(ast.editor.map.legs.get(d.legIds[i]) === null) {
-        //recreate leg with last color
-        ast.editor.map.legs.addLeg(d.legIds[i]);
-        ast.editor.map.legs.arr[d.legIds[i]].setHexColor(d.legColor[i]);
-        // set background color of sidebar Leg element
-        let ele= document.getElementById("panelLegHolder");
-        ele.legArray[d.legIds[i]].childNodes[0].style.backgroundColor= d.legColor[i];
+      if(d.legIds[i] !== -1) {
+        // if leg was deleted -> recreate leg
+        if(ast.editor.map.legs.get(d.legIds[i]) === null) {
+          //recreate leg with last color
+          ast.editor.map.legs.addLeg(d.legIds[i]);
+          ast.editor.map.legs.arr[d.legIds[i]].setHexColor(d.legColor[i]);
+          // set background color of sidebar Leg element
+          let ele= document.getElementById("panelLegHolder");
+          ele.legArray[d.legIds[i]].childNodes[0].style.backgroundColor= d.legColor[i];
+        }
       }
-        // reassign lost Leg data
-        d.panelObjects[i].panelLegId= d.legIds[i];
-        d.panelObjects[i].panelLegIndex= d.legIndices[i];
+      // reassign lost Leg data
+      d.panelObjects[i].panelLegId= d.legIds[i];
+      d.panelObjects[i].panelLegIndex= d.legIndices[i];
       // recreate Panel
       ast.editor.map.attachPanel( d.panelObjects[i] );
 
@@ -583,27 +581,21 @@ function PanelDetachTip () {
 function ScreenResizeTip() {
 
   this.actv= function (ast, dat) {
-    console.log("actv");
     ast.pushAction( 'screen-resize', dat );
-    console.log(ast);
   }
 
   this.end= function(ast) {
-    console.log("end");
   }
 
   this.undo= function (ast, t, d) {
-    console.log("undo");
     this.swapConfig(ast, d);
   }
 
   this.redo= function (ast, t, d) {
-    console.log("redo");
     this.swapConfig(ast, d);
   }
 
   this.swapConfig= function (ast, d) {
-    console.log("swap");
     ui.uiScreenMenu.setPosition(d);
     let helppos= d.pos.copy();
     let helpdim= d.dim.copy();

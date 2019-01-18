@@ -15,10 +15,10 @@ function UserInterface() {
 
   const self= this;
 
-  var ctrlDown = false;
+  /*var ctrlDown = false;
   var ctrlKey = 17, vKey = 86, cKey = 67, zKey = 90;
 
-  /*document.body.onkeydown = function(e) {
+  document.body.onkeydown = function(e) {
     if (e.keyCode == 17 || e.keyCode == 91) {
       ctrlDown = true;
     }
@@ -254,13 +254,13 @@ function UserInterface() {
     return Split( divs, config );
   }
 
-  this.addCloseX= function(divId, action) {
+  this.addCloseX= function(divId, action, imgName) {
 
     let element= document.getElementById(divId);
 
     element.closeX= document.createElement("span");    // create button Icon element
     element.closeX.classList.add("fas");               // set css class
-    element.closeX.classList.add("fa-times");          // set css class
+    element.closeX.classList.add(imgName);          // set css class
     element.closeX.classList.add("X");          // set css class
     element.button= document.createElement("button");  //Create button element
     element.button.appendChild( element.closeX );         // add menu icon
@@ -298,8 +298,9 @@ function UserInterface() {
     direction: 'vertical' //split orientation
   });
 
-  this.addCloseX('timeline-wrapper', 'ui.hideTimeline();');
-  this.addCloseX('console-wrapper', 'ui.hideConsole();');
+  this.addCloseX('timeline-wrapper', 'ui.hideTimeline();', 'fa-times');
+  this.addCloseX('console-wrapper', 'ui.hideConsole();', 'fa-times');
+  this.addCloseX('console-wrapper', 'ui.uiConsole.clearConsole();', 'fa-ban');
 
 
 
@@ -467,15 +468,12 @@ function UserInterface() {
   //Create standard sidebar menu
   this.createColorPicker= function() {
     this.uiColorPicker= new ColorPicker( this.uiMenu.pushNode( {name: "Color Picker", html: ""} ) );
-    this.uiColorPicker.addCallback( function(c) {
-                                      console.log("Picker hat jetzt die Farbe: " );
-                                      console.log(c);
-                                    } );
+    this.uiColorPicker.addCallback( function(c) {  } );
   }
 
 
 
-
+  this.uiConsole.println("Done starting Editor.");
 
 
 }

@@ -3,6 +3,7 @@ const p5Module= require('p5');
 const Common = require('./common.js');
 const Render = require('./frameRenderer.js');
 const Tools  = require('./editorTools.js');
+const {Compiler}  = require('./Compiler.js');
 const {AnimationFile} = require('./applicationInterface.js');
 
 // create a new p5-Vector and subtract another one from it on the fly
@@ -623,11 +624,11 @@ function PanelLegArray( m ) {
     let panel= this.map.get( pid );
 
     if( (leg === null) || (panel === null) ) {
-      console.log("no leg or panel found!");
+      ui.uiConsole.printError("no leg or panel found!");
       return false;
     }
     if(panel.panelLegIndex > (-1)) {
-      console.log("panel already attached to leg!");
+      ui.uiConsole.printWarning("panel already attached to leg!");
       return false;
     }
 
@@ -835,10 +836,10 @@ function ProjectionCanvas( p, d, e ) {
     this.editor.actions.setToolTip('screen-resize', dat);
   }
 
-  this.tracePanels= function( map ) {
+  this.tracePanels= function(  ) {
     // TODO
-
-    let hasError= false;
+    let map= this.editor.map;
+    let errorPanel= null;
 
     for( let i=0; i<map.panels.length; i++ ) {
 
@@ -852,12 +853,11 @@ function ProjectionCanvas( p, d, e ) {
 
 
         } else {
-          hasError= true;
-          ui.uiConsole.printError("Panel " + i + " not in screen area!");
+          errorPanel= panel;
         }
       }
     }
-    return !hasError;
+    return errorPanel;
   }
 }
 
@@ -877,8 +877,8 @@ function EditorMap( e ) {
 
   this.selection= new PanelSelection( this.editor, this );
 
-  this.projection= new ProjectionCanvas(  new Dimension( 0, 0, "m", e.grid.conversion ),
-                                          new Dimension( 24*4, 24*4, "cm", e.grid.conversion ),
+  this.projection= new ProjectionCanvas(  new Dimension( 0, 0, "pl", e.grid.conversion ),
+                                          new Dimension( 4, 4, "pl", e.grid.conversion ),
                                           this.editor);
 
   // calculate the mouse position on the map
@@ -1073,13 +1073,9 @@ function ActionStack( e ) {
       this.curTip.intf.eventChildClosed( this, this.msgBox );
     }
     this.msgBox= null;
-    console.log( "Win closed." );
   }
 
   this.eventChildSubmit= function( ev ) {
-    console.log( "Win submitted. " );
-    console.log( ev );
-
     switch( ev.desc ) {
 
       case 'grid-event':
@@ -1422,7 +1418,7 @@ function Editor( i, cnf ) {
   this.backColor= this.p5.color( this.config.backColor );
   this.complementCol= this.p5.color( this.config.compColor );
   this.clickPosition= null;
-
+  this.compiler= new Compiler(this);
 }
 
 module.exports.Editor= Editor;

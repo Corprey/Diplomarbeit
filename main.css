@@ -55,10 +55,8 @@ html, body {
   padding: 3px 5px; /*space between image and button-border*/
 }
 .close-X {
-  position: absolute;
+  float: right;
   text-align: center;
-  top: 3px;   /*Button space to top right border*/
-  right: 3px; /*Button space to top right border*/
   padding: 0; /*image shall fill whole button*/
   margin: 0;  /*image shall fill whole button*/
   background-color: #282c34; /*less dark Gray background */
@@ -168,6 +166,8 @@ html, body {
 
 #console {
 	overflow: scroll;
+  float: left;
+  max-width: 96%;
   font-family: "Courier New", Consolas, monospace;
 }
 
@@ -185,6 +185,8 @@ html, body {
 
 #timeline {
     overflow: hidden;
+    float: left;
+    max-width: 96%;
 }
 
 /********************************************************************************************************************/

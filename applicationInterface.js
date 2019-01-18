@@ -31,56 +31,65 @@ function AppInterface( ui ) {
   }
 
   this.editorCommand= function( cmd, conf ) {
-    switch( cmd ) {
-      case 'toggleDebug':
-        this.userInterface.uiEditor.toggleDebugScreen();
-        this.userInterface.uiConsole.println( "Toggled editor debug screen" );
-        break;
 
-      case 'panOrigin':
-        this.userInterface.uiEditor.autoPanOrigin();
-        break;
+    if(document.activeElement.tagName.toLowerCase() != "input") {
+      switch( cmd ) {
+        case 'toggleDebug':
+          this.userInterface.uiEditor.toggleDebugScreen();
+          this.userInterface.uiConsole.println( "Toggled editor debug screen" );
+          break;
 
-       case 'undo':
-        this.userInterface.uiEditor.actions.eventUndo();
-        break;
+        case 'panOrigin':
+          this.userInterface.uiEditor.autoPanOrigin();
+          break;
 
-      case 'redo':
-        this.userInterface.uiEditor.actions.eventRedo();
-        break;
+         case 'undo':
+          this.userInterface.uiEditor.actions.eventUndo();
+          break;
 
-      case 'toolPlacePanel':
-        this.userInterface.uiEditor.actions.setToolTip('panel-place');
-        //deactivate other Radiobuttons
-        this.userInterface.uiToolbar.getById(5).update();
-        break;
+        case 'redo':
+          this.userInterface.uiEditor.actions.eventRedo();
+          break;
 
-      case 'toolPaint':
-        this.userInterface.uiEditor.actions.setToolTip();
-        //deactivate other Radiobuttons
-        this.userInterface.uiToolbar.getById(6).update();
-        break;
+        case 'toolPlacePanel':
+          this.userInterface.uiEditor.actions.setToolTip('panel-place');
+          //deactivate other Radiobuttons
+          this.userInterface.uiToolbar.getById(5).update();
+          break;
 
-      case 'resetTooltip':
-        this.userInterface.uiEditor.actions.setToolTip();
-        //deactivate other Radiobuttons
-        this.userInterface.uiToolbar.getById(4).update();
-        break;
+        case 'toolLegConnect':
+          this.userInterface.uiEditor.actions.setToolTip('leg-connect');
+          //deactivate other Radiobuttons
+          this.userInterface.uiToolbar.getById(7).update();
+          break;
 
-      case 'toggleGridWin':
-        this.userInterface.uiToolbar.status.createGridBox();
-        break;
+        case 'toolPaint':
+          this.userInterface.uiEditor.actions.setToolTip();
+          //deactivate other Radiobuttons
+          this.userInterface.uiToolbar.getById(6).update();
+          break;
 
-      case 'switchGrid':
-        break;
+        case 'resetTooltip':
+          this.userInterface.uiEditor.actions.setToolTip();
+          //deactivate other Radiobuttons
+          this.userInterface.uiToolbar.getById(4).update();
+          break;
 
-      case 'deletePanel':
-        this.userInterface.uiEditor.actions.setToolTip('panel-delete');
-        break;
+        case 'toggleGridWin':
+          this.userInterface.uiToolbar.status.createGridBox();
+          break;
 
-      case 'select-all':
+        case 'switchGrid':
+          break;
 
-        break;
+        case 'deletePanel':
+          this.userInterface.uiEditor.actions.setToolTip('panel-delete');
+          break;
+
+        case 'select-all':
+
+          break;
+      }
     }
   }
 
@@ -159,7 +168,6 @@ function AppInterface( ui ) {
   this.createMessageBox= function( ev ) {
     ev.type= 'openMsg';
     ev.caller= -1;
-    console.log(ev);
     ipcRenderer.send( 'msgbox-event', ev );
   }
 

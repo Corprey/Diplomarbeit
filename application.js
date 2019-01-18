@@ -380,6 +380,7 @@ function Application() {
                                                           { trig: 'G',       func: 'switchGrid',  type:'e' },
                                                           { trig: 'Ctrl+G',  func: 'toggleGridWin',  type:'e' },
                                                           { trig: 'Delete',  func: 'deletePanel',  type:'e' },
+                                                          { trig: 'C',       func: 'toolLegConnect',  type:'e' },
                                                          ] );
 
   this.terminate= function() {

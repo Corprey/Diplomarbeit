@@ -61,7 +61,6 @@ function clickOk() {
       data= checkForChange(data);
       data.index= data.index-1; // just for visualizing (line 11)
       data.desc= "panel-config-event";
-      console.log(data);
       box.submit(data);
       clickClose();
     }
@@ -77,9 +76,9 @@ function clickClose() {
 //Key-events
 function keyEvent(event) {
   //Enter-Button
-  if (event.keyCode == 13) document.getElementById('ok-button').click();
+  if (event.keyCode == 13) clickOk();
   //ESC-Button
-  if (event.keyCode == 27) document.getElementById('close-button').click();
+  if (event.keyCode == 27) clickClose();
 }
 //checks if index is number
 function checkIndex(index) {
@@ -94,7 +93,6 @@ function checkForChange(data) {
 
   //returns changes made to values
   changes= Common.mkDifference(initDat, data);
-  console.log(changes);
   //if at least one position defined set undefined to old value
   if( changes.pos !== undefined ) {
       changes.pos.x= Object.assign(initDat.pos.x, changes.pos.x);
