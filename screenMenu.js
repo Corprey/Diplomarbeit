@@ -6,6 +6,7 @@ function ScreenMenu() {
   let wrapper= document.getElementById("screenMenuHolder");
   this.prevPosUnit= "pl";
   this.prevDimUnit= "pl";
+  this.prevDimUnit= "px";
 
   // create this.checkbox with label
   this.showWrapper= document.createElement("div");
@@ -78,17 +79,44 @@ function ScreenMenu() {
   this.dimWrapper.appendChild( this.dimInputX );
   this.dimWrapper.appendChild( this.dimInputY );
 
+  //------------------ create resolution input ------------------------------
+
+  this.resWrapper= document.createElement("div");
+  this.resSpan= document.createElement("span");
+  this.resSpan.innerHTML= "Resolution W | H: ";
+
+  this.resInputX= document.createElement("input");
+  this.resInputX.type= "text";
+  this.resInputX.id= "resInputX";
+  this.resInputX.value= "800 px";
+  this.resInputX.classList.add("posInput");
+  this.resInputX.addEventListener( 'keydown', keyEvent);
+
+  this.resInputY= document.createElement("input");
+  this.resInputY.type= "text";
+  this.resInputY.id= "resInputY";
+  this.resInputY.value= "600 px";
+  this.resInputY.classList.add("posInput");
+  this.resInputY.addEventListener( 'keydown', keyEvent);
+
+  this.resWrapper.appendChild( this.resSpan );
+  this.resWrapper.appendChild( this.resInputX );
+  this.resWrapper.appendChild( this.resInputY );
+
   //------------------- add to wrapper ---------------------------
 
   wrapper.appendChild( this.showWrapper );
   wrapper.appendChild( this.posWrapper );
   wrapper.appendChild( this.dimWrapper );
+  wrapper.appendChild( this.resWrapper );
 
   this.setPosition= function(d) {
     this.posInputX.value= "" + d.pos.val.x + " " + d.pos.unit;
     this.posInputY.value= "" + d.pos.val.y + " " + d.pos.unit;
     this.dimInputX.value= "" + d.dim.val.x + " " + d.dim.unit;
     this.dimInputY.value= "" + d.dim.val.y + " " + d.dim.unit;
+    this.resInputX.value= "" + d.resX + "px";
+    this.resInputY.value= "" + d.resY + "px";
   }
 
   //Key-events
@@ -101,14 +129,21 @@ function ScreenMenu() {
       let yp= Common.checkPosInput('posInputY', this.prevPosUnit);
       let up= xp.unit;
       this.prevPosUnit= up;
+
       let xd= Common.checkPosInput('dimInputX', this.prevDimUnit);
       let yd= Common.checkPosInput('dimInputY', this.prevDimUnit);
       let ud= xd.unit;
       this.prevDimUnit= ud;
 
+      let xr= Common.checkPosInput('resInputX', this.prevResUnit);
+      let yr= Common.checkPosInput('resInputY', this.prevResUnit);
+      let ur= "px"; // only unit pixel is allowed
+      this.prevResUnit= ur;
+
 
       ui.uiEditor.map.projection.resize(  xp.value, yp.value, up,
-                                          xd.value, yd.value, ud );
+                                          xd.value, yd.value, ud,
+                                          xr.value, yr.value );
     }
   }
 }

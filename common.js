@@ -35,7 +35,7 @@ function DefaultConfig( cnf, def, callback= function(){} ) {
 //validates the Position/Grid input if number and unit are legal
 function checkPosInput(ele, prevUnit, box= null) {
 
-  let units= ["mm", "cm", "pl", "m", "mil", "in", "ft"];
+  let units= ["mm", "cm", "pl", "px", "m", "mil", "in", "ft"];
   let input= document.getElementById(ele).value;
   let dat= {};
 

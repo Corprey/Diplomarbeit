@@ -71,7 +71,9 @@ function UserInterface() {
     {id: 5, type: "radio", connections: [4,6,7,8], name: "Place Panel",  iconType: 'far', iconImg: 'fa-plus-square',    tooltipText:'  Place Panel  ',      action:'ui.uiEditor.actions.setToolTip("panel-place");'},
     {id: 6, type: "radio", connections: [4,5,7,8], name: "Paint",        iconType: 'fas', iconImg: 'fa-paint-brush',    tooltipText:'  Paint Tool  ',       action:'ui.uiEditor.actions.setToolTip();'},
     {id: 7, type: "radio", connections: [4,5,6,8], name: "Attach",      iconType: null, iconImg: 'add_leg.svg',         tooltipText:'  Connect Panel  ',    action:'ui.uiEditor.actions.setToolTip("leg-connect");'},
-    {id: 8, type: "radio", connections: [4,5,6,7], name: "Detach",      iconType: null, iconImg: 'remove_leg.svg',      tooltipText:'  Detach Panel  ',     action:'ui.uiEditor.actions.setToolTip("panel-detach");'}
+    {id: 8, type: "radio", connections: [4,5,6,7], name: "Detach",      iconType: null, iconImg: 'remove_leg.svg',      tooltipText:'  Detach Panel  ',     action:'ui.uiEditor.actions.setToolTip("panel-detach");'},
+    {id: 3, name: "Start",        iconType: 'fas', iconImg: 'fa-play',          tooltipText:"  Start Compiling  ",     action:'ui.uiEditor.compiler.startComp();'}
+
   ]);
 
 

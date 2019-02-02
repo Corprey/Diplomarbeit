@@ -599,10 +599,16 @@ function ScreenResizeTip() {
     ui.uiScreenMenu.setPosition(d);
     let helppos= d.pos.copy();
     let helpdim= d.dim.copy();
+    let helpResX= d.resX;
+    let helpResY= d.ResY;
     d.pos= ast.editor.map.projection.position.copy();
     d.dim= ast.editor.map.projection.dimensions.copy();
+    d.resX= ast.editor.map.projection.resolution.width;
+    d.resY= ast.editor.map.projection.resolution.height;
     ast.editor.map.projection.position= helppos.copy();
     ast.editor.map.projection.dimensions= helpdim.copy();
+    ast.editor.map.projection.resolution.width= helpResX;
+    ast.editor.map.projection.resolution.height= helpResY;
 
 
 

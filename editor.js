@@ -137,6 +137,7 @@ function UnitConversion() {
     mm:  100/240,
     cm:  100/24,
     pl:  100/1,
+    px:  100/48,
     m:   100/0.24,
     mil: 100/9448.82,
     in:  100/9.44882,
@@ -396,6 +397,10 @@ LedPanel.prototype.draw= function( def= true ) {
 
     p5.rect( pos.x, pos.y, this.size, this.size );
   }
+}
+
+LedPanel.prototype.getRelativePosition= function() {
+  this.relPos= this.editor.map.projection.relativePanelPosition( this );
 }
 
 
@@ -802,11 +807,12 @@ function PanelSelection( e, m ) {
 
 }
 
-
+const PIXELPERCMPANEL= 2;
 function ProjectionCanvas( p, d, e ) {
 
   this.position= p;
   this.dimensions= d;
+  this.resolution= {width: 800, height: 600};
   this.isEnabled= false;
   this.editor= e;
 
@@ -827,13 +833,55 @@ function ProjectionCanvas( p, d, e ) {
     this.isEnabled= e;
   }
 
-  this.resize= function( xp, yp, up, xd, yd, ud ) {
-    let dat= {pos: this.position.copy(), dim: this.dimensions.copy()};
+  this.resize= function( xp, yp, up, xd, yd, ud, xr, yr ) {
+    let dat= {pos: this.position.copy(), dim: this.dimensions.copy(),
+              resX: this.resolution.width, resY: this.resolution.height};
 
     this.position.set( xp, yp, up, this.editor.grid.conversion );
     this.dimensions.set( xd, yd, ud, this.editor.grid.conversion );
+    this.resolution.width= xr;
+    this.resolution.height= yr;
 
     this.editor.actions.setToolTip('screen-resize', dat);
+  }
+
+  // returns factor of picturePixel/realPixel
+  this.resolutionFactor= function() {
+    let factor= {x: null, y:null};
+    let dimValue= this.dimensions.get().copy(); //get dimension Value
+    let c= this.editor.grid.conversion;
+    //convert dimension to cm if needed
+    if(this.dimensions.unit !== "cm") {
+      dimValue.x= (dimValue.x * c.getFactor(this.dimensions.unit) ) / c.getFactor("cm");
+      dimValue.y= (dimValue.y * c.getFactor(this.dimensions.unit) ) / c.getFactor("cm");
+    }
+    // get factor for down/up scaling
+    // resolution Pixel per cm divided by 2 --> Panel has 2 px per cm
+    factor.x= (this.resolution.width/dimValue.x) / PIXELPERCMPANEL;
+    factor.y= (this.resolution.height/dimValue.y) / PIXELPERCMPANEL;
+
+    return factor;
+  }
+
+  this.relativePanelPosition= function(p) {
+    let c= this.editor.grid.conversion;
+    let pos= p.position.copy();
+
+    // convert map position to cm
+    let x= pos.x/c.getFactor("cm");
+    let y= pos.y/c.getFactor("cm");
+
+    // convert projection Screen position to cm
+    let posValue= this.position.get().copy(); //get position Value
+    if(this.dimensions.unit !== "cm") {
+      posValue.x= (posValue.x * c.getFactor(this.position.unit) ) / c.getFactor("cm");
+      posValue.y= (posValue.y * c.getFactor(this.position.unit) ) / c.getFactor("cm");
+    }
+
+    // calculate relative position of panel origin to origin of projectionScreen
+    pos.x= Math.ceil(x - posValue.x);
+    pos.y= Math.ceil(y - posValue.y);
+    return pos;
   }
 
   this.tracePanels= function(  ) {
